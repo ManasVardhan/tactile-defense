@@ -27,6 +27,15 @@ namespace TactileWars.Squad
         public SquadRing ring;
         public Transform spawnPoint;
 
+        [Header("Loadout (set by BattleSetup before Start; null keeps the defaults)")]
+        [Tooltip("Stats for the squad leader (Hero model). Null uses soldierConfig.")] public UnitConfig leaderConfig;
+        [Tooltip("Hired mercenary stats. Null means no mercenary joins the battle.")] public UnitConfig mercenaryConfig;
+        public float mercenaryScale = 1.2f;
+        public string mercenaryName = "Mercenary";
+
+        /// <summary>The hired mercenary (Hero model variant), or null.</summary>
+        public Soldier Mercenary { get; private set; }
+
         readonly List<Soldier> soldiers = new List<Soldier>(96);
         readonly FormationSolver solver = new FormationSolver();
         readonly List<Vector3> work = new List<Vector3>(1024);
@@ -105,6 +114,15 @@ namespace TactileWars.Squad
             work.Clear();
             for (int i = 0; i < scratch.Count; i++) work.Add(scratch[i]);
             for (int i = 0; i < n; i++) AddSoldier(c + new Vector3(Random.Range(-1.5f, 1.5f), 0f, Random.Range(-1.5f, 1.5f)), i == n / 2);
+            if (mercenaryConfig != null)
+            {
+                Mercenary = AddSoldier(c + new Vector3(0f, 0f, 1f), true, mercenaryConfig);
+                if (Mercenary != null)
+                {
+                    Mercenary.name = "Mercenary_" + mercenaryName;
+                    Mercenary.transform.localScale *= mercenaryScale;
+                }
+            }
             SetPath(work, false);
             SolveAndAssign(c + Vector3.back * 3f);
             for (int i = 0; i < soldiers.Count; i++) soldiers[i].Motor.Teleport(slots[assignment[i]].position);
@@ -112,7 +130,7 @@ namespace TactileWars.Squad
             ringSnap = true;
         }
 
-        Soldier AddSoldier(Vector3 pos, bool leader = false)
+        Soldier AddSoldier(Vector3 pos, bool leader = false, UnitConfig overrideConfig = null)
         {
             var prefabs = BattleContext.Prefabs;
             if (prefabs == null || prefabs.soldier == null) return null;
@@ -120,7 +138,8 @@ namespace TactileWars.Squad
             var prefab = leader && prefabs.hero != null ? prefabs.hero : prefabs.soldier;
             var s = Instantiate(prefab, pos, Quaternion.identity, transform);
             s.name = (leader && prefabs.hero != null ? "Leader_" : "Player_") + soldiers.Count;
-            s.Setup(Team.Player, gc != null ? gc.playerTeam : TeamColorId.Red, soldierConfig);
+            var cfg = overrideConfig != null ? overrideConfig : (leader && leaderConfig != null ? leaderConfig : soldierConfig);
+            s.Setup(Team.Player, gc != null ? gc.playerTeam : TeamColorId.Red, cfg);
             s.Motor.Teleport(pos);
             soldiers.Add(s);
             EnsureCapacity(soldiers.Count);
@@ -332,6 +351,8 @@ namespace TactileWars.Squad
 
             if (soldierConfig != null)
             {
+                // Everybody marches at the squad's speed so the formation stays together (leader and mercenary
+                // stat differences are health, damage and fire rate).
                 var ms = soldierConfig.ToMotor(bmin, bmax);
                 for (int i = 0; i < n; i++) soldiers[i].Tick(dt, ms, positions, n, i);
             }

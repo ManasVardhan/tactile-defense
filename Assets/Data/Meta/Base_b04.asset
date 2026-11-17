@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf3d02b252309449f90a717e7c9603b1, type: 3}
+  m_Name: Base_b04
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Meta.BaseDefinition
+  id: b04
+  displayName: Splat Ridge
+  commanderName: Cpt. Violet
+  enemyTeam: 5
+  difficulty: 4
+  requiredLevel: 3
+  rewardMultiplier: 1.5
+  enemyHealthMult: 1.1
+  enemyDamageMult: 1.1
+  layout: {fileID: 11400000, guid: 86355a433c9b84234acc64be3e30aa45, type: 2}
+  enemySquads: 6
+  defenses: 10

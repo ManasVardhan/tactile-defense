@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf3d02b252309449f90a717e7c9603b1, type: 3}
+  m_Name: Base_b08
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Meta.BaseDefinition
+  id: b08
+  displayName: Jade Fortress
+  commanderName: Gen. Celadon
+  enemyTeam: 6
+  difficulty: 8
+  requiredLevel: 8
+  rewardMultiplier: 2.5
+  enemyHealthMult: 1.45
+  enemyDamageMult: 1.36
+  layout: {fileID: 11400000, guid: f1e7e518b209b44a69e2e991d20479ee, type: 2}
+  enemySquads: 9
+  defenses: 16

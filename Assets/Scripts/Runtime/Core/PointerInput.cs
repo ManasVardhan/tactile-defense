@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -98,6 +99,12 @@ namespace TactileWars.Core
         public static bool ReleasedThisFrame { get { Refresh(); return !current.isDown && previous.isDown; } }
         public static Vector2 Position { get { Refresh(); return current.isDown || !previous.isDown ? current.position : previous.position; } }
         public static bool ReinforceRequested { get { Refresh(); return reinforce; } }
+
+        /// <summary>Optional hit test installed by the presentation layer: returns true when a screen point is over
+        /// an interactive UI element. Gameplay input ignores presses that start over UI. Core never references UI.</summary>
+        public static Func<Vector2, bool> UIHitTest;
+
+        public static bool IsOverUI(Vector2 screen) => UIHitTest != null && UIHitTest(screen);
 
         /// <summary>Ray from the camera through a screen point onto the ground plane y = 0.</summary>
         public static bool ScreenToGround(Camera cam, Vector2 screen, out Vector3 world)

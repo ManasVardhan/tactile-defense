@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e367a0101e43459aa1836c5241fb8d0, type: 3}
+  m_Name: DefenseCatalog
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Battle.DefenseCatalog
+  entries:
+  - id: turret
+    displayName: Turret
+    prefab: {fileID: 6181814431278351229, guid: 2b31dc453c2f645979b5fc1548278c26, type: 3}
+  - id: mine
+    displayName: Paint Mine
+    prefab: {fileID: 1970420554959904801, guid: 28012ee5b8c674ad19d577591b154724, type: 3}
+  - id: tank
+    displayName: Tank
+    prefab: {fileID: 289845630816412128, guid: e1ecfe6c6304d47a18bc1938455b58f5, type: 3}
+  - id: cannon
+    displayName: Cannon
+    prefab: {fileID: 4348711568055691164, guid: fe8ca22bbbf934ad4b043fd4bcd7e10f, type: 3}
+  - id: bunker
+    displayName: Bunker
+    prefab: {fileID: 7376294761557736346, guid: 453cff1dcdb984a61ac378d4513a8ff4, type: 3}
+  - id: tesla
+    displayName: Tesla Antenna
+    prefab: {fileID: 6569430907797430318, guid: 1ad3b56e7fed84c59aa6baf00c375a73, type: 3}

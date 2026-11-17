@@ -16,6 +16,11 @@ namespace TactileWars.Audio
         AudioSource music, loop;
 
         public static bool Muted { get; set; }
+        /// <summary>Player sfx volume (0..1) from the settings screen.</summary>
+        public static float SfxVolume { get; set; } = 1f;
+        public static AudioManager Instance => instance;
+        public SoundLibrary Library => library;
+        [Tooltip("Which music this scene plays through MusicPlayer (crossfaded).")] public bool menuMusic;
 
         void Awake()
         {
@@ -39,11 +44,11 @@ namespace TactileWars.Audio
 
         void Start()
         {
-            if (library != null && library.battleMusic != null && !Application.isBatchMode)
+            // Music lives in the persistent MusicPlayer so menu and battle themes crossfade across scene loads.
+            if (library != null)
             {
-                music.clip = library.battleMusic;
-                music.volume = library.musicVolume * library.masterVolume;
-                music.Play();
+                var clip = menuMusic ? library.menuMusic : library.battleMusic;
+                if (clip != null) MusicPlayer.Play(clip, library.musicVolume * library.masterVolume);
             }
         }
 
@@ -60,13 +65,13 @@ namespace TactileWars.Audio
             if (e == null || e.clips.Length == 0 || e.clips[0] == null) return;
             if (l.isPlaying && l.clip == e.clips[0]) return;
             l.clip = e.clips[0];
-            l.volume = e.volume * instance.library.masterVolume;
+            l.volume = e.volume * instance.library.masterVolume * SfxVolume;
             l.Play();
         }
 
         void PlayInternal(SoundId id)
         {
-            if (Muted || library == null) return;
+            if (Muted || library == null || SfxVolume <= 0.001f) return;
             var e = library.Find(id);
             if (e == null || e.clips == null || e.clips.Length == 0) return;
             int idx = (int)id;
@@ -87,7 +92,7 @@ namespace TactileWars.Audio
             if (clip == null) return;
             var s = sources[free];
             s.clip = clip;
-            s.volume = e.volume * library.masterVolume;
+            s.volume = e.volume * library.masterVolume * SfxVolume;
             s.pitch = Random.Range(e.pitch.x, e.pitch.y);
             s.Play();
             sourceSound[free] = idx;

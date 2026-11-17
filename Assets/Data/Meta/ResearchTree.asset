@@ -1,0 +1,311 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb546c69f0a524f6d9a64c18db1cc2cc, type: 3}
+  m_Name: ResearchTree
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Meta.ResearchTree
+  nodes:
+  - id: squad_size
+    displayName: Squad Size
+    description: More pigments march with you.
+    branch: 0
+    effect: 0
+    icon: Users
+    defenseId: 
+    valueFormat: +{0}
+    displayScale: 1
+    steps:
+    - requiredLevel: 1
+      goldCost: 150
+      value: 4
+    - requiredLevel: 2
+      goldCost: 320
+      value: 8
+    - requiredLevel: 4
+      goldCost: 560
+      value: 12
+    - requiredLevel: 6
+      goldCost: 900
+      value: 16
+    - requiredLevel: 9
+      goldCost: 1400
+      value: 20
+  - id: soldier_health
+    displayName: Thick Helmets
+    description: Each soldier takes more paint before popping.
+    branch: 0
+    effect: 1
+    icon: Heart
+    defenseId: 
+    valueFormat: +{0}%
+    displayScale: 100
+    steps:
+    - requiredLevel: 1
+      goldCost: 120
+      value: 0.1
+    - requiredLevel: 3
+      goldCost: 260
+      value: 0.2
+    - requiredLevel: 5
+      goldCost: 480
+      value: 0.3
+    - requiredLevel: 7
+      goldCost: 800
+      value: 0.4
+    - requiredLevel: 10
+      goldCost: 1250
+      value: 0.5
+  - id: fire_rate
+    displayName: Rapid Pumps
+    description: Paint guns fire faster.
+    branch: 0
+    effect: 2
+    icon: Lightning
+    defenseId: 
+    valueFormat: +{0}%
+    displayScale: 100
+    steps:
+    - requiredLevel: 2
+      goldCost: 180
+      value: 0.08
+    - requiredLevel: 3
+      goldCost: 340
+      value: 0.16
+    - requiredLevel: 5
+      goldCost: 600
+      value: 0.24
+    - requiredLevel: 8
+      goldCost: 950
+      value: 0.32
+    - requiredLevel: 11
+      goldCost: 1450
+      value: 0.4
+  - id: paint_damage
+    displayName: Heavy Pigment
+    description: Every paint dot hits harder.
+    branch: 0
+    effect: 3
+    icon: Target
+    defenseId: 
+    valueFormat: +{0}%
+    displayScale: 100
+    steps:
+    - requiredLevel: 2
+      goldCost: 200
+      value: 0.1
+    - requiredLevel: 4
+      goldCost: 380
+      value: 0.2
+    - requiredLevel: 6
+      goldCost: 650
+      value: 0.3
+    - requiredLevel: 9
+      goldCost: 1000
+      value: 0.4
+    - requiredLevel: 12
+      goldCost: 1500
+      value: 0.5
+  - id: move_speed
+    displayName: Light Boots
+    description: The squad marches and reforms faster.
+    branch: 0
+    effect: 4
+    icon: Boot
+    defenseId: 
+    valueFormat: +{0}%
+    displayScale: 100
+    steps:
+    - requiredLevel: 3
+      goldCost: 260
+      value: 0.06
+    - requiredLevel: 6
+      goldCost: 600
+      value: 0.12
+    - requiredLevel: 10
+      goldCost: 1100
+      value: 0.18
+  - id: reinforcement_size
+    displayName: Bigger Backup
+    description: More soldiers arrive per reinforcement call.
+    branch: 1
+    effect: 5
+    icon: Plus
+    defenseId: 
+    valueFormat: +{0}
+    displayScale: 1
+    steps:
+    - requiredLevel: 2
+      goldCost: 220
+      value: 3
+    - requiredLevel: 4
+      goldCost: 450
+      value: 6
+    - requiredLevel: 7
+      goldCost: 800
+      value: 9
+    - requiredLevel: 10
+      goldCost: 1250
+      value: 12
+  - id: reinforcement_charge
+    displayName: Quick Call
+    description: The POW meter fills faster.
+    branch: 1
+    effect: 6
+    icon: Pow
+    defenseId: 
+    valueFormat: +{0}%
+    displayScale: 100
+    steps:
+    - requiredLevel: 3
+      goldCost: 260
+      value: 0.12
+    - requiredLevel: 5
+      goldCost: 520
+      value: 0.24
+    - requiredLevel: 8
+      goldCost: 880
+      value: 0.36
+    - requiredLevel: 11
+      goldCost: 1300
+      value: 0.5
+  - id: hero_ability
+    displayName: Leader Training
+    description: Your squad leader and mercenary get tougher and hit harder.
+    branch: 1
+    effect: 7
+    icon: Mercenary
+    defenseId: 
+    valueFormat: +{0}%
+    displayScale: 100
+    steps:
+    - requiredLevel: 4
+      goldCost: 400
+      value: 0.2
+    - requiredLevel: 7
+      goldCost: 850
+      value: 0.4
+    - requiredLevel: 12
+      goldCost: 1500
+      value: 0.6
+  - id: def_mine
+    displayName: Paint Mine
+    description: Hidden trap. Pops soldiers that walk over it.
+    branch: 2
+    effect: 8
+    icon: Skull
+    defenseId: mine
+    valueFormat: Lv {0}
+    displayScale: 1
+    steps:
+    - requiredLevel: 1
+      goldCost: 0
+      value: 1
+    - requiredLevel: 3
+      goldCost: 250
+      value: 2
+    - requiredLevel: 6
+      goldCost: 600
+      value: 3
+  - id: def_turret
+    displayName: Turret
+    description: Rotating paint turret with long range.
+    branch: 2
+    effect: 8
+    icon: Target
+    defenseId: turret
+    valueFormat: Lv {0}
+    displayScale: 1
+    steps:
+    - requiredLevel: 2
+      goldCost: 300
+      value: 1
+    - requiredLevel: 4
+      goldCost: 550
+      value: 2
+    - requiredLevel: 7
+      goldCost: 900
+      value: 3
+  - id: def_bunker
+    displayName: Bunker
+    description: Sturdy block that sprays paint.
+    branch: 2
+    effect: 8
+    icon: Shield
+    defenseId: bunker
+    valueFormat: Lv {0}
+    displayScale: 1
+    steps:
+    - requiredLevel: 4
+      goldCost: 450
+      value: 1
+    - requiredLevel: 6
+      goldCost: 750
+      value: 2
+    - requiredLevel: 9
+      goldCost: 1100
+      value: 3
+  - id: def_tank
+    displayName: Tank
+    description: Patrols and lobs heavy paint shells.
+    branch: 2
+    effect: 8
+    icon: Shield
+    defenseId: tank
+    valueFormat: Lv {0}
+    displayScale: 1
+    steps:
+    - requiredLevel: 5
+      goldCost: 600
+      value: 1
+    - requiredLevel: 8
+      goldCost: 950
+      value: 2
+    - requiredLevel: 11
+      goldCost: 1400
+      value: 3
+  - id: def_cannon
+    displayName: Cannon
+    description: Long range mortar. Squads must dodge.
+    branch: 2
+    effect: 8
+    icon: Target
+    defenseId: cannon
+    valueFormat: Lv {0}
+    displayScale: 1
+    steps:
+    - requiredLevel: 7
+      goldCost: 800
+      value: 1
+    - requiredLevel: 10
+      goldCost: 1200
+      value: 2
+    - requiredLevel: 13
+      goldCost: 1700
+      value: 3
+  - id: def_tesla
+    displayName: Tesla Antenna
+    description: Short range zap trap.
+    branch: 2
+    effect: 8
+    icon: Lightning
+    defenseId: tesla
+    valueFormat: Lv {0}
+    displayScale: 1
+    steps:
+    - requiredLevel: 9
+      goldCost: 1000
+      value: 1
+    - requiredLevel: 12
+      goldCost: 1500
+      value: 2
+    - requiredLevel: 15
+      goldCost: 2100
+      value: 3

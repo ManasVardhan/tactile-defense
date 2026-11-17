@@ -7,7 +7,9 @@ namespace TactileWars.Audio
     {
         Shoot, ShootHeavy, TurretShot, CannonShot, TankShot, Hit, Splat, UnitPop, Explosion, MineExplosion,
         BuildingHit, BuildingDestroyed, StrokeDraw, FormationSet, CaptureTick, CaptureComplete,
-        ReinforcementReady, ReinforcementCall, BubblePop, Victory, Defeat, Footsteps, UiClick
+        ReinforcementReady, ReinforcementCall, BubblePop, Victory, Defeat, Footsteps, UiClick,
+        // Appended for the UI phase (keep order: values are serialized as ints).
+        UiBack, UiOpen, UiPurchase, UiError, CoinPickup, LevelUp
     }
 
     [Serializable]
@@ -28,6 +30,7 @@ namespace TactileWars.Audio
     {
         public SoundEntry[] entries = Array.Empty<SoundEntry>();
         public AudioClip battleMusic;
+        public AudioClip menuMusic;
         [Range(0, 1)] public float musicVolume = 0.35f;
         [Range(0, 1)] public float masterVolume = 0.9f;
 

@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0bdde0c4d8d54e5fb15450ef572936e, type: 3}
+  m_Name: MetaDatabase
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Meta.MetaDatabase
+  progression: {fileID: 11400000, guid: fce5b4ad6a3824c90beb967153e6d11c, type: 2}
+  research: {fileID: 11400000, guid: 4e9df9e93ca81439dba5184599a38c23, type: 2}
+  mercenaries:
+  - {fileID: 11400000, guid: ac16bcfe906af4c93a4982a8f7360433, type: 2}
+  - {fileID: 11400000, guid: 300b0d5a168e44e82b9f6552affd1476, type: 2}
+  - {fileID: 11400000, guid: 068e215c14a4e4fefb063923c0f4d4a5, type: 2}
+  roster: {fileID: 11400000, guid: b52d658890bde459da528f08337c0d0d, type: 2}
+  defenses: {fileID: 11400000, guid: 71935f9e3402748f1a93b114b138f52a, type: 2}
+  game: {fileID: 11400000, guid: 347244d8377e84fbe9d6993c33b24cdb, type: 2}
+  squadConfig: {fileID: 11400000, guid: 5d3a04598ecfd4cdb97b9d3c6c691f51, type: 2}
+  battleConfig: {fileID: 11400000, guid: 27a40089f34c74a30baf988458688e67, type: 2}
+  playerSoldier: {fileID: 11400000, guid: 27a57207c0cf04dd68ca27d37bc2ccfa, type: 2}

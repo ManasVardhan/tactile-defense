@@ -1,0 +1,203 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8277048141f03489ca5008f4e1cfe046, type: 3}
+  m_Name: UISkin
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.UI.UISkin
+  headingFont: {fileID: 11400000, guid: 63d1375ae8c5647ec9539627c79e4bcf, type: 2}
+  bodyFont: {fileID: 11400000, guid: 18315bb4464d74f9395cdf3a45967fec, type: 2}
+  headingOutline: {fileID: 2100000, guid: 3c7e8dad887a44d2bb222e6362bd86df, type: 2}
+  headingOutlineThin: {fileID: 2100000, guid: 9123d9c064d584bd2ae1f2b4edf374b0, type: 2}
+  bodyOutline: {fileID: 2100000, guid: 642f32372d616424d992b5155bd21b58, type: 2}
+  rounded16: {fileID: 21300000, guid: e9881ce85c3af4b119879da8128e1950, type: 3}
+  rounded32: {fileID: 21300000, guid: d7ceade61c57243d1a0bc00a25800020, type: 3}
+  pill: {fileID: 21300000, guid: 22c42f398e8b14e6b9ca548bd3c50ef5, type: 3}
+  pillShine: {fileID: 21300000, guid: 6d783aa6146664524be27cb26549cbfe, type: 3}
+  circle: {fileID: 21300000, guid: 6d9984e7c4de145078a6fa242e1121cd, type: 3}
+  circleShine: {fileID: 21300000, guid: 79db1fde61a184e1992514a1d253064b, type: 3}
+  ring: {fileID: 21300000, guid: 0adb6e66699ab4b0682037834ad4d7b2, type: 3}
+  ringThin: {fileID: 21300000, guid: 55369e9c5ad1d4d8c88002ab83357fb6, type: 3}
+  hex: {fileID: 21300000, guid: e308bb01dde14410d9aaf4e7700b1c32, type: 3}
+  hexRing: {fileID: 21300000, guid: 9e9f60d2e269c4269b084d233081a0f9, type: 3}
+  tab: {fileID: 21300000, guid: 5f625ee4da5164e70af74fb405f120de, type: 3}
+  softShadow: {fileID: 21300000, guid: ca2ed80383180437eb4db49fc3d42909, type: 3}
+  glow: {fileID: 21300000, guid: 198005d88e48c45d295693f857e4ea21, type: 3}
+  splat: {fileID: 21300000, guid: bfc456406fabe41a9ac4efa8986e6c89, type: 3}
+  ribbon: {fileID: 21300000, guid: 07d6a1252617e4b078336f7db9a5796c, type: 3}
+  gradientV: {fileID: 21300000, guid: 6ad716008256f4896aadc4f35dddcb76, type: 3}
+  dash: {fileID: 21300000, guid: d77f298e1f66547a2ae583a7d027949a, type: 3}
+  medal: {fileID: 21300000, guid: 38c851433a268438ba27ab681bc8762d, type: 3}
+  white: {fileID: 21300000, guid: 46d8fc8e184e943b7a05148a660d7205, type: 3}
+  icons:
+  - {fileID: 21300000, guid: 31fbbd7b94e5f47bcb11c2a3a9b343e0, type: 3}
+  - {fileID: 21300000, guid: b80740301581f406c9025c4db787b986, type: 3}
+  - {fileID: 21300000, guid: afd8b6807ec594bd7a043e56ed891886, type: 3}
+  - {fileID: 21300000, guid: 6caad1794dd154a9e823260a66860384, type: 3}
+  - {fileID: 21300000, guid: 5057967b1c4a6484c945a4fefec7448e, type: 3}
+  - {fileID: 21300000, guid: 0baf88dd7a36d4336ab134c0613c3671, type: 3}
+  - {fileID: 21300000, guid: 3d90c4a6ff0b646a282065e3d82ca10f, type: 3}
+  - {fileID: 21300000, guid: c1496a83b0ee94a79ba5694706f323e5, type: 3}
+  - {fileID: 21300000, guid: 393633dbdfec14da49a786b0f0b84645, type: 3}
+  - {fileID: 21300000, guid: f6400e00285814df885f097028f663a6, type: 3}
+  - {fileID: 21300000, guid: aea6314dc77714975965c195118dec89, type: 3}
+  - {fileID: 21300000, guid: 5a1b3cf28f95c43418445704f60e0d9f, type: 3}
+  - {fileID: 21300000, guid: 38ef2a4a79e5f4ea5a8b2012d025ca92, type: 3}
+  - {fileID: 21300000, guid: 3af2f11ecacda41738c4b7dd61260f95, type: 3}
+  - {fileID: 21300000, guid: 7dfe14f093f154de78f00fe6e3a35072, type: 3}
+  - {fileID: 21300000, guid: 29f075eadfc65418198a02629f9246bd, type: 3}
+  - {fileID: 21300000, guid: 51b829a3a313549d1af3dbae5c82f2f0, type: 3}
+  - {fileID: 21300000, guid: e7a99c83c4a4e4749bf33758504be3c5, type: 3}
+  - {fileID: 21300000, guid: e2cc56d0e88224f3495ffe8dee1fc165, type: 3}
+  - {fileID: 21300000, guid: 59f735dfe20564d8f801f39534040949, type: 3}
+  - {fileID: 21300000, guid: 6d5b0fb5ebfed49a1b10860f82442bf6, type: 3}
+  - {fileID: 21300000, guid: 0f3caf4cffcd34534a4072ae5afb3891, type: 3}
+  - {fileID: 21300000, guid: 7d8984e6d33a84eb88d2dda03bb39786, type: 3}
+  - {fileID: 21300000, guid: 3a2ce64a383e244d6ae6fd5766de9819, type: 3}
+  - {fileID: 21300000, guid: 78c578f616498417e80a314436632f38, type: 3}
+  - {fileID: 21300000, guid: e32b6aa236d2443d2a695cb24563db8f, type: 3}
+  - {fileID: 21300000, guid: d37ae01dcd964433b81c2ec5740e8502, type: 3}
+  - {fileID: 21300000, guid: e8559935b242242eaa302c837a332b03, type: 3}
+  - {fileID: 21300000, guid: a9facb3c39591433f8f14d1dae1aa0df, type: 3}
+  - {fileID: 21300000, guid: 992e83da56f5f457092ca8eeff3a20a6, type: 3}
+  - {fileID: 21300000, guid: 2e09ec8a6fd2048c18f37174dafbad4a, type: 3}
+  - {fileID: 21300000, guid: 112d2607a7d624eb7b30aae2fe7dad98, type: 3}
+  - {fileID: 21300000, guid: 06471053899b347f6bbd51d4e2c72f82, type: 3}
+  - {fileID: 21300000, guid: f179f1ecff176478399b977608f2fbde, type: 3}
+  - {fileID: 21300000, guid: 4d6852109416d4d1793a6f6f41a15557, type: 3}
+  - {fileID: 21300000, guid: 205bdd2c8cd8e435c86641d94a9d12b4, type: 3}
+  - {fileID: 21300000, guid: ec32b80aef31546ae8738111eb91e11c, type: 3}
+  - {fileID: 21300000, guid: c1a53e8bed747451483643811963f0a5, type: 3}
+  - {fileID: 21300000, guid: 0fa7ba4dd6ee642b687f14fb1899d32b, type: 3}
+  - {fileID: 21300000, guid: e2a474663a52242a3bd3e273c464ace5, type: 3}
+  busts:
+  - {fileID: 21300000, guid: bedb14025f95b4bc0aba72dc4ca3162a, type: 3}
+  - {fileID: 21300000, guid: 0d3598a5602114022b4f60289cefcec8, type: 3}
+  - {fileID: 21300000, guid: bac987e8ec2404c14b97ec7d53126584, type: 3}
+  - {fileID: 21300000, guid: 12e6189ee548444858db145e8a1a29f5, type: 3}
+  - {fileID: 21300000, guid: 047f73bb490a04ac5aa3df285263464c, type: 3}
+  - {fileID: 21300000, guid: 0b1ff0a7409c649e79da29357ea66a1f, type: 3}
+  - {fileID: 21300000, guid: 8223b7033947249a8a7f3cc114c7f117, type: 3}
+  soldiers:
+  - {fileID: 21300000, guid: 22fb8d4fe179a45ea8c99a610daad483, type: 3}
+  - {fileID: 21300000, guid: b96413b1e59044f469433422aa9f3400, type: 3}
+  - {fileID: 21300000, guid: c8941d28014b14ca9a5daf19e4277b85, type: 3}
+  - {fileID: 21300000, guid: bdf827acdae004d4c90f4acfc6123505, type: 3}
+  - {fileID: 21300000, guid: f6e4221e6706945bdb44d62c04709eb6, type: 3}
+  - {fileID: 21300000, guid: d1d68a6e5898c4c87bf47a62b8f307b5, type: 3}
+  - {fileID: 21300000, guid: d3b3ca1f765534cc7b0c20c44361be8b, type: 3}
+  heroes:
+  - {fileID: 21300000, guid: 996e7b7e9749e4e1f826e544014d20cd, type: 3}
+  - {fileID: 21300000, guid: fba03a76382494c168a41da29f3a8a12, type: 3}
+  - {fileID: 21300000, guid: ac18ff4abf48c48adb237a3ea1ea4a3b, type: 3}
+  - {fileID: 21300000, guid: 29fa605a472ce418db34c30625fba9ba, type: 3}
+  - {fileID: 21300000, guid: 9194adb587bb04b078c51d6e33981a46, type: 3}
+  - {fileID: 21300000, guid: a6f5de2c6f6d3420284710440bf66125, type: 3}
+  - {fileID: 21300000, guid: 397dec59452c34af392c2c7df1576ffc, type: 3}
+  renders:
+  - key: def_turret_Blue
+    sprite: {fileID: 21300000, guid: 79fbc9fc70d87417cabe6bb43b9817d5, type: 3}
+  - key: def_tank_Blue
+    sprite: {fileID: 21300000, guid: 74627316b6bb34808b385020b18ae20b, type: 3}
+  - key: def_cannon_Blue
+    sprite: {fileID: 21300000, guid: 505f86444acd043fead0a53ce99aaea9, type: 3}
+  - key: def_mine_Blue
+    sprite: {fileID: 21300000, guid: 896b298db5823498a8318cd275f0db57, type: 3}
+  - key: def_bunker_Blue
+    sprite: {fileID: 21300000, guid: 362dd5c23bbfd41a48ffef3f3d554cfa, type: 3}
+  - key: def_tesla_Blue
+    sprite: {fileID: 21300000, guid: d1f304e6f62364d6fb6e04e654f9deca, type: 3}
+  - key: hq_Blue
+    sprite: {fileID: 21300000, guid: 4dc6421489afc4f0588381aa3c0eba94, type: 3}
+  - key: def_turret_Green
+    sprite: {fileID: 21300000, guid: 16322681b59dd4922a3869fc61e1e98f, type: 3}
+  - key: def_tank_Green
+    sprite: {fileID: 21300000, guid: eb2182bc0d66c44faba6e979bb0e80bd, type: 3}
+  - key: def_cannon_Green
+    sprite: {fileID: 21300000, guid: ddee81d806e81443d8d2acd19952a43b, type: 3}
+  - key: def_mine_Green
+    sprite: {fileID: 21300000, guid: b3bf6be27eb524e24814350d049556a6, type: 3}
+  - key: def_bunker_Green
+    sprite: {fileID: 21300000, guid: 0c83a11a5c80c411e932c6e81a61035c, type: 3}
+  - key: def_tesla_Green
+    sprite: {fileID: 21300000, guid: 34cb36ff39b7546eb8ef32ad6a80494e, type: 3}
+  - key: hq_Green
+    sprite: {fileID: 21300000, guid: 8ee657977d3ff443a87ed296e5586ee5, type: 3}
+  - key: def_turret_Orange
+    sprite: {fileID: 21300000, guid: 9a7aa62a5ff914816ba0350b3b415201, type: 3}
+  - key: def_tank_Orange
+    sprite: {fileID: 21300000, guid: f5639d4b1a6fa454ba6200168f20a577, type: 3}
+  - key: def_cannon_Orange
+    sprite: {fileID: 21300000, guid: 64f0266e84b194a77ad7811bf5d025ba, type: 3}
+  - key: def_mine_Orange
+    sprite: {fileID: 21300000, guid: 732d173fcca354d14bdf0f5cb5938271, type: 3}
+  - key: def_bunker_Orange
+    sprite: {fileID: 21300000, guid: 209dd6210e33b4ff79576d18894994dd, type: 3}
+  - key: def_tesla_Orange
+    sprite: {fileID: 21300000, guid: b4e0c8fe48bb74c47a18c75986d3cbb1, type: 3}
+  - key: hq_Orange
+    sprite: {fileID: 21300000, guid: 5f9845a31db2c4928b7c1f92756775a8, type: 3}
+  - key: def_turret_Red
+    sprite: {fileID: 21300000, guid: 3f2ca173852d24726a3c01a3a4647534, type: 3}
+  - key: def_tank_Red
+    sprite: {fileID: 21300000, guid: b75b8c4b17c504fb79623a5d4bbd441c, type: 3}
+  - key: def_cannon_Red
+    sprite: {fileID: 21300000, guid: b6f50c105781f4e80be167ea561ebd0f, type: 3}
+  - key: def_mine_Red
+    sprite: {fileID: 21300000, guid: 784bb4ddd0ea043109d3348c91f0e8bf, type: 3}
+  - key: def_bunker_Red
+    sprite: {fileID: 21300000, guid: 75113646f4be24c9fa68cfd3b8db5d2b, type: 3}
+  - key: def_tesla_Red
+    sprite: {fileID: 21300000, guid: 506b9225350584f99be311c475d8401e, type: 3}
+  - key: hq_Red
+    sprite: {fileID: 21300000, guid: fd7ef1a47a51b4f85870a61473857ff1, type: 3}
+  - key: def_turret_Pink
+    sprite: {fileID: 21300000, guid: 130629b1d97ce4a909800ae9fa05afcf, type: 3}
+  - key: def_tank_Pink
+    sprite: {fileID: 21300000, guid: a5a92d29fd00843e28da205a57fd6e9f, type: 3}
+  - key: def_cannon_Pink
+    sprite: {fileID: 21300000, guid: 27d796afb87ae4903ac6ae94de171efb, type: 3}
+  - key: def_mine_Pink
+    sprite: {fileID: 21300000, guid: ae1ee4a0eb4ad4e2bb9b6cde48880364, type: 3}
+  - key: def_bunker_Pink
+    sprite: {fileID: 21300000, guid: 4719b2c324ab242e4b0e855ed37b54b4, type: 3}
+  - key: def_tesla_Pink
+    sprite: {fileID: 21300000, guid: 18cbafd27bd824766b3eac1a3a04801b, type: 3}
+  - key: hq_Pink
+    sprite: {fileID: 21300000, guid: 4bb1de712e9354e5d97a9318f25f3f98, type: 3}
+  - key: def_turret_Purple
+    sprite: {fileID: 21300000, guid: 2ff85083a2c8b4709adf777c19f3cb92, type: 3}
+  - key: def_tank_Purple
+    sprite: {fileID: 21300000, guid: b5e375f587a574c77a7e019dd4fbaca8, type: 3}
+  - key: def_cannon_Purple
+    sprite: {fileID: 21300000, guid: 58aafd2736d4b40ae816392d5373c49b, type: 3}
+  - key: def_mine_Purple
+    sprite: {fileID: 21300000, guid: e5a5b0e53a11f4c3ca13bc0b75aefe49, type: 3}
+  - key: def_bunker_Purple
+    sprite: {fileID: 21300000, guid: 514b996f5055c483883056e06741e1c8, type: 3}
+  - key: def_tesla_Purple
+    sprite: {fileID: 21300000, guid: 70076d2ec4f654491b4eb6204f284841, type: 3}
+  - key: hq_Purple
+    sprite: {fileID: 21300000, guid: eb793d5405176451794d83483bace529, type: 3}
+  - key: def_turret_Teal
+    sprite: {fileID: 21300000, guid: 521db9887f5ad4591a3750387b6424a3, type: 3}
+  - key: def_tank_Teal
+    sprite: {fileID: 21300000, guid: 137d7167863324f0db9d18ce6262a590, type: 3}
+  - key: def_cannon_Teal
+    sprite: {fileID: 21300000, guid: a07831b94c0f74b7795524a04fbfe0e5, type: 3}
+  - key: def_mine_Teal
+    sprite: {fileID: 21300000, guid: 2ef99b5f43ef74ae4a27afd2a0cafffd, type: 3}
+  - key: def_bunker_Teal
+    sprite: {fileID: 21300000, guid: 0661ec107904f4005a3f4a3b99bce4c5, type: 3}
+  - key: def_tesla_Teal
+    sprite: {fileID: 21300000, guid: 2c66cdeb9787943cb8306e6d57d1bc5c, type: 3}
+  - key: hq_Teal
+    sprite: {fileID: 21300000, guid: 48fc75a57cae24e6787139e3770d7abb, type: 3}
+  palette: {fileID: 11400000, guid: 56bec7ad47a3347cf894cbc9f1e00421, type: 2}

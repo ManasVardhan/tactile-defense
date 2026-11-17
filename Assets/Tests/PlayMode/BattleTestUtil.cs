@@ -19,6 +19,8 @@ namespace TactileWars.Tests
 
         public static IEnumerator LoadBattle()
         {
+            // Phase 6: battles save meta progress; keep tests away from the real save and skip the tutorial overlay.
+            UseTestSave();
             Pointer = new SimulatedPointerSource();
             PointerInput.Source = Pointer;
             SceneManager.LoadScene("Battle");
@@ -35,8 +37,28 @@ namespace TactileWars.Tests
             yield return null;
         }
 
+        static string testSaveDir;
+
+        public static void UseTestSave()
+        {
+            if (TactileWars.Save.SaveSystem.DirectoryOverride != null) return;
+            testSaveDir = Path.Combine(Path.GetTempPath(), "tw_battle_tests_" + System.Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(testSaveDir);
+            TactileWars.Save.SaveSystem.DirectoryOverride = testSaveDir;
+            var p = TactileWars.Meta.MetaGame.Profile;
+            p.teamChosen = true;
+            p.tutorial.drawStroke = true;
+            p.tutorial.tapToMove = true;
+        }
+
         public static void Cleanup()
         {
+            if (testSaveDir != null)
+            {
+                TactileWars.Save.SaveSystem.DirectoryOverride = null;
+                try { Directory.Delete(testSaveDir, true); } catch (System.Exception) { }
+                testSaveDir = null;
+            }
             PointerInput.Source = null;
             if (Cam != null) Cam.targetTexture = null;
         }

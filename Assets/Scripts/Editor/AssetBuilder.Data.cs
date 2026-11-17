@@ -198,7 +198,14 @@ namespace TactileWars.EditorTools
             Add(SoundId.Defeat, "defeat", 0.8f, 1, 1f, 1f, 1f);
             Add(SoundId.Footsteps, "footsteps_loop", 0.2f, 1, 0f, 1f, 1f);
             Add(SoundId.UiClick, "ui_click", 0.5f, 2, 0.05f, 1f, 1f);
+            Add(SoundId.UiBack, "ui_back", 0.5f, 2, 0.05f, 1f, 1f);
+            Add(SoundId.UiOpen, "ui_open", 0.5f, 2, 0.05f, 1f, 1f);
+            Add(SoundId.UiPurchase, "ui_purchase", 0.6f, 2, 0.05f, 1f, 1f);
+            Add(SoundId.UiError, "ui_error", 0.5f, 1, 0.1f, 1f, 1f);
+            Add(SoundId.CoinPickup, "coin_pickup", 0.5f, 3, 0.05f, 0.95f, 1.1f);
+            Add(SoundId.LevelUp, "level_up", 0.8f, 1, 0.5f, 1f, 1f);
             lib.entries = entries.ToArray();
+            lib.menuMusic = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/menu_theme.ogg");
             lib.battleMusic = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/battle_theme.ogg");
             if (lib.battleMusic == null) Debug.LogWarning("[AssetBuilder] battle_theme.ogg missing, no music");
             EditorUtility.SetDirty(lib);

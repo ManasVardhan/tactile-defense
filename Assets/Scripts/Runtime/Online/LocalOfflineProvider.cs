@@ -1,0 +1,76 @@
+using System.Collections.Generic;
+using TactileWars.Core;
+using TactileWars.Meta;
+using TactileWars.Save;
+using UnityEngine;
+
+namespace TactileWars.Online
+{
+    /// <summary>
+    /// OFFLINE / SIMULATED provider. Serves the AI base roster as matchmaking results, a deterministic simulated
+    /// leaderboard (fake commander names, seeded points) with the local player inserted by league points, and a
+    /// simulated alliance list. Nothing here talks to a network. The UI labels all of it as offline / simulated.
+    /// </summary>
+    public class LocalOfflineProvider : IAccountService, ILeaderboardService, IAllianceService, IBaseMatchmakingService
+    {
+        static LocalOfflineProvider instance;
+        public static LocalOfflineProvider Instance => instance ??= new LocalOfflineProvider();
+
+        static readonly string[] Names =
+        {
+            "Sgt. Puddle", "Major Drip", "Cpt. Swirl", "Lt. Smudge", "Col. Blot", "Gen. Splash", "Pvt. Dab", "Cpl. Stroke",
+            "Ace Brushwood", "Mira Tint", "Otto Gloss", "Ruby Daub", "Kip Pastel", "Nova Hue", "Zed Primer", "Lola Wash",
+        };
+
+        public bool IsOnline => false;
+        public bool IsSimulated => true;
+        public bool IsAvailable => true;
+        public bool IsOffline => true;
+
+        public AccountInfo CurrentAccount
+        {
+            get
+            {
+                var p = SaveSystem.Profile;
+                return new AccountInfo { playerId = "local", displayName = p.playerName, team = p.team, isOffline = true };
+            }
+        }
+
+        public void GetTopEntries(int count, List<LeaderboardEntry> into)
+        {
+            into.Clear();
+            var p = SaveSystem.Profile;
+            var rng = new System.Random(1234);
+            var list = new List<LeaderboardEntry>(Names.Length + 1);
+            for (int i = 0; i < Names.Length; i++)
+            {
+                int pts = 2400 - i * 150 - rng.Next(0, 90);
+                list.Add(new LeaderboardEntry { name = Names[i], team = (TeamColorId)(rng.Next(0, 6)), points = Mathf.Max(0, pts), isSimulated = true });
+            }
+            list.Add(new LeaderboardEntry { name = p.playerName, team = p.team, points = p.leaguePoints, isLocalPlayer = true });
+            list.Sort((a, b) => b.points.CompareTo(a.points));
+            for (int i = 0; i < list.Count; i++)
+            {
+                var e = list[i];
+                e.rank = i + 1;
+                if (i < count || e.isLocalPlayer) into.Add(e);
+            }
+        }
+
+        public void GetAlliances(TeamColorId team, List<AllianceInfo> into)
+        {
+            into.Clear();
+            string[] a = { "Wet Paint Club", "Brush Brigade", "The Splatterers" };
+            for (int i = 0; i < a.Length; i++) into.Add(new AllianceInfo { name = a[i], team = team, members = 12 + i * 7, isSimulated = true });
+        }
+
+        public void GetOpponents(List<OpponentBase> into)
+        {
+            into.Clear();
+            var roster = MetaGame.Db != null ? MetaGame.Db.roster : null;
+            if (roster == null) return;
+            foreach (var b in roster.bases)
+                if (b != null) into.Add(new OpponentBase { baseId = b.id, ownerName = b.commanderName, team = b.enemyTeam, difficulty = b.difficulty, isAI = true });
+        }
+    }
+}

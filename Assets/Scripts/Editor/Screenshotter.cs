@@ -22,6 +22,10 @@ namespace TactileWars.EditorTools
         [MenuItem("TactileWars/Capture Screenshots")]
         public static void CaptureAll() => Run("Screenshots");
 
+        /// <summary>Every UI screen at 1280x720 plus tall phone captures (PlayMode category "UIScreenshots").</summary>
+        [MenuItem("TactileWars/Capture UI Screenshots")]
+        public static void CaptureUI() => Run("UIScreenshots");
+
         [MenuItem("TactileWars/Measure Frame Time")]
         public static void MeasurePerf() => Run("Perf");
 

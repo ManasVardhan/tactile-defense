@@ -41,7 +41,12 @@ namespace TactileWars.Formation
                 return;
             }
 
-            if (PointerInput.PressedThisFrame) Begin();
+            if (PointerInput.PressedThisFrame)
+            {
+                // Presses that start on a UI element (pause tab, POW badge) never draw or move the squad.
+                if (PointerInput.IsOverUI(PointerInput.Position)) { pressing = false; isStroke = false; return; }
+                Begin();
+            }
 
             if (pressing && PointerInput.IsDown) Track();
 

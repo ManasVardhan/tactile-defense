@@ -6,7 +6,9 @@ using TactileWars.CameraRig;
 using TactileWars.Combat;
 using TactileWars.Core;
 using TactileWars.Formation;
+using TactileWars.Meta;
 using TactileWars.Squad;
+using TactileWars.UI;
 using TactileWars.Structures;
 using TactileWars.Units;
 using UnityEditor;
@@ -24,6 +26,8 @@ namespace TactileWars.EditorTools
     {
         public const string BattlePath = "Assets/Scenes/Battle.unity";
         public const string BootPath = "Assets/Scenes/Boot.unity";
+        public const string MenuPath = "Assets/Scenes/MainMenu.unity";
+        public const string BaseEditorPath = "Assets/Scenes/BaseEditor.unity";
         static readonly Vector4 MapRect = new Vector4(-40f, -25f, 80f, 160f);
 
         // Level layout (all estimates of a pleasing linear assault map).
@@ -56,20 +60,65 @@ namespace TactileWars.EditorTools
             new Vector3(1.5f, 0, 62f), new Vector3(-1.5f, 0, 64.5f), new Vector3(4.5f, 0, 63.5f), new Vector3(7f, 0, 79f), new Vector3(-7f, 0, 79.5f),
         };
 
+        // ---------------- prop free sockets for generated AI base layouts (ProgressionBuilder)
+        public struct SquadSocket { public Vector3 pos; public bool holdOnly; }
+        public struct DefenseSocket { public Vector3 pos; public float yaw; public bool allowTank; }
+
+        /// <summary>Enemy squad positions known to be clear of props: the handcrafted squads plus spots on the lane.</summary>
+        public static readonly SquadSocket[] SquadSockets =
+        {
+            new SquadSocket { pos = new Vector3(-8.5f, 0, 21.5f), holdOnly = true },
+            new SquadSocket { pos = new Vector3(8.5f, 0, 28f) },
+            new SquadSocket { pos = new Vector3(-6.5f, 0, 47.5f), holdOnly = true },
+            new SquadSocket { pos = new Vector3(5.5f, 0, 57f) },
+            new SquadSocket { pos = new Vector3(-5.5f, 0, 69f), holdOnly = true },
+            new SquadSocket { pos = new Vector3(-6.5f, 0, 88.5f), holdOnly = true },
+            new SquadSocket { pos = new Vector3(6.5f, 0, 99f), holdOnly = true },
+            new SquadSocket { pos = new Vector3(0f, 0, 36f) },
+            new SquadSocket { pos = new Vector3(-1f, 0, 52f), holdOnly = true },
+            new SquadSocket { pos = new Vector3(0f, 0, 73f), holdOnly = true },
+            new SquadSocket { pos = new Vector3(1.5f, 0, 87f), holdOnly = true },
+        };
+
+        /// <summary>Mine positions: the handcrafted ones plus lane spots away from squads and capture rings.</summary>
+        public static readonly Vector3[] MineSockets =
+        {
+            new Vector3(-3.5f, 0, 17f), new Vector3(3.5f, 0, 15.5f), new Vector3(0.5f, 0, 21f), new Vector3(-4.5f, 0, 30f), new Vector3(5f, 0, 34f),
+            new Vector3(1.5f, 0, 62f), new Vector3(-1.5f, 0, 64.5f), new Vector3(4.5f, 0, 63.5f), new Vector3(7f, 0, 79f), new Vector3(-7f, 0, 79.5f),
+            new Vector3(-2f, 0, 26f), new Vector3(1.5f, 0, 48f), new Vector3(-2.5f, 0, 56f), new Vector3(2f, 0, 70f), new Vector3(-1.5f, 0, 81f), new Vector3(2.5f, 0, 90f),
+        };
+
+        /// <summary>Heavy defense spots: sandbag nests, the bunker and cannon pads, the tank lane, hex paving clusters.</summary>
+        public static readonly DefenseSocket[] DefenseSockets =
+        {
+            new DefenseSocket { pos = new Vector3(8.5f, 0, 46.5f), yaw = 200f },
+            new DefenseSocket { pos = new Vector3(-9.5f, 0, 98.5f), yaw = 160f },
+            new DefenseSocket { pos = new Vector3(-11f, 0, 59f), yaw = 150f },
+            new DefenseSocket { pos = new Vector3(11f, 0, 67f), yaw = 210f },
+            new DefenseSocket { pos = new Vector3(0f, 0, 83.5f), yaw = 90f, allowTank = true },
+            new DefenseSocket { pos = new Vector3(-12f, 0, 52f), yaw = 140f },
+            new DefenseSocket { pos = new Vector3(10.5f, 0, 90f), yaw = 220f },
+        };
+
         [MenuItem("TactileWars/Build Scenes")]
         public static void BuildAll()
         {
             if (AssetBuilder.LastPrefabs == null || AssetBuilder.LastData == null) AssetBuilder.BuildAll();
             Directory.CreateDirectory("Assets/Scenes");
             BuildBattle();
+            BuildMainMenu();
             BuildBoot();
-            EditorBuildSettings.scenes = new[]
+            var list = new List<EditorBuildSettingsScene>
             {
                 new EditorBuildSettingsScene(BootPath, true),
+                new EditorBuildSettingsScene(MenuPath, true),
                 new EditorBuildSettingsScene(BattlePath, true),
             };
+            // The base editor (next phase) is picked up automatically once its scene exists.
+            if (File.Exists(BaseEditorPath)) list.Add(new EditorBuildSettingsScene(BaseEditorPath, true));
+            EditorBuildSettings.scenes = list.ToArray();
             AssetDatabase.SaveAssets();
-            Debug.Log("[SceneBuilder] Built Boot and Battle scenes. Stand-ins: " + (AssetBuilder.StandIns.Count == 0 ? "none" : string.Join(", ", AssetBuilder.StandIns)));
+            Debug.Log("[SceneBuilder] Built Boot, MainMenu and Battle scenes. Stand-ins: " + (AssetBuilder.StandIns.Count == 0 ? "none" : string.Join(", ", AssetBuilder.StandIns)));
         }
 
         /// <summary>Build everything in one go: project setup, assets, scenes.</summary>
@@ -92,7 +141,7 @@ namespace TactileWars.EditorTools
         {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var go = new GameObject("Boot");
-            go.AddComponent<BootLoader>().firstScene = "Battle";
+            go.AddComponent<BootLoader>().firstScene = "MainMenu";
             var cam = new GameObject("BootCamera").AddComponent<Camera>();
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = AssetBuilder.Hex("#C3B48E");
@@ -282,6 +331,20 @@ namespace TactileWars.EditorTools
                 tank.patrolB = new Vector3(8f, 0, 83.5f);
             }
 
+            // ---------------- meta, loadout and HUD (presentation listens to BattleEvents only)
+            var setup = systems.AddComponent<BattleSetup>();
+            setup.battleManager = bm;
+            setup.squad = squad;
+            setup.enemiesRoot = enemies.transform;
+            setup.defensesRoot = defenses.transform;
+            setup.catalog = AssetDatabase.LoadAssetAtPath<DefenseCatalog>(ProgressionBuilder.Dir + "/DefenseCatalog.asset");
+            setup.enemySquadConfig = data.enemySquad;
+            systems.AddComponent<BattleSession>();
+            var hud = new GameObject("BattleHUD").AddComponent<BattleHUD>();
+            hud.skin = AssetDatabase.LoadAssetAtPath<UISkin>(UIArtBuilder.SkinPath);
+            hud.cam = cam;
+            if (hud.skin == null) Debug.LogWarning("[SceneBuilder] UISkin missing: run TactileWars/Build UI first");
+
             // ---------------- dressing
             var env = new GameObject("Environment");
             Dress(env.transform);
@@ -289,6 +352,215 @@ namespace TactileWars.EditorTools
             Lightmapping.bakedGI = false;
             Lightmapping.realtimeGI = false;
             EditorSceneManager.SaveScene(scene, BattlePath);
+        }
+
+
+        // ---------------------------------------------------------------- main menu
+
+        static void BuildMainMenu()
+        {
+            var data = AssetBuilder.LastData;
+            var mats = AssetBuilder.LastMats;
+            var meshes = AssetBuilder.LastMeshes;
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var team = data.game.playerTeam;
+
+            var lighting = new GameObject("Lighting");
+            var sunGo = new GameObject("Sun");
+            sunGo.transform.SetParent(lighting.transform);
+            sunGo.transform.rotation = Quaternion.LookRotation(new Vector3(0.5f, -0.82f, -0.28f).normalized);
+            var sun = sunGo.AddComponent<Light>();
+            sun.type = LightType.Directional;
+            sun.color = AssetBuilder.Hex("#FFF4E2");
+            sun.intensity = 1.05f;
+            sun.shadows = LightShadows.Soft;
+            sun.shadowStrength = 0.55f;
+            lighting.AddComponent<SceneLighting>().Apply();
+            RenderSettings.fog = false;
+            RenderSettings.sun = sun;
+            var volGo = new GameObject("GlobalVolume");
+            volGo.transform.SetParent(lighting.transform);
+            var vol = volGo.AddComponent<Volume>();
+            vol.isGlobal = true;
+            vol.sharedProfile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(ProjectSetup.VolumePath);
+            Lightmapping.lightingSettings = GetLightingSettings();
+
+            // Ground with its own mask (paving under the HQ, dirt paths).
+            var rect = new Vector4(-36f, -22f, 72f, 56f);
+            const string gmPath = "Assets/Art/Materials/M_Ground_Menu.mat";
+            var gm = AssetDatabase.LoadAssetAtPath<Material>(gmPath);
+            if (gm == null) { gm = new Material(mats.ground); AssetDatabase.CreateAsset(gm, gmPath); }
+            else gm.CopyPropertiesFromMaterial(mats.ground);
+            gm.SetTexture("_MaskTex", PaintMenuMask(rect));
+            gm.SetVector("_MapRect", rect);
+            EditorUtility.SetDirty(gm);
+            var ground = new GameObject("Ground");
+            ground.layer = Layers.Ground;
+            ground.AddComponent<MeshFilter>().sharedMesh = MeshGen.GroundPlane("M_GroundPlane_Menu", new Vector2(rect.x, rect.y), new Vector2(rect.x + rect.z, rect.y + rect.w), 24, 18);
+            var gr = ground.AddComponent<MeshRenderer>();
+            gr.sharedMaterial = gm;
+            gr.shadowCastingMode = ShadowCastingMode.Off;
+
+            // Camera: the game's orthographic 35 degree view, a little closer than battle.
+            var rig = new GameObject("CameraRig");
+            rig.transform.position = new Vector3(0f, 0f, 5.5f);
+            var camGo = new GameObject("Main Camera");
+            camGo.tag = "MainCamera";
+            camGo.transform.SetParent(rig.transform, false);
+            camGo.transform.localRotation = Quaternion.Euler(35f, 0f, 0f);
+            camGo.transform.localPosition = camGo.transform.localRotation * new Vector3(0f, 0f, -60f);
+            var cam = camGo.AddComponent<Camera>();
+            cam.orthographic = true;
+            cam.orthographicSize = 8.4f;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = AssetBuilder.Hex("#C3B48E");
+            cam.nearClipPlane = 1f;
+            cam.farClipPlane = 160f;
+            camGo.AddComponent<AudioListener>();
+            var camData = cam.GetUniversalAdditionalCameraData();
+            camData.renderPostProcessing = true;
+            camData.antialiasing = AntialiasingMode.None;
+            camData.renderShadows = true;
+
+            var world = new GameObject("HomeBase");
+            var tints = new List<TeamTint>();
+            var anims = new List<Animator>();
+
+            // HQ on a paved patch, a turret nest and a squad drilling in front of it.
+            var hq = Place(Env("HQ"), new Vector3(4.6f, 0f, 9.5f), 200f, 1f, world.transform, "HQ");
+            Strip(hq, tints);
+            var turret = Place(Str("Turret"), new Vector3(11f, 0f, 4.5f), 215f, 1f, world.transform, "Turret");
+            Strip(turret, tints);
+            SandbagArc(world.transform, new Vector3(11f, 0f, 4.5f), 2.1f, 200f);
+            var bunker = Place(Str("Cannon"), new Vector3(-0.5f, 0f, -2.6f), 160f, 1f, world.transform, "Cannon");
+            Strip(bunker, tints);
+
+            var squadRoot = new GameObject("Squad").transform;
+            squadRoot.SetParent(world.transform);
+            var rng = new System.Random(7);
+            var spots = new List<Vector3>();
+            for (int i = 0; i < 11; i++)
+            {
+                float u = i / 10f;
+                spots.Add(new Vector3(Mathf.Lerp(-8.6f, 0.2f, u), 0f, 3.2f + Mathf.Sin(u * Mathf.PI) * 2.2f));
+            }
+            for (int i = 0; i < 5; i++) spots.Add(new Vector3(-6.2f + i * 1.25f, 0f, 1.1f + (i % 2) * 0.35f));
+            for (int i = 0; i < spots.Count; i++)
+            {
+                var s = Place(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Units/" + (i == 5 ? "Hero" : "Soldier") + ".prefab"), spots[i], 180f + ((float)rng.NextDouble() - 0.5f) * 50f, 1f, squadRoot, "Soldier_" + i);
+                if (s == null) continue;
+                Strip(s, tints);
+                var a = s.GetComponentInChildren<Animator>();
+                if (a != null) anims.Add(a);
+            }
+            var ringRoot = new GameObject("SquadRing").transform;
+            ringRoot.SetParent(world.transform);
+            ringRoot.position = new Vector3(-4.2f, 0.02f, 3.4f);
+            var tm = data.visuals.Get(team);
+            var ringQ = MakeFlat("Ring", ringRoot, meshes.quad, tm.ring, 12.5f, 0f);
+            var blotQ = MakeFlat("Blot", ringRoot, meshes.quad, tm.blot, 3.6f, 0.005f);
+
+            // Props framing the base.
+            Camp(world.transform, new Vector3(-11.5f, 0f, 11f), 20f, rng);
+            Camp(world.transform, new Vector3(13.5f, 0f, 13f), -40f, rng);
+            Barricade(world.transform, new Vector3(-13.5f, 0f, 3f), 75f);
+            Place(Env("Crate"), new Vector3(1.4f, 0f, 7.2f), 20f, 1f, world.transform);
+            Place(Env("Barrel"), new Vector3(2.1f, 0f, 6.3f), 0f, 1f, world.transform);
+            Place(Env("Crate"), new Vector3(8.4f, 0f, 8.3f), 65f, 0.9f, world.transform);
+            Place(Env("SpawnHatch"), new Vector3(-8.5f, 0f, 8.2f), 0f, 1f, world.transform);
+            string[] trees = { "Tree_A", "Tree_B", "Tree_C" };
+            for (float x = -30f; x <= 30f; x += 2.3f)
+                for (int row = 0; row < 3; row++)
+                {
+                    float z = 18.5f + row * 2.6f + (float)rng.NextDouble() * 1.6f;
+                    Place(Env(trees[rng.Next(3)]), new Vector3(x + (float)rng.NextDouble(), 0f, z), (float)rng.NextDouble() * 360f, 1f + (float)rng.NextDouble() * 0.5f, world.transform);
+                }
+            for (int side = -1; side <= 1; side += 2)
+                for (float z = -10f; z < 18f; z += 2.2f)
+                    for (int row = 0; row < 2; row++)
+                    {
+                        float x = side * (17.5f + row * 2.4f + (float)rng.NextDouble() * 1.5f);
+                        Place(Env(trees[rng.Next(3)]), new Vector3(x, 0f, z + (float)rng.NextDouble()), (float)rng.NextDouble() * 360f, 0.95f + (float)rng.NextDouble() * 0.5f, world.transform);
+                    }
+            foreach (var (n, cnt) in new[] { ("Rock_A", 4), ("Rock_B", 4), ("Bush_A", 6), ("Bush_B", 6), ("GrassTuft", 26), ("Flower_A", 10), ("Flower_B", 10) })
+                for (int i = 0; i < cnt; i++)
+                {
+                    float x = ((float)rng.NextDouble() * 2f - 1f) * 16f;
+                    float z = -6f + (float)rng.NextDouble() * 22f;
+                    if (Mathf.Abs(x - 4.6f) < 4.5f && Mathf.Abs(z - 9.5f) < 4.5f) continue;
+                    if (x > -10f && x < 1.5f && z > -0.5f && z < 7f) continue;
+                    Place(Env(n), new Vector3(x, 0f, z), (float)rng.NextDouble() * 360f, 0.8f + (float)rng.NextDouble() * 0.4f, world.transform);
+                }
+
+            var backdrop = world.AddComponent<MenuBackdrop>();
+            backdrop.visuals = data.visuals;
+            backdrop.tinted = tints.ToArray();
+            backdrop.soldierAnimators = anims.ToArray();
+            backdrop.cameraPivot = rig.transform;
+            backdrop.ringRenderer = ringQ.GetComponent<Renderer>();
+            backdrop.blotRenderer = blotQ.GetComponent<Renderer>();
+
+            var am = new GameObject("Audio").AddComponent<AudioManager>();
+            am.library = data.sounds;
+            am.menuMusic = true;
+
+            var menu = new GameObject("MainMenu").AddComponent<MenuRoot>();
+            menu.skin = AssetDatabase.LoadAssetAtPath<UISkin>(UIArtBuilder.SkinPath);
+            menu.cam = cam;
+            menu.backdrop = backdrop;
+            menu.database = AssetDatabase.LoadAssetAtPath<MetaDatabase>(ProgressionBuilder.DbPath);
+
+            Lightmapping.bakedGI = false;
+            Lightmapping.realtimeGI = false;
+            EditorSceneManager.SaveScene(scene, MenuPath);
+        }
+
+        /// <summary>Menu props are decoration: unpack the prefab and drop gameplay scripts, keep tints and animators.</summary>
+        static void Strip(GameObject go, List<TeamTint> tints)
+        {
+            if (go == null) return;
+            if (PrefabUtility.IsPartOfPrefabInstance(go)) PrefabUtility.UnpackPrefabInstance(go, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            foreach (var s in go.GetComponentsInChildren<Soldier>(true)) Object.DestroyImmediate(s);
+            foreach (var s in go.GetComponentsInChildren<StructureBase>(true)) Object.DestroyImmediate(s);
+            foreach (var s in go.GetComponentsInChildren<HealthArc>(true)) Object.DestroyImmediate(s.gameObject);
+            foreach (var s in go.GetComponentsInChildren<Health>(true)) Object.DestroyImmediate(s);
+            foreach (var c in go.GetComponentsInChildren<Collider>(true)) Object.DestroyImmediate(c);
+            foreach (var t in go.GetComponentsInChildren<TeamTint>(true)) { t.applyOnStart = false; tints.Add(t); }
+        }
+
+        static Texture2D PaintMenuMask(Vector4 rect)
+        {
+            const int W = 256, H = 200;
+            var px = new Color[W * H];
+            Vector2[] pathA = { new Vector2(-30f, 2f), new Vector2(-16f, 3.5f), new Vector2(-6f, 6.5f), new Vector2(2f, 7.5f) };
+            Vector2[] pathB = { new Vector2(3.5f, 6.5f), new Vector2(2.5f, 0f), new Vector2(0f, -8f), new Vector2(-2f, -20f) };
+            Vector2[] pathC = { new Vector2(8f, 8f), new Vector2(14f, 7f), new Vector2(30f, 9f) };
+            for (int y = 0; y < H; y++)
+                for (int x = 0; x < W; x++)
+                {
+                    float wx = rect.x + (x + 0.5f) / W * rect.z;
+                    float wz = rect.y + (y + 0.5f) / H * rect.w;
+                    var p = new Vector2(wx, wz);
+                    float dirt = Mathf.Max(Stroke(p, pathA, 1.4f), Mathf.Max(Stroke(p, pathB, 1.3f), Stroke(p, pathC, 1.1f)));
+                    float tiles = Disc(p, new Vector2(4.6f, 9.5f), 5.6f);
+                    float edge = Mathf.InverseLerp(13f, 20f, Mathf.Abs(wx)) + Mathf.InverseLerp(15f, 22f, wz);
+                    float dark = Mathf.Clamp01(edge) * (0.5f + 0.5f * Mathf.PerlinNoise(wx * 0.15f, wz * 0.15f));
+                    px[y * W + x] = new Color(dirt, tiles, dark, 1f);
+                }
+            var tex = new Texture2D(W, H, TextureFormat.RGBA32, true, true);
+            tex.SetPixels(px);
+            tex.Apply();
+            string path = TextureGen.Dir + "/T_GroundMask_Menu.png";
+            File.WriteAllBytes(path, tex.EncodeToPNG());
+            Object.DestroyImmediate(tex);
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            var ti = (TextureImporter)AssetImporter.GetAtPath(path);
+            ti.sRGBTexture = false;
+            ti.wrapMode = TextureWrapMode.Clamp;
+            ti.mipmapEnabled = true;
+            ti.textureCompression = TextureImporterCompression.Uncompressed;
+            ti.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
 
         static LightingSettings GetLightingSettings()
