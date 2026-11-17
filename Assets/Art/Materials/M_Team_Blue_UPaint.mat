@@ -27,7 +27,7 @@ Material:
     m_Floats:
     - _Ambient: 0.5
     - _Emission: 0.35
-    - _OutlineWidth: 1.25
+    - _OutlineWidth: 1
     - _RimPower: 3
     - _RimStrength: 0.3
     - _ShadeSoftness: 0.3
@@ -35,7 +35,7 @@ Material:
     - _ShadowStrength: 0.6
     m_Colors:
     - _BaseColor: {r: 0.24705882, g: 0.5568628, b: 0.9490196, a: 1}
-    - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
+    - _OutlineColor: {r: 0.16, g: 0.14, b: 0.19, a: 1}
     - _RimColor: {r: 1, g: 1, b: 1, a: 1}
     - _ShadeColor: {r: 0.7, g: 0.68, b: 0.8, a: 1}
   m_BuildTextureStacks: []

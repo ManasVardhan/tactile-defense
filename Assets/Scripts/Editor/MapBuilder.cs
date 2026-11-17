@@ -294,25 +294,40 @@ namespace TactileWars.EditorTools
             Common(m, g, 3, false);
             // A wall across the pass with an off centre gate on the path (placed first so rocks keep clear).
             WallWithGate(g, 71f, 3f, 10.5f);
-            // Rock ridges lining the pass, with a few gaps (soldiers slide around single rocks).
+            Camp(g, new Vector3(-13.5f, 0, 26f), 80f);
+            Camp(g, new Vector3(13f, 0, 46f), -70f);
+            Barricade(g, new Vector3(-1f, 0, 37f), 20f);
+            // Sockets before the ridges so the denser canyon walls leave room for the defender squads.
+            Sockets(m, g);
+            // Rock ridges lining the pass (phase 8: continuous canyon walls instead of scattered rocks): a dense inner
+            // row of big boulders, a second staggered row behind it, and pines on top of the outer row, with only a
+            // few narrow gaps so the pass reads as a canyon.
             string[] rocks = { "Rock_A", "Rock_B", "Rock_C" };
-            for (float z = 14f; z < 100f; z += 2.2f)
+            string[] trees = { "Tree_A", "Tree_B", "Tree_C" };
+            for (float z = 14f; z < 100f; z += 1.5f)
             {
                 float px = PathX(g.path, z);
                 for (int side = -1; side <= 1; side += 2)
                 {
-                    if (g.R() < 0.22f) continue;
-                    float x = px + side * (8.2f + g.R() * 1.8f);
-                    if (Mathf.Abs(x) > 16.5f) continue;
-                    if (!g.Free(x, z, 1.1f, 2.5f)) continue;
-                    g.Place(rocks[g.rng.Next(3)], new Vector3(x, 0, z), g.R() * 360f, 1.4f + g.R() * 0.7f, 1.2f, 1.3f);
+                    for (int row = 0; row < 2; row++)
+                    {
+                        if (g.R() < (row == 0 ? 0.07f : 0.15f)) continue;
+                        float x = px + side * (8.0f + row * 2.3f + g.R() * 1.0f);
+                        float zz = z + row * 0.75f;
+                        if (Mathf.Abs(x) > 17.2f) continue;
+                        if (!g.Free(x, zz, 0.9f, 2.5f)) continue;
+                        string id = row == 0 ? rocks[1 + g.rng.Next(2)] : rocks[g.rng.Next(3)];
+                        g.Place(id, new Vector3(x, 0, zz), g.R() * 360f, 1.6f + g.R() * 0.8f, 1.15f, 1.3f);
+                    }
+                    if (g.R() < 0.35f)
+                    {
+                        float tx = px + side * (11.8f + g.R() * 1.5f);
+                        if (Mathf.Abs(tx) <= 17.5f && g.Free(tx, z, 0.8f, 2.5f))
+                            g.Place(trees[g.rng.Next(3)], new Vector3(tx, 0, z), g.R() * 360f, 0.85f + g.R() * 0.4f, 0.9f, 0f);
+                    }
                 }
             }
-            Camp(g, new Vector3(-13.5f, 0, 26f), 80f);
-            Camp(g, new Vector3(13f, 0, 46f), -70f);
-            Barricade(g, new Vector3(-1f, 0, 37f), 20f);
             Scatter(g, new[] { "Log" }, 8, 1.0f, 1.0f, 0.9f, 1.1f, 15f);
-            Sockets(m, g);
             HexCluster(g, new Vector3(10f, 0, 14f));
             Decor(g, 0f, 18);
         }

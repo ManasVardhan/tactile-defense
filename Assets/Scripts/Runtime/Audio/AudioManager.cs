@@ -65,7 +65,7 @@ namespace TactileWars.Audio
             if (e == null || e.clips.Length == 0 || e.clips[0] == null) return;
             if (l.isPlaying && l.clip == e.clips[0]) return;
             l.clip = e.clips[0];
-            l.volume = e.volume * instance.library.masterVolume * SfxVolume;
+            l.volume = e.volume * instance.library.CategoryVolume(e.category) * instance.library.masterVolume * SfxVolume;
             l.Play();
         }
 
@@ -92,7 +92,7 @@ namespace TactileWars.Audio
             if (clip == null) return;
             var s = sources[free];
             s.clip = clip;
-            s.volume = e.volume * library.masterVolume * SfxVolume;
+            s.volume = e.volume * library.CategoryVolume(e.category) * library.masterVolume * SfxVolume;
             s.pitch = Random.Range(e.pitch.x, e.pitch.y);
             s.Play();
             sourceSound[free] = idx;

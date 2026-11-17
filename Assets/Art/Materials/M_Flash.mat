@@ -27,7 +27,7 @@ Material:
     m_Floats:
     - _Ambient: 0.5
     - _Emission: 1
-    - _OutlineWidth: 1.25
+    - _OutlineWidth: 1.35
     - _RimPower: 3
     - _RimStrength: 0.22
     - _ShadeSoftness: 0.3

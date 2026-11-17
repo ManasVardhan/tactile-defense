@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace TactileWars.Combat
 {
-    public enum VfxType { Hit = 0, Puff = 1, Ghost = 2, Explosion = 3, Muzzle = 4, BubblePop = 5, Capture = 6, Reinforce = 7, Geyser = 8, Zap = 9 }
+    public enum VfxType { Hit = 0, Puff = 1, Ghost = 2, Explosion = 3, Muzzle = 4, BubblePop = 5, Capture = 6, Reinforce = 7, Geyser = 8, Zap = 9, Coins = 10 }
 
     /// <summary>Pools every effect type. Released automatically after their lifetime.</summary>
     public class VfxManager : MonoBehaviour

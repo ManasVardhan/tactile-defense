@@ -35,6 +35,12 @@ namespace TactileWars.Combat
             for (int i = 0; i < renderers.Length; i++) normal[i] = renderers[i].sharedMaterials;
         }
 
+        /// <summary>Squash (positive) or stretch (negative) without a flash: hops, landings.</summary>
+        public void Squash(float amount)
+        {
+            if (Mathf.Abs(amount) > Mathf.Abs(squash)) squash = amount;
+        }
+
         public void Trigger(float duration, float squashAmount)
         {
             flashTimer = duration;
@@ -57,12 +63,12 @@ namespace TactileWars.Combat
                     flashing = false;
                 }
             }
-            if (squash > 0.001f && squashTarget != null)
+            if (Mathf.Abs(squash) > 0.001f && squashTarget != null)
             {
-                squash = Mathf.MoveTowards(squash, 0f, recover * dt * Mathf.Max(0.1f, squash));
+                squash = Mathf.MoveTowards(squash, 0f, recover * dt * Mathf.Max(0.1f, Mathf.Abs(squash)));
                 float s = squash;
                 squashTarget.localScale = new Vector3(baseScale.x * (1f + s), baseScale.y * (1f - s), baseScale.z * (1f + s));
-                if (squash <= 0.001f) squashTarget.localScale = baseScale;
+                if (Mathf.Abs(squash) <= 0.001f) squashTarget.localScale = baseScale;
             }
         }
     }

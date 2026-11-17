@@ -81,16 +81,26 @@ namespace TactileWars.EditorTools
         {
             readonly float[] amp = new float[7], phase = new float[7];
             readonly Drop[] drops;
+            readonly Drop[] lobes;   // overlapping sub blobs: clumpy paint like the reference splats (ps_12)
             readonly float baseR;
 
             public SplatShape(int seed, bool big)
             {
                 var rng = new System.Random(seed);
-                baseR = big ? 0.5f : 0.42f;
+                baseR = big ? 0.46f : 0.36f;
                 for (int k = 0; k < 7; k++)
                 {
-                    amp[k] = (float)rng.NextDouble() * (k < 2 ? 0.1f : 0.06f);
+                    amp[k] = (float)rng.NextDouble() * (k < 2 ? 0.16f : 0.07f);
                     phase[k] = (float)rng.NextDouble() * 6.283f;
+                }
+                int nl = 3 + rng.Next(3);
+                lobes = new Drop[nl];
+                for (int i = 0; i < nl; i++)
+                {
+                    float a = (float)rng.NextDouble() * 6.283f;
+                    float d = baseR * (0.55f + (float)rng.NextDouble() * 0.45f);
+                    float r = baseR * (0.32f + (float)rng.NextDouble() * 0.28f);
+                    lobes[i] = new Drop { x = Mathf.Cos(a) * d, y = Mathf.Sin(a) * d, r = r };
                 }
                 int n = big ? 14 : 9 + rng.Next(4);
                 drops = new Drop[n];
@@ -113,6 +123,15 @@ namespace TactileWars.EditorTools
                 float aa = 0.012f;
                 float body = 1f - Smooth(rr - aa, rr + aa, r);
                 float edge = Smooth(rr * 0.55f, rr, r);
+                // Smooth union with the lobes (metaball style) so the outline is a clump, not a disc.
+                float field = Mathf.Exp(-Mathf.Max(0f, r - rr) * 30f);
+                for (int i = 0; i < lobes.Length; i++)
+                {
+                    float lx = x - lobes[i].x, ly = y - lobes[i].y;
+                    float ld = Mathf.Sqrt(lx * lx + ly * ly);
+                    field += Mathf.Exp(-Mathf.Max(0f, ld - lobes[i].r) * 30f);
+                }
+                body = Mathf.Max(body, Smooth(0.95f, 1.05f, field));
                 float alpha = body;
                 for (int i = 0; i < drops.Length; i++)
                 {
@@ -137,7 +156,7 @@ namespace TactileWars.EditorTools
                 float x = u * 2f - 1f, y = v * 2f - 1f;
                 float r = Mathf.Sqrt(x * x + y * y);
                 float a = Mathf.Atan2(y, x);
-                float thick = 0.032f + 0.01f * Mathf.Sin(a * 3f + 1.3f) + 0.006f * Mathf.Sin(a * 7f + 0.2f);
+                float thick = 0.048f + 0.012f * Mathf.Sin(a * 3f + 1.3f) + 0.006f * Mathf.Sin(a * 7f + 0.2f);
                 float center = 0.95f - thick + 0.006f * Mathf.Sin(a * 5f + 2f);
                 float d = Mathf.Abs(r - center);
                 float aa = 0.004f;
@@ -251,6 +270,29 @@ namespace TactileWars.EditorTools
                 float eye = 1f - Smooth(0.06f, 0.09f, Mathf.Min(e1, e2));
                 float c = 1f - eye * 0.75f;
                 return new Color(c, c, c, a);
+            }, true, TextureWrapMode.Clamp, true, 2);
+        }
+
+        /// <summary>Gold star coin (victory coin burst; reference f_0037, f_0077 star coin tokens).</summary>
+        public static Texture2D Coin()
+        {
+            return Write("T_Coin", 64, 64, (u, v) =>
+            {
+                float x = u * 2f - 1f, y = v * 2f - 1f;
+                float r = Mathf.Sqrt(x * x + y * y);
+                float a = Mathf.Atan2(y, x) + Mathf.PI * 0.5f;
+                float alpha = 1f - Smooth(0.9f, 0.98f, r);
+                // Five point star: radius oscillates between inner and outer.
+                float k = Mathf.Cos(5f * a);
+                float starR = Mathf.Lerp(0.26f, 0.55f, (k + 1f) * 0.5f);
+                float star = 1f - Smooth(starR - 0.04f, starR + 0.04f, r);
+                float rim = Smooth(0.72f, 0.8f, r);
+                Color gold = new Color(1f, 0.78f, 0.22f), dark = new Color(0.78f, 0.5f, 0.1f), light = new Color(1f, 0.93f, 0.6f);
+                Color c = Color.Lerp(gold, dark, rim);
+                c = Color.Lerp(c, dark, star * 0.85f);
+                c = Color.Lerp(c, light, Mathf.Clamp01(0.4f - (x + y) * 0.6f) * (1f - rim) * 0.5f);
+                c.a = alpha;
+                return c;
             }, true, TextureWrapMode.Clamp, true, 2);
         }
 

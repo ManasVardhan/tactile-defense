@@ -30,18 +30,19 @@ Material:
     m_Ints: []
     m_Floats:
     - _Brightness: 1
-    - _HexLineStrength: 0.5
-    - _HexLineWidth: 0.03
+    - _HexLineStrength: 0.62
+    - _HexLineWidth: 0.028
     - _HexSize: 5.2
-    - _HexTint: 0.03
+    - _HexTint: 0.045
     - _NoiseScale: 0.08
     - _NoiseStrength: 0.06
+    - _PathStrength: 0.55
     - _ShadowStrength: 0.8
     m_Colors:
     - _DarkColor: {r: 0.6627451, g: 0.6313726, b: 0.49803922, a: 1}
-    - _HexLineColor: {r: 0.6392157, g: 0.5803922, b: 0.44705883, a: 1}
+    - _HexLineColor: {r: 0.58431375, g: 0.5254902, b: 0.4, a: 1}
     - _MapRect: {r: -36, g: -22, b: 72, a: 56}
-    - _PathColor: {r: 0.70980394, g: 0.64705884, b: 0.49411765, a: 1}
+    - _PathColor: {r: 0.73333335, g: 0.67058825, b: 0.5176471, a: 1}
     - _SandColor: {r: 0.7647059, g: 0.7058824, b: 0.5568628, a: 1}
     - _SandColor2: {r: 0.7254902, g: 0.6745098, b: 0.53333336, a: 1}
     - _ShadowColor: {r: 0.6117647, g: 0.6039216, b: 0.6509804, a: 1}

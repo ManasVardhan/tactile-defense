@@ -387,6 +387,17 @@ namespace TactileWars.EditorTools
                 s.Add(PS(root.transform, "Steam", mats.pPuff, 6, new Vector2(0.6f, 0.9f), new Vector2(1f, 2.4f), new Vector2(0.9f, 1.5f), new Color(1f, 1f, 1f, 0.8f), -0.15f, hemi, 0.5f, true, true)); t.Add(false);
                 Finish(fx, root, s, t, p);
             }
+            // Coins: gold star coins burst and tumble down (victory; reference star coin tokens f_0037, f_0077).
+            {
+                var fx = VfxRoot(VfxType.Coins, 1.8f, out var root);
+                var s = new List<ParticleSystem>(); var t = new List<bool>();
+                var coins = PS(root.transform, "Coins", mats.pCoin, 26, new Vector2(1.2f, 1.6f), new Vector2(5f, 8f), new Vector2(0.45f, 0.6f), Color.white, 2.0f, ParticleSystemShapeType.Cone, 0.6f, true, false, 32);
+                var csh = coins.shape; csh.angle = 28f;
+                var rot = coins.rotationOverLifetime; rot.enabled = true; rot.z = new ParticleSystem.MinMaxCurve(-6f, 6f);
+                s.Add(coins); t.Add(false);
+                s.Add(PS(root.transform, "Star", mats.pStar, 1, new Vector2(0.2f, 0.25f), Vector2.zero, new Vector2(3.4f, 3.8f), Color.white, 0f, sphere, 0.01f)); t.Add(false);
+                Finish(fx, root, s, t, p);
+            }
             // Zap: electric spark on a tesla target.
             {
                 var fx = VfxRoot(VfxType.Zap, 0.4f, out var root);

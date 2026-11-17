@@ -183,18 +183,21 @@ namespace TactileWars.EditorTools
             public string map; // null: handcrafted lane; "canyon" or "ridge": a MapBuilder variant
         }
 
+        // Phase 8 balance (ESTIMATE, tuned with the BotPlaythroughTests bot): base one is a soft training fight, the
+        // multipliers then climb faster than before because researched squads (up to +20 soldiers, +50% health,
+        // +40% fire rate, +50% damage, bigger and faster reinforcements) made the old top bases easier than base one.
         static readonly BaseSpec[] Specs =
         {
-            new BaseSpec { id = "b01", name = "Training Grounds", commander = "Sgt. Puddle", team = TeamColorId.Teal, diff = 1, level = 1, reward = 1.0f, hp = 1f, dmg = 1f },
-            new BaseSpec { id = "b02", name = "Pine Outpost", commander = "Cpl. Moss", team = TeamColorId.Green, diff = 2, level = 1, reward = 1.15f, hp = 1f, dmg = 1f },
-            new BaseSpec { id = "b03", name = "Dusty Crossing", commander = "Lt. Amber", team = TeamColorId.Orange, diff = 3, level = 2, reward = 1.3f, hp = 1.05f, dmg = 1.05f , map = "canyon" },
-            new BaseSpec { id = "b04", name = "Splat Ridge", commander = "Cpt. Violet", team = TeamColorId.Purple, diff = 4, level = 3, reward = 1.5f, hp = 1.1f, dmg = 1.1f , map = "ridge" },
-            new BaseSpec { id = "b05", name = "Magenta Bastion", commander = "Maj. Rosa", team = TeamColorId.Pink, diff = 5, level = 4, reward = 1.7f, hp = 1.18f, dmg = 1.15f },
-            new BaseSpec { id = "b06", name = "Cobalt Trench", commander = "Col. Indigo", team = TeamColorId.Blue, diff = 6, level = 5, reward = 1.95f, hp = 1.26f, dmg = 1.2f , map = "canyon" },
-            new BaseSpec { id = "b07", name = "Crimson Gate", commander = "Gen. Scarlet", team = TeamColorId.Red, diff = 7, level = 6, reward = 2.2f, hp = 1.35f, dmg = 1.28f , map = "ridge" },
-            new BaseSpec { id = "b08", name = "Jade Fortress", commander = "Gen. Celadon", team = TeamColorId.Teal, diff = 8, level = 8, reward = 2.5f, hp = 1.45f, dmg = 1.36f },
-            new BaseSpec { id = "b09", name = "Thunder Camp", commander = "Marshal Ochre", team = TeamColorId.Orange, diff = 9, level = 10, reward = 2.85f, hp = 1.55f, dmg = 1.45f , map = "canyon" },
-            new BaseSpec { id = "b10", name = "Prism Citadel", commander = "Warlord Lilac", team = TeamColorId.Purple, diff = 10, level = 12, reward = 3.3f, hp = 1.7f, dmg = 1.55f , map = "ridge" },
+            new BaseSpec { id = "b01", name = "Training Grounds", commander = "Sgt. Puddle", team = TeamColorId.Teal, diff = 1, level = 1, reward = 1.0f, hp = 0.75f, dmg = 0.6f },
+            new BaseSpec { id = "b02", name = "Pine Outpost", commander = "Cpl. Moss", team = TeamColorId.Green, diff = 2, level = 1, reward = 1.15f, hp = 0.95f, dmg = 0.85f },
+            new BaseSpec { id = "b03", name = "Dusty Crossing", commander = "Lt. Amber", team = TeamColorId.Orange, diff = 3, level = 2, reward = 1.3f, hp = 1.05f, dmg = 0.95f , map = "canyon" },
+            new BaseSpec { id = "b04", name = "Splat Ridge", commander = "Cpt. Violet", team = TeamColorId.Purple, diff = 4, level = 3, reward = 1.5f, hp = 1.15f, dmg = 1.02f , map = "ridge" },
+            new BaseSpec { id = "b05", name = "Magenta Bastion", commander = "Maj. Rosa", team = TeamColorId.Pink, diff = 5, level = 4, reward = 1.7f, hp = 1.3f, dmg = 1.1f },
+            new BaseSpec { id = "b06", name = "Cobalt Trench", commander = "Col. Indigo", team = TeamColorId.Blue, diff = 6, level = 5, reward = 1.95f, hp = 1.45f, dmg = 1.2f , map = "canyon" },
+            new BaseSpec { id = "b07", name = "Crimson Gate", commander = "Gen. Scarlet", team = TeamColorId.Red, diff = 7, level = 6, reward = 2.2f, hp = 1.6f, dmg = 1.32f , map = "ridge" },
+            new BaseSpec { id = "b08", name = "Jade Fortress", commander = "Gen. Celadon", team = TeamColorId.Teal, diff = 8, level = 8, reward = 2.5f, hp = 1.75f, dmg = 1.45f },
+            new BaseSpec { id = "b09", name = "Thunder Camp", commander = "Marshal Ochre", team = TeamColorId.Orange, diff = 9, level = 10, reward = 2.85f, hp = 1.95f, dmg = 1.6f , map = "canyon" },
+            new BaseSpec { id = "b10", name = "Prism Citadel", commander = "Warlord Lilac", team = TeamColorId.Purple, diff = 10, level = 12, reward = 3.3f, hp = 2.15f, dmg = 1.75f , map = "ridge" },
         };
 
         static BaseDefinition[] Bases()

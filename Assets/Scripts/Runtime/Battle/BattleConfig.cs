@@ -17,6 +17,8 @@ namespace TactileWars.Battle
 
         [Header("Reinforcements (estimates)")]
         public float meterRequired = 30f;
+        [Tooltip("Each reinforcement call raises the next meter requirement by this fraction (ESTIMATE, phase 8 balance: without it researched squads got near endless backup).")]
+        public float meterGrowthPerCall = 0.3f;
         public float perSoldierKill = 1f;
         public float perStructureKill = 4f;
         public float perSquadWipe = 3f;

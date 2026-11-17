@@ -284,7 +284,7 @@ namespace TactileWars.EditorTools
             var ring = ringRoot.AddComponent<SquadRing>();
             var red = data.visuals.Get(data.game.playerTeam);
             var ringQ = MakeFlat("Ring", ringRoot.transform, meshes.quad, red.ring, data.squad.ringRadius * 2f, 0.0f);
-            var blotQ = MakeFlat("Blot", ringRoot.transform, meshes.quad, red.blot, 3.8f, 0.005f);
+            var blotQ = MakeFlat("Blot", ringRoot.transform, meshes.quad, red.blot, 5.6f, 0.005f);
             ring.ring = ringQ.transform;
             ring.blot = blotQ.transform;
             squad.ring = ring;

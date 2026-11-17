@@ -10,6 +10,7 @@ Shader "TW/Ground"
         _HexLineStrength ("Hex Line Strength", Range(0, 1)) = 0.45
         _HexTint ("Per Hex Variation", Range(0, 0.2)) = 0.035
         _PathColor ("Dirt Path", Color) = (0.62, 0.55, 0.42, 1)
+        _PathStrength ("Dirt Path Strength", Range(0, 1)) = 1
         _TileColor ("Paved Tile", Color) = (0.84, 0.77, 0.62, 1)
         _DarkColor ("Dark Patch", Color) = (0.6, 0.6, 0.47, 1)
         _MaskTex ("Mask (R path, G tiles, B dark)", 2D) = "black" {}
@@ -33,7 +34,7 @@ Shader "TW/Ground"
             float _HexSize, _HexLineWidth, _HexLineStrength, _HexTint;
             float4 _MaskTex_ST;
             float4 _MapRect;
-            float _NoiseScale, _NoiseStrength, _ShadowStrength, _Brightness;
+            float _NoiseScale, _NoiseStrength, _ShadowStrength, _Brightness, _PathStrength;
         CBUFFER_END
         TEXTURE2D(_MaskTex); SAMPLER(sampler_MaskTex);
 
@@ -112,7 +113,7 @@ Shader "TW/Ground"
 
             // Dirt paths with a ragged noisy edge.
             float pathN = mask.r + (ValueNoise(w * 1.3) - 0.5) * 0.35;
-            float path = smoothstep(0.35, 0.6, pathN);
+            float path = smoothstep(0.3, 0.7, pathN) * _PathStrength;
             half3 pathCol = _PathColor.rgb * (0.94 + 0.12 * ValueNoise(w * 2.7));
             col = lerp(col, pathCol, path);
 

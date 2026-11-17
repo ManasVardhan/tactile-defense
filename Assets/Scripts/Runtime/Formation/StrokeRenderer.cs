@@ -9,13 +9,16 @@ namespace TactileWars.Formation
     public class StrokeRenderer : MonoBehaviour
     {
         public float width = 0.3f;
-        public float glowWidth = 1.0f;
+        public float glowWidth = 0.8f;
         public float dashTiling = 1.6f;
         public float holdTime = 0.5f;
         public float fadeTime = 0.6f;
         public float lift = 0.035f;
 
-        LineRenderer core, glow;
+        [Tooltip("Width of the solid inner line drawn through the dashes (reference ps_08: solid inner line plus dashes).")]
+        public float innerWidth = 0.11f;
+        LineRenderer core, glow, inner;
+        Material innerMat;
         Vector3[] buffer = new Vector3[1024];
         float fadeTimer = -1f;
         readonly Color coreColor = Color.white, glowColor = Color.white; // tint comes from the material, vertex alpha fades
@@ -28,6 +31,12 @@ namespace TactileWars.Formation
             core = MakeLine("StrokeCore", mats != null ? mats.stroke : null, width, 1);
             core.textureMode = LineTextureMode.Tile;
             core.textureScale = new Vector2(dashTiling, 1f);
+            if (mats != null && mats.stroke != null)
+            {
+                innerMat = new Material(mats.stroke) { name = "StrokeInner (runtime)", mainTexture = Texture2D.whiteTexture };
+                innerMat.renderQueue = mats.stroke.renderQueue + 1;
+            }
+            inner = MakeLine("StrokeInner", innerMat, innerWidth, 2);
             Hide();
         }
 
@@ -74,6 +83,7 @@ namespace TactileWars.Formation
             if (core == null) return;
             core.positionCount = 0;
             glow.positionCount = 0;
+            if (inner != null) inner.positionCount = 0;
             fadeTimer = -1f;
         }
 
@@ -86,7 +96,10 @@ namespace TactileWars.Formation
             core.SetPositions(buffer);
             glow.positionCount = n;
             glow.SetPositions(buffer);
+            if (inner != null) { inner.positionCount = n; inner.SetPositions(buffer); }
         }
+
+        void OnDestroy() { if (innerMat != null) Destroy(innerMat); }
 
         void SetAlpha(float a)
         {
@@ -94,6 +107,7 @@ namespace TactileWars.Formation
             core.startColor = c; core.endColor = c;
             Color g = glowColor; g.a *= a;
             glow.startColor = g; glow.endColor = g;
+            if (inner != null) { inner.startColor = c; inner.endColor = c; }
         }
 
         void Update()

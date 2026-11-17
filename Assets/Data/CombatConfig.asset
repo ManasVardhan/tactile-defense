@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Combat.CombatConfig
   splatCap: 420
   splatSizeRange: {x: 0.45, y: 0.9}
-  deathSplatSize: 1.3
+  deathSplatSize: 1.6
   explosionSplatSize: 3.2
   hitFlashDuration: 0.08
   squashAmount: 0.28
@@ -22,3 +22,13 @@ MonoBehaviour:
   targetScanInterval: 0.25
   projectilePrewarm: 256
   dieAnimTime: 0.55
+  visualLean: 30
+  visualMaxYaw: 80
+  visualTurnSpeed: 900
+  hopHeight: 0.32
+  hopTime: 0.28
+  hopStagger: 0.18
+  landSquash: 0.22
+  recoilKick: 0.08
+  muzzleFlashChance: 0.6
+  muzzleFlashScale: 1.3

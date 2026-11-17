@@ -169,7 +169,10 @@ namespace TactileWars.EditorTools
         {
             var lib = d.sounds;
             var entries = new List<SoundEntry>();
-            void Add(SoundId id, string pattern, float vol, int voices, float interval, float p0 = 0.92f, float p1 = 1.08f)
+            // Phase 8 mix (ESTIMATE, nobody could listen): every SFX file is peak normalized, so per sound volumes are
+            // relative within a category and SoundLibrary category multipliers set the overall balance. Shots are quiet
+            // with tight voice limits (40 guns), UI moderate, explosions and jingles loud, music under the effects.
+            void Add(SoundId id, string pattern, SoundCategory cat, float vol, int voices, float interval, float p0 = 0.92f, float p1 = 1.08f)
             {
                 var clips = new List<AudioClip>();
                 foreach (var dir in new[] { "Assets/Audio/SFX", "Assets/Audio/Music" })
@@ -186,43 +189,45 @@ namespace TactileWars.EditorTools
                     }
                 }
                 if (clips.Count == 0) Debug.LogWarning("[AssetBuilder] No audio for " + id + " (" + pattern + "), it will be silent");
-                entries.Add(new SoundEntry { id = id, clips = clips.ToArray(), volume = vol, maxVoices = voices, minInterval = interval, pitch = new Vector2(p0, p1) });
+                entries.Add(new SoundEntry { id = id, category = cat, clips = clips.ToArray(), volume = vol, maxVoices = voices, minInterval = interval, pitch = new Vector2(p0, p1) });
             }
-            Add(SoundId.Shoot, "paint_shot", 0.16f, 4, 0.04f, 0.9f, 1.12f);
-            Add(SoundId.ShootHeavy, "turret_shot", 0.45f, 2, 0.1f);
-            Add(SoundId.TurretShot, "turret_shot", 0.45f, 2, 0.1f);
-            Add(SoundId.CannonShot, "cannon_shot", 0.55f, 2, 0.2f);
-            Add(SoundId.TankShot, "tank_shot", 0.55f, 2, 0.2f);
-            Add(SoundId.Hit, "paint_splat", 0.14f, 3, 0.05f);
-            Add(SoundId.Splat, "paint_splat", 0.2f, 3, 0.05f);
-            Add(SoundId.UnitPop, "unit_pop", 0.35f, 3, 0.05f);
-            Add(SoundId.Explosion, "mine_explosion", 0.5f, 2, 0.12f);
-            Add(SoundId.MineExplosion, "mine_explosion", 0.65f, 2, 0.1f);
-            Add(SoundId.BuildingHit, "building_hit", 0.25f, 2, 0.12f);
-            Add(SoundId.BuildingDestroyed, "building_destroyed", 0.7f, 2, 0.2f, 1f, 1f);
-            Add(SoundId.StrokeDraw, "stroke_draw_loop", 0.25f, 1, 0f, 1f, 1f);
-            Add(SoundId.FormationSet, "formation_set", 0.45f, 1, 0.08f, 0.98f, 1.02f);
-            Add(SoundId.CaptureTick, "capture_tick", 0.35f, 2, 0.1f, 1f, 1f);
-            Add(SoundId.CaptureComplete, "capture_complete", 0.7f, 1, 0.5f, 1f, 1f);
-            Add(SoundId.ReinforcementReady, "reinforcement_ready", 0.6f, 1, 0.5f, 1f, 1f);
-            Add(SoundId.ReinforcementCall, "reinforcement_call", 0.7f, 1, 0.5f, 1f, 1f);
-            Add(SoundId.BubblePop, "bubble_pop", 0.6f, 2, 0.1f);
-            Add(SoundId.Victory, "victory", 0.8f, 1, 1f, 1f, 1f);
-            Add(SoundId.Defeat, "defeat", 0.8f, 1, 1f, 1f, 1f);
-            Add(SoundId.Footsteps, "footsteps_loop", 0.2f, 1, 0f, 1f, 1f);
-            Add(SoundId.UiClick, "ui_click", 0.5f, 2, 0.05f, 1f, 1f);
-            Add(SoundId.UiBack, "ui_back", 0.5f, 2, 0.05f, 1f, 1f);
-            Add(SoundId.UiOpen, "ui_open", 0.5f, 2, 0.05f, 1f, 1f);
-            Add(SoundId.UiPurchase, "ui_purchase", 0.6f, 2, 0.05f, 1f, 1f);
-            Add(SoundId.UiError, "ui_error", 0.5f, 1, 0.1f, 1f, 1f);
-            Add(SoundId.CoinPickup, "coin_pickup", 0.5f, 3, 0.05f, 0.95f, 1.1f);
-            Add(SoundId.LevelUp, "level_up", 0.8f, 1, 0.5f, 1f, 1f);
-            Add(SoundId.TeslaCharge, "tesla_charge", 0.35f, 2, 0.3f);
-            Add(SoundId.TeslaZap, "tesla_zap", 0.55f, 2, 0.1f);
-            Add(SoundId.SniperAim, "sniper_aim", 0.3f, 1, 0.3f, 1f, 1f);
-            Add(SoundId.SniperShot, "sniper_shot", 0.6f, 2, 0.15f);
-            Add(SoundId.GeyserRumble, "geyser_rumble", 0.45f, 2, 0.2f);
-            Add(SoundId.GeyserErupt, "geyser_erupt", 0.7f, 2, 0.15f);
+            const SoundCategory Sh = SoundCategory.Shots, Im = SoundCategory.Impacts, Ex = SoundCategory.Explosions,
+                Ji = SoundCategory.Jingles, Ui = SoundCategory.UI, Fb = SoundCategory.Feedback, Am = SoundCategory.Ambience;
+            Add(SoundId.Shoot, "paint_shot", Sh, 0.2f, 3, 0.05f, 0.9f, 1.12f);
+            Add(SoundId.ShootHeavy, "turret_shot", Sh, 0.55f, 2, 0.1f);
+            Add(SoundId.TurretShot, "turret_shot", Sh, 0.55f, 2, 0.1f);
+            Add(SoundId.CannonShot, "cannon_shot", Sh, 0.75f, 2, 0.2f);
+            Add(SoundId.TankShot, "tank_shot", Sh, 0.7f, 2, 0.2f);
+            Add(SoundId.SniperShot, "sniper_shot", Sh, 0.75f, 2, 0.15f);
+            Add(SoundId.Hit, "paint_splat", Im, 0.18f, 3, 0.06f);
+            Add(SoundId.Splat, "paint_splat", Im, 0.25f, 3, 0.06f);
+            Add(SoundId.UnitPop, "unit_pop", Im, 0.45f, 3, 0.05f);
+            Add(SoundId.BuildingHit, "building_hit", Im, 0.35f, 2, 0.12f);
+            Add(SoundId.Explosion, "mine_explosion", Ex, 0.7f, 2, 0.12f);
+            Add(SoundId.MineExplosion, "mine_explosion", Ex, 0.8f, 2, 0.1f);
+            Add(SoundId.BuildingDestroyed, "building_destroyed", Ex, 0.85f, 2, 0.2f, 1f, 1f);
+            Add(SoundId.GeyserErupt, "geyser_erupt", Ex, 0.75f, 2, 0.15f);
+            Add(SoundId.TeslaZap, "tesla_zap", Ex, 0.55f, 2, 0.1f);
+            Add(SoundId.Victory, "victory", Ji, 0.9f, 1, 1f, 1f, 1f);
+            Add(SoundId.Defeat, "defeat", Ji, 0.9f, 1, 1f, 1f, 1f);
+            Add(SoundId.LevelUp, "level_up", Ji, 0.85f, 1, 0.5f, 1f, 1f);
+            Add(SoundId.CaptureComplete, "capture_complete", Ji, 0.8f, 1, 0.5f, 1f, 1f);
+            Add(SoundId.ReinforcementCall, "reinforcement_call", Ji, 0.75f, 1, 0.5f, 1f, 1f);
+            Add(SoundId.ReinforcementReady, "reinforcement_ready", Fb, 0.6f, 1, 0.5f, 1f, 1f);
+            Add(SoundId.FormationSet, "formation_set", Fb, 0.45f, 1, 0.08f, 0.98f, 1.02f);
+            Add(SoundId.CaptureTick, "capture_tick", Fb, 0.35f, 2, 0.1f, 1f, 1f);
+            Add(SoundId.BubblePop, "bubble_pop", Fb, 0.6f, 2, 0.1f);
+            Add(SoundId.TeslaCharge, "tesla_charge", Fb, 0.35f, 2, 0.3f);
+            Add(SoundId.SniperAim, "sniper_aim", Fb, 0.3f, 1, 0.3f, 1f, 1f);
+            Add(SoundId.GeyserRumble, "geyser_rumble", Fb, 0.45f, 2, 0.2f);
+            Add(SoundId.StrokeDraw, "stroke_draw_loop", Am, 0.3f, 1, 0f, 1f, 1f);
+            Add(SoundId.Footsteps, "footsteps_loop", Am, 0.25f, 1, 0f, 1f, 1f);
+            Add(SoundId.UiClick, "ui_click", Ui, 0.55f, 2, 0.05f, 1f, 1f);
+            Add(SoundId.UiBack, "ui_back", Ui, 0.55f, 2, 0.05f, 1f, 1f);
+            Add(SoundId.UiOpen, "ui_open", Ui, 0.5f, 2, 0.05f, 1f, 1f);
+            Add(SoundId.UiPurchase, "ui_purchase", Ui, 0.65f, 2, 0.05f, 1f, 1f);
+            Add(SoundId.UiError, "ui_error", Ui, 0.55f, 1, 0.1f, 1f, 1f);
+            Add(SoundId.CoinPickup, "coin_pickup", Ui, 0.6f, 3, 0.05f, 0.95f, 1.1f);
             lib.entries = entries.ToArray();
             lib.menuMusic = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/menu_theme.ogg");
             lib.battleMusic = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/battle_theme.ogg");

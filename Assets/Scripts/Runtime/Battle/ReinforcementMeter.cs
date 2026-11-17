@@ -9,6 +9,9 @@ namespace TactileWars.Battle
         public float Required { get; private set; }
         public float Fill => Required > 0f ? Mathf.Clamp01(Value / Required) : 0f;
         public bool Ready => Value >= Required;
+        /// <summary>Fraction added to Required after every call (diminishing returns).</summary>
+        public float Growth { get; set; }
+        public int Calls { get; private set; }
 
         public ReinforcementMeter(float required) { Required = Mathf.Max(1f, required); }
 
@@ -24,6 +27,8 @@ namespace TactileWars.Battle
         {
             if (!Ready) return false;
             Value = 0f;
+            Calls++;
+            Required *= 1f + Mathf.Max(0f, Growth);
             return true;
         }
     }

@@ -55,7 +55,7 @@ namespace TactileWars.Battle
             GameConfig.Active = gameConfig;
             BattleColors.Palette = gameConfig != null ? gameConfig.palette : null;
             BattleColors.Visuals = gameConfig != null ? gameConfig.visuals : null;
-            Meter = new ReinforcementMeter(battleConfig != null ? battleConfig.meterRequired : 30f);
+            Meter = new ReinforcementMeter(battleConfig != null ? battleConfig.meterRequired : 30f) { Growth = battleConfig != null ? battleConfig.meterGrowthPerCall : 0f };
             BattleEvents.UnitKilled += OnUnitKilled;
             BattleEvents.SquadWiped += OnSquadWiped;
             BattleEvents.PointCaptured += OnPointCaptured;
@@ -220,7 +220,12 @@ namespace TactileWars.Battle
             counterTimer = -1f;
             if (victory)
             {
-                if (squad != null) squad.SetCheer(true);
+                if (squad != null)
+                {
+                    squad.SetCheer(true);
+                    if (!DefenseMode && VfxManager.Instance != null && squad.AliveCount > 0)
+                        VfxManager.Instance.Play(VfxType.Coins, squad.Centroid + Vector3.up * 0.5f, Color.white, 1f);
+                }
                 // In a defense battle the attackers winning is the player's loss.
                 AudioManager.Play(DefenseMode ? SoundId.Defeat : SoundId.Victory, Vector3.zero);
                 BattleEvents.RaiseVictory(r);

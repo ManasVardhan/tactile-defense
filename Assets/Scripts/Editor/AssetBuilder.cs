@@ -41,8 +41,8 @@ namespace TactileWars.EditorTools
         {
             { "TeamColor", "#3B7FD8" }, { "TeamColorDark", "#2556A0" }, { "Paint", "#3F8EF2" },
             { "Skin", "#F7F2EA" }, { "Dark", "#2C2F3C" }, { "Metal", "#A9AEB6" }, { "Accent", "#F4EFE2" },
-            { "Wood", "#A3743F" }, { "Leaf", "#28655A" }, { "LeafLight", "#3C8270" }, { "Trunk", "#6E4C33" },
-            { "Rock", "#A59E8B" }, { "Sand", "#AE9A6C" }, { "Glass", "#9FE3F5" }, { "Canvas", "#E8DDBD" },
+            { "Wood", "#A3743F" }, { "Leaf", "#1E5249" }, { "LeafLight", "#2F6E60" }, { "Trunk", "#6E4C33" },
+            { "Rock", "#B2A386" }, { "Sand", "#AE9A6C" }, { "Glass", "#9FE3F5" }, { "Canvas", "#E8DDBD" },
             { "Stone", "#CFC09C" },
         };
 
@@ -77,7 +77,7 @@ namespace TactileWars.EditorTools
 
         // ------------------------------------------------------------------ textures and meshes
 
-        public class Tex { public Texture2D splat, ring, blot, dash, glow, dot, soft, puff, ghost, star, beam, grid, white; }
+        public class Tex { public Texture2D splat, ring, blot, dash, glow, dot, soft, puff, ghost, star, beam, grid, white, coin; }
 
         static Tex BuildTextures()
         {
@@ -93,6 +93,7 @@ namespace TactileWars.EditorTools
                 puff = TextureGen.Puff(),
                 ghost = TextureGen.Ghost(),
                 star = TextureGen.Star(),
+                coin = TextureGen.Coin(),
                 beam = TextureGen.Write("T_Beam", 16, 64, (u, v) => { float a = Mathf.Clamp01(1f - Mathf.Abs(v - 0.5f) * 2f); a = a * a * (3f - 2f * a); return new Color(1f, 1f, 1f, a); }),
                 grid = TextureGen.Write("T_EditorGrid", 64, 64, (u, v) => { float e = Mathf.Min(Mathf.Min(u, 1f - u), Mathf.Min(v, 1f - v)); float a = e < 0.03f ? 0.9f : (e < 0.06f ? 0.35f : 0f); return new Color(1f, 1f, 1f, a); }, false, TextureWrapMode.Repeat),
                 white = TextureGen.Write("T_White", 8, 8, (u, v) => Color.white),
@@ -122,7 +123,7 @@ namespace TactileWars.EditorTools
             public Dictionary<string, Material> unitSlots = new Dictionary<string, Material>();  // outlined, for characters
             public Dictionary<TeamColorId, TeamMaterials> teams = new Dictionary<TeamColorId, TeamMaterials>();
             public Material flash, blobShadow, ground, bubble, neutralArc;
-            public Material pDot, pPuff, pGhost, pStar, pSoft;
+            public Material pDot, pPuff, pGhost, pStar, pSoft, pCoin;
             public Material zap, beam, ghostEdit, gridEdit, discEdit;
         }
 
@@ -151,7 +152,11 @@ namespace TactileWars.EditorTools
             return m;
         }
 
-        static void ToonSetup(Material m, Color c, bool outline, float emission = 0f, float rim = 0.22f)
+        // Unit outlines (phase 8 readability pass): the team colored helmet and body keep a white sticker edge like the
+        // reference (f_0022, ps_12); face, gun, boots and hands get a thin dark edge so the white face pops off the ground.
+        static readonly Color UnitDarkOutline = new Color(0.16f, 0.14f, 0.19f, 1f);
+
+        static void ToonSetup(Material m, Color c, bool outline, float emission = 0f, float rim = 0.22f, bool darkOutline = false)
         {
             m.SetColor("_BaseColor", c);
             m.SetColor("_ShadeColor", new Color(0.7f, 0.68f, 0.8f));
@@ -160,8 +165,8 @@ namespace TactileWars.EditorTools
             m.SetColor("_RimColor", Color.white);
             m.SetFloat("_RimStrength", rim);
             m.SetFloat("_RimPower", 3f);
-            m.SetColor("_OutlineColor", Color.white);
-            m.SetFloat("_OutlineWidth", outline ? 1.25f : 0f);
+            m.SetColor("_OutlineColor", darkOutline ? UnitDarkOutline : Color.white);
+            m.SetFloat("_OutlineWidth", outline ? (darkOutline ? 1.0f : 1.35f) : 0f);
             m.SetFloat("_Emission", emission);
             m.SetFloat("_ShadowStrength", 0.6f);
             m.SetFloat("_Ambient", 0.5f);
@@ -191,7 +196,8 @@ namespace TactileWars.EditorTools
                 var c = Hex(kv.Value);
                 float em = kv.Key == "Glass" ? 0.35f : kv.Key == "Paint" ? 0.25f : 0f;
                 mats.slots[kv.Key] = Mat("M_" + kv.Key, toon, m => ToonSetup(m, c, false, em, kv.Key == "Leaf" || kv.Key == "LeafLight" ? 0.12f : 0.18f));
-                mats.unitSlots[kv.Key] = Mat("M_U_" + kv.Key, toonO, m => ToonSetup(m, c, true, em, 0.28f));
+                bool darkEdge = kv.Key != "TeamColor" && kv.Key != "TeamColorDark" && kv.Key != "Accent";
+                mats.unitSlots[kv.Key] = Mat("M_U_" + kv.Key, toonO, m => ToonSetup(m, c, true, em, 0.28f, darkEdge));
             }
 
             foreach (var th in TeamHex)
@@ -204,7 +210,7 @@ namespace TactileWars.EditorTools
                 tm.paint = Mat($"M_Team_{n}_Paint", toon, m => ToonSetup(m, pt, false, 0.35f));
                 tm.unitTeamColor = Mat($"M_Team_{n}_UColor", toonO, m => ToonSetup(m, p, true, 0f, 0.3f));
                 tm.unitTeamColorDark = Mat($"M_Team_{n}_UDark", toonO, m => ToonSetup(m, d, true, 0f, 0.3f));
-                tm.unitPaint = Mat($"M_Team_{n}_UPaint", toonO, m => ToonSetup(m, pt, true, 0.35f, 0.3f));
+                tm.unitPaint = Mat($"M_Team_{n}_UPaint", toonO, m => ToonSetup(m, pt, true, 0.35f, 0.3f, true));
                 tm.splat = Mat($"M_Team_{n}_Splat", decal, m => DecalSetup(m, t.splat, pt, pt, 3000, 0.6f));
                 tm.ring = Mat($"M_Team_{n}_Ring", decal, m => DecalSetup(m, t.ring, p, p, 3002, 0.3f));
                 tm.blot = Mat($"M_Team_{n}_Blot", decal, m => DecalSetup(m, t.blot, pt, pt, 3002, 1.0f));
@@ -232,21 +238,24 @@ namespace TactileWars.EditorTools
             mats.bubble = Mat("M_Bubble", Find("TW/Bubble"), m =>
             {
                 m.SetColor("_BaseColor", new Color(1f, 1f, 1f, 1f));
-                m.SetFloat("_CenterAlpha", 0.16f); m.SetFloat("_RimAlpha", 0.95f); m.SetFloat("_RimPower", 2.2f); m.SetFloat("_Highlight", 0.9f);
+                m.SetFloat("_CenterAlpha", 0.1f); m.SetFloat("_RimAlpha", 0.95f); m.SetFloat("_RimPower", 2.2f); m.SetFloat("_Highlight", 0.9f);
+                m.SetColor("_BackColor", new Color(0.93f, 0.93f, 0.9f, 0.62f));
+                m.SetColor("_BackEdgeColor", new Color(0.66f, 0.66f, 0.64f, 0.85f));
             });
             mats.ground = Mat("M_Ground", Find("TW/Ground"), m =>
             {
                 m.SetColor("_SandColor", Hex("#C3B48E"));
                 m.SetColor("_SandColor2", Hex("#B9AC88"));
-                m.SetColor("_HexLineColor", Hex("#A39472"));
-                m.SetColor("_PathColor", Hex("#B5A57E"));
+                m.SetColor("_HexLineColor", Hex("#958666"));
+                m.SetColor("_PathColor", Hex("#BBAB84"));
                 m.SetColor("_TileColor", Hex("#D8CAA6"));
                 m.SetColor("_DarkColor", Hex("#A9A17F"));
                 m.SetColor("_ShadowColor", Hex("#9C9AA6"));
                 m.SetFloat("_HexSize", 5.2f);
-                m.SetFloat("_HexLineWidth", 0.03f);
-                m.SetFloat("_HexLineStrength", 0.5f);
-                m.SetFloat("_HexTint", 0.03f);
+                m.SetFloat("_HexLineWidth", 0.028f);
+                m.SetFloat("_HexLineStrength", 0.62f);
+                m.SetFloat("_HexTint", 0.045f);
+                m.SetFloat("_PathStrength", 0.55f);
                 m.SetFloat("_NoiseScale", 0.08f);
                 m.SetFloat("_ShadowStrength", 0.8f);
             });
@@ -255,6 +264,7 @@ namespace TactileWars.EditorTools
             mats.pGhost = Mat("M_P_Ghost", particle, m => { m.SetTexture("_MainTex", t.ghost); m.renderQueue = 3012; });
             mats.pStar = Mat("M_P_Star", particle, m => { m.SetTexture("_MainTex", t.star); m.SetFloat("_Emission", 0.8f); m.renderQueue = 3013; });
             mats.pSoft = Mat("M_P_Soft", particle, m => { m.SetTexture("_MainTex", t.soft); m.renderQueue = 3011; });
+            mats.pCoin = Mat("M_P_Coin", particle, m => { m.SetTexture("_MainTex", t.coin); m.SetFloat("_Emission", 0.2f); m.renderQueue = 3013; });
             mats.zap = Mat("M_Zap", particle, m => { m.SetTexture("_MainTex", t.beam); m.SetFloat("_Emission", 1.2f); m.renderQueue = 3014; });
             mats.beam = Mat("M_AimBeam", particle, m => { m.SetTexture("_MainTex", t.beam); m.SetFloat("_Emission", 0.4f); m.renderQueue = 3014; });
             mats.ghostEdit = Mat("M_EditorGhost", particle, m => { m.SetTexture("_MainTex", t.white); m.renderQueue = 3015; });

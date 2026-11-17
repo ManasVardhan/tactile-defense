@@ -60,7 +60,15 @@ namespace TactileWars.Units
             var flashMat = BattleContext.Visuals != null ? BattleContext.Visuals.flash : null;
             feedback = new DamageFeedback(bodyRenderers, flashMat, modelRoot);
             View = new SoldierView(animator, modelRoot);
+            var fb = feedback;
+            View.Squash = a => fb.Squash(a);
+            View.ApplyModel(0f);
         }
+
+        bool movedSinceRest;
+
+        /// <summary>Formation-set hop (presentation only).</summary>
+        public void Hop(float delay) { if (!IsGone && IsAlive) View?.Hop(delay); }
 
         public Vector3 MuzzlePosition
         {
@@ -96,14 +104,30 @@ namespace TactileWars.Units
                 Vector3 to = target.transform.position - transform.position; to.y = 0f;
                 if (Vector3.Dot(transform.forward, to.normalized) > 0.6f || Motor.SpeedNormalized > 0.5f)
                 {
-                    if (Weapon.Tick(dt, target, MuzzlePosition, Team, Color)) View.Shoot();
+                    if (Weapon.Tick(dt, target, MuzzlePosition, Team, Color)) OnShot();
                 }
                 else Weapon.Tick(dt, null, MuzzlePosition, Team, Color);
             }
             else Weapon.Tick(dt, null, MuzzlePosition, Team, Color);
 
+            // Landing squash when the soldier settles on its slot after a run.
+            if (Motor.SpeedNormalized > 0.5f) movedSinceRest = true;
+            else if (Motor.AtRest && movedSinceRest)
+            {
+                movedSinceRest = false;
+                feedback?.Squash(combat != null ? combat.landSquash * 0.7f : 0.15f);
+            }
+
             View.Tick(dt, Motor.SpeedNormalized);
             feedback.Tick(dt, combat != null ? combat.squashRecover : 10f);
+        }
+
+        void OnShot()
+        {
+            View.Shoot();
+            var vfx = VfxManager.Instance;
+            if (vfx != null && combat != null && Random.value < combat.muzzleFlashChance)
+                vfx.Play(VfxType.Muzzle, MuzzlePosition, UnityEngine.Color.white, combat.muzzleFlashScale);
         }
 
         void OnDamaged(Health h, float dmg, Vector3 from, TeamColorId by)

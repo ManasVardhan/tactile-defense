@@ -102,8 +102,21 @@ namespace TactileWars.Squad
         /// <summary>Drops the cached grid (call after the map's props change).</summary>
         public void InvalidateNav() { navBuilt = false; nav = null; }
 
+        float cheerTimer;
+        bool cheerHeld;
+
         void Awake() { Instance = this; }
-        void OnDestroy() { if (Instance == this) Instance = null; }
+        void OnDestroy() { if (Instance == this) Instance = null; BattleEvents.PointCaptured -= OnPointCaptured; }
+
+        void OnPointCaptured(int index) { CheerFor(1.6f); }
+
+        /// <summary>Short cheer (capture), unless a held cheer (victory) is already on.</summary>
+        public void CheerFor(float seconds)
+        {
+            if (cheerHeld) return;
+            cheerTimer = seconds;
+            for (int i = 0; i < soldiers.Count; i++) if (soldiers[i] != null && soldiers[i].IsAlive) soldiers[i].View.Cheer(true);
+        }
 
         void OnEnable()
         {
@@ -131,6 +144,8 @@ namespace TactileWars.Squad
             var gc = BattleContext.Config;
             if (strokeRenderer != null) strokeRenderer.Init(vis != null && gc != null ? vis.Get(gc.playerTeam) : null);
             if (ring != null && config != null) ring.SetRadius(config.ringRadius);
+            BattleEvents.PointCaptured -= OnPointCaptured;
+            BattleEvents.PointCaptured += OnPointCaptured;
             SpawnInitial(config != null ? config.soldierCount : 40);
         }
 
@@ -243,9 +258,59 @@ namespace TactileWars.Squad
             for (int i = 0; i < raw.Count; i++) work.Add(raw[i]);
             PathResampler.Chaikin(work, false, 1, scratch);
             PathResampler.ResampleBySpacing(work, false, formation != null ? formation.resampleStep : 0.25f, scratch);
+            ExtendLiveTail(scratch);
             SetPath(scratch, false);
             SolveAndAssign(Centroid);
             respaceTimer = -1f;
+        }
+
+        /// <summary>While drawing, a short stroke cannot hold the whole squad single file, and the solver would pack the
+        /// overflow into extra rows (a clump). Instead the chain streams: the stroke is filled at min spacing from its
+        /// leading end, and the rest of the squad queues in a column that runs from the stroke start back toward the
+        /// squad, so the soldiers flow onto the line as it grows (like the column in f_0056).</summary>
+        void ExtendLiveTail(List<Vector3> pts)
+        {
+            int n = soldiers.Count;
+            if (n < 2 || pts.Count < 2) return;
+            float minSp = formation != null ? formation.minSpacing : 0.7f;
+            float need = (n - 1) * minSp;
+            float L = 0f;
+            for (int i = 1; i < pts.Count; i++) L += Vector3.Distance(pts[i - 1], pts[i]);
+            float extra = need - L;
+            if (extra <= 0.01f) return;
+            Vector3 p0 = pts[0];
+            Vector3 dir = Centroid - p0; dir.y = 0f;
+            Vector3 strokeDir = pts[Mathf.Min(pts.Count - 1, 3)] - p0; strokeDir.y = 0f;
+            if (dir.magnitude < 2f || (strokeDir.sqrMagnitude > 1e-4f && Vector3.Dot(dir.normalized, strokeDir.normalized) > 0.7f))
+                dir = strokeDir.sqrMagnitude > 1e-4f ? -strokeDir : Vector3.back;
+            dir.Normalize();
+            float step = formation != null ? formation.resampleStep : 0.25f;
+            int k = Mathf.CeilToInt(extra / step);
+            var gc = BattleContext.Config;
+            // Prepend tail points (farthest first) so the path still runs tail -> stroke start -> leading end.
+            work.Clear();
+            for (int i = k; i >= 1; i--)
+            {
+                Vector3 q = p0 + dir * Mathf.Min(extra, i * step);
+                if (gc != null)
+                {
+                    q.x = Mathf.Clamp(q.x, gc.mapMin.x, gc.mapMax.x);
+                    q.z = Mathf.Clamp(q.z, gc.mapMin.y, gc.mapMax.y);
+                }
+                work.Add(q);
+            }
+            for (int i = 0; i < pts.Count; i++) work.Add(pts[i]);
+            pts.Clear();
+            for (int i = 0; i < work.Count; i++) pts.Add(work[i]);
+        }
+
+        /// <summary>Presentation: a rippling hop when a formation is set.</summary>
+        void HopAll()
+        {
+            var cc = BattleContext.Combat;
+            float stagger = cc != null ? cc.hopStagger : 0.18f;
+            for (int i = 0; i < soldiers.Count; i++)
+                if (soldiers[i] != null) soldiers[i].Hop(Random.value * stagger);
         }
 
         void OnStrokeCancelled()
@@ -294,6 +359,7 @@ namespace TactileWars.Squad
             SolveAndAssign(Centroid);
             if (strokeRenderer != null) strokeRenderer.ShowFinal(pathPts, closed);
             if (ring != null) ring.Pulse();
+            HopAll();
             AudioManager.Play(SoundId.FormationSet, anchor);
             BattleEvents.RaiseShapeRecognized(shape.type);
         }
@@ -326,6 +392,7 @@ namespace TactileWars.Squad
             LastShape = shape;
             if (strokeRenderer != null) strokeRenderer.ShowFinal(pathPts, closed);
             if (ring != null) ring.Pulse();
+            HopAll();
             BattleEvents.RaiseShapeRecognized(shape);
         }
 
@@ -475,6 +542,12 @@ namespace TactileWars.Squad
             if (alive > 0) Centroid = sum / alive;
 
             if (routing && alive > 0) TickRoute();
+            if (cheerTimer > 0f)
+            {
+                cheerTimer -= dt;
+                if (cheerTimer <= 0f && !cheerHeld)
+                    for (int i = 0; i < n; i++) if (soldiers[i] != null && soldiers[i].IsAlive) soldiers[i].View.Cheer(false);
+            }
 
             if (soldierConfig != null)
             {
@@ -509,6 +582,8 @@ namespace TactileWars.Squad
 
         public void SetCheer(bool on)
         {
+            cheerHeld = on;
+            cheerTimer = 0f;
             for (int i = 0; i < soldiers.Count; i++) if (soldiers[i] != null && soldiers[i].IsAlive) soldiers[i].View.Cheer(on);
         }
     }

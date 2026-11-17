@@ -26,6 +26,17 @@ namespace TactileWars.Tests
             yield return BattleTestUtil.Wait(1.2f);
             BattleTestUtil.Capture("battle_start");
 
+            // Phase 8 reference match for ps_12: a U shaped single file line open toward the camera, the ring inside it,
+            // enemy squads and bubbles around the top, mid firefight.
+            yield return BattleTestUtil.Wait(2.6f);
+            var uShape = new List<Vector3>();
+            for (int i = 0; i <= 6; i++) uShape.Add(new Vector3(-7f, 0, 8.5f + i));
+            for (int i = 0; i <= 20; i++) { float a = Mathf.PI - i / 20f * Mathf.PI; uShape.Add(new Vector3(Mathf.Cos(a) * 7f, 0, 14.5f + Mathf.Sin(a) * 1.6f)); }
+            for (int i = 0; i <= 6; i++) uShape.Add(new Vector3(7f, 0, 14.5f - i));
+            yield return BattleTestUtil.Drag(uShape.ToArray(), 1.0f);
+            yield return BattleTestUtil.Wait(3.4f);
+            BattleTestUtil.Capture("battle_u_formation");
+
             // Mid drag: a sweeping curve ahead of the squad, captured before release.
             Vector3 c = squad.Centroid;
             var curve = new List<Vector3>();
@@ -114,32 +125,14 @@ namespace TactileWars.Tests
             yield return BattleTestUtil.Tap(new Vector3(0f, 0, 17f));
             yield return BattleTestUtil.Wait(2.5f);
 
-            var mainThread = ProfilerRecorder.StartNew(ProfilerCategory.Internal, "Main Thread", 1);
             var cam = BattleTestUtil.Cam;
-            const int frames = 240;
-            var cpu = new List<double>(frames);
-            var main = new List<double>(frames);
-            var sw = new System.Diagnostics.Stopwatch();
             int maxProjectiles = 0;
-            for (int i = 0; i < frames; i++)
-            {
-                sw.Restart();
-                cam.Render(); // include rendering cost: batchmode does not present frames on its own
-                yield return null;
-                sw.Stop();
-                cpu.Add(sw.Elapsed.TotalMilliseconds);
-                if (mainThread.Valid && mainThread.LastValue > 0) main.Add(mainThread.LastValue * 1e-6);
-                maxProjectiles = Mathf.Max(maxProjectiles, ProjectileManager.Instance.ActiveCount);
-            }
-            mainThread.Dispose();
-            cpu.Sort(); main.Sort();
-            double avg = 0; foreach (var v in cpu) avg += v; avg /= cpu.Count;
-            double mavg = 0; foreach (var v in main) mavg += v; if (main.Count > 0) mavg /= main.Count;
+            var sampler = new PerfSampler();
+            yield return sampler.Run(cam, 300, () => maxProjectiles = Mathf.Max(maxProjectiles, ProjectileManager.Instance.ActiveCount));
             string report =
-                $"Editor play mode (batchmode, Apple M2), {frames} frames, Battle.unity\n" +
+                $"Editor play mode (batchmode, Apple M2), Battle.unity attack (handcrafted base one deployment), 1280x720 render target\n" +
                 $"Player soldiers at start of window: {players}, enemy soldiers alive at load: {enemySoldiers} in {squads.Length} squads, all defenses active\n" +
-                $"Wall time per frame incl. extra camera render: avg {avg:0.00} ms, median {cpu[cpu.Count / 2]:0.00} ms, p95 {cpu[(int)(cpu.Count * 0.95f)]:0.00} ms\n" +
-                (main.Count > 0 ? $"Profiler 'Main Thread': avg {mavg:0.00} ms, median {main[main.Count / 2]:0.00} ms, p95 {main[(int)(main.Count * 0.95f)]:0.00} ms\n" : "Profiler 'Main Thread' recorder unavailable\n") +
+                sampler.Report +
                 $"Peak live projectiles: {maxProjectiles}, splats: {PaintSplatManager.Instance.Count}, kills so far: {BattleManager.Instance.Kills}\n";
             Debug.Log("[Perf]\n" + report);
             string path = Path.GetFullPath(Path.Combine(Application.dataPath, "../Logs/perf_battle.txt"));

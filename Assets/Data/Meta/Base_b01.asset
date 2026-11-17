@@ -19,8 +19,8 @@ MonoBehaviour:
   difficulty: 1
   requiredLevel: 1
   rewardMultiplier: 1
-  enemyHealthMult: 1
-  enemyDamageMult: 1
+  enemyHealthMult: 0.75
+  enemyDamageMult: 0.6
   layout: {fileID: 0}
   map: {fileID: 0}
   enemySquads: 11

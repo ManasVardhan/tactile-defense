@@ -387,3 +387,43 @@ MainMenu, Battle, BaseEditor. Captures: PlayMode category `DefenseScreenshots`; 
 - UI: `UIIcon` appended FastForward, Rotate, Trash, Move, Save, Grid. `ConfirmDialog.ShowChoice` (two actions plus a
   close button). Base editor UI in `UI/BaseEditor` (root, HUD, card, display copies). Ghosts, grid and discs use
   `M_EditorGhost`, `M_EditorGrid`, `M_EditorDisc` (TW/Particle); zap and aim lines use `M_Zap` and `M_AimBeam`.
+
+### 2026-11-17 Phase 4 and 8: visual polish, combat feel, balance, regression (technical art and QA agent)
+
+- Soldier read (presentation only, gameplay facing untouched): `Units/SoldierView` now owns the visual model transform.
+  The `Model` child leans back toward the camera by `CombatConfig.visualLean` (30 degrees, ESTIMATE) and its visual yaw
+  is clamped to `CombatConfig.visualMaxYaw` (80 degrees) from the camera-facing direction, so faces stay visible like the
+  original's upright sprites. Root rotation, targeting, the fire cone check and the motor still use the true facing.
+  The muzzle is part of the model, so projectiles start from the drawn gun. Verified with the `Lineup` PlayMode capture
+  (`Docs/Screenshots/soldier_lineup*.png`). Camera elevation lowered from 35 to 31 degrees (ring ellipse ratio closer to
+  ps_12; still inside the 30 to 40 contract range).
+- Unit outlines: team colored slots keep a white 1.35 px edge; Skin, Dark, Metal and team Paint unit materials get a dark
+  1.0 px edge (`AssetBuilder.UnitDarkOutline`) so the white face reads against the ground.
+- Combat feel: formation hop with stretch and landing squash (`SquadController.HopAll`, `CombatConfig.hop*`), landing squash
+  when a soldier settles on its slot, recoil kick per shot, muzzle puffs on soldier shots (`VfxType.Muzzle`, chance
+  `muzzleFlashChance`), cheer for 1.6 s on every capture (`SquadController.CheerFor`) and held cheer on victory, a gold
+  coin burst on victory (new `VfxType.Coins = 10`, texture `T_Coin`, material `M_P_Coin`).
+- Live stroke streaming: while drawing, if the partial stroke is shorter than the squad needs at min spacing, the path is
+  extended with a tail from the stroke start back toward the squad (`SquadController.ExtendLiveTail`), so the chain streams
+  single file instead of packing extra rows. The released stroke is solved exactly as before.
+- UI and post: an overlay UI camera (stacked, post off) was tried and reverted: in render texture captures
+  (`RenderPipeline.SubmitRenderRequest` on the base camera) the overlay never drew, so the HUD vanished from every
+  capture. Canvases stay Screen Space Camera on the scene camera; the gentle post stack still touches the HUD (see
+  Docs/Comparisons/NOTES.md). A device build could use the overlay route if captures are moved to another path.
+- Decals and effects: thicker squad ring texture, larger spiral blot (5.6 units), clumpy splat atlas (metaball lobes plus
+  satellite drops), fewer but larger soldier splats (hit 0.3, miss 0.25, size 1.4), solid inner line through the dashed
+  stroke (`StrokeRenderer.innerWidth`, runtime material copy with a white texture), bubble back faces drawn as a pale disc
+  behind the bearer (`TW/Bubble` gained an `SRPDefaultUnlit` back face pass and `_BackColor`, `_BackEdgeColor`).
+- Ground: hex seams stronger, per cell tint up, and the dirt path (the faint vertical band) softened through a new
+  `_PathStrength` (0.55) on `TW/Ground`. Leaf slots darker teal (`#1E5249`, `#2F6E60`), Rock warmer (`#B2A386`).
+- Props: `build_environment.py` rocks are chunkier and faceted with `Stone` top faces (lighter tops), grass tufts and
+  flowers are larger. Canyon Pass ridges are continuous double rows of boulders with pines behind; canyon sockets are now
+  generated before the ridges so defender squads keep room.
+- Balance (ALL ESTIMATES, tuned with `Tests/PlayMode/BotPlaythroughTests`): base enemy multipliers retuned in
+  `ProgressionBuilder.Specs`; `BattleConfig.meterGrowthPerCall` (each reinforcement call raises the next requirement) so
+  researched squads no longer get near endless backup; `ReinforcementMeter.Growth` and `Calls` added.
+- Audio: `SoundEntry.category` (`SoundCategory`) and per category multipliers on `SoundLibrary` (shots quiet, UI moderate,
+  explosions and jingles full, music 0.28). Chosen without listening.
+- New editor and test tools: `TactileWars.EditorTools.ProjectValidator.Run` (writes `Logs/validation.txt`),
+  `Tests/PlayMode/PerfSampler` (uncapped frame timing plus render counters), `AnimationStateTests`, `SoldierLineupCapture`
+  (category `Lineup`), `BotPlaythroughTests` (category `Bot`), capture `battle_u_formation.png` for the ps_12 comparison.

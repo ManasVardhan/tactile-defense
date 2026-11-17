@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dd7fb9bc1f654382a3d6105a1824ccc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.CameraRig.CameraConfig
-  elevation: 35
+  elevation: 31
   yaw: 0
   screenSoldierHeights: 33
   soldierHeight: 1

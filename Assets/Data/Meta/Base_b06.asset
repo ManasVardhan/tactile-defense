@@ -19,7 +19,7 @@ MonoBehaviour:
   difficulty: 6
   requiredLevel: 5
   rewardMultiplier: 1.95
-  enemyHealthMult: 1.26
+  enemyHealthMult: 1.45
   enemyDamageMult: 1.2
   layout: {fileID: 11400000, guid: 700a36ba8c87b4d14b357ac3edeacb39, type: 2}
   map: {fileID: 11400000, guid: 34eab83668f3647808993a774755e220, type: 2}

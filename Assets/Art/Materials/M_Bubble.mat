@@ -25,11 +25,13 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _CenterAlpha: 0.16
+    - _CenterAlpha: 0.1
     - _Highlight: 0.9
     - _RimAlpha: 0.95
     - _RimPower: 2.2
     m_Colors:
+    - _BackColor: {r: 0.93, g: 0.93, b: 0.9, a: 0.62}
+    - _BackEdgeColor: {r: 0.66, g: 0.66, b: 0.64, a: 0.85}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

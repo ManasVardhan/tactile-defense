@@ -24,9 +24,9 @@ MonoBehaviour:
   arcHeight: 0
   burstCount: 3
   burstGap: 0.075
-  hitSplatChance: 0.35
-  missSplatChance: 0.6
-  splatSize: 1
+  hitSplatChance: 0.3
+  missSplatChance: 0.25
+  splatSize: 1.4
   impactShake: 0
   heavy: 0
   fireSound: 0

@@ -110,18 +110,23 @@ def bush_b():
 
 
 def rock(name, size, n, seed):
+    """Phase 8: chunkier, faceted, warmer rocks with a lighter top face (baked two-tone like the trees),
+    so they read as boulders at game size instead of grey pebbles."""
     rnd = random.Random(seed)
     parts = []
     base = size / 2
     for i in range(n):
-        r = base * (1.0 if i == 0 else rnd.uniform(0.45, 0.6))
-        off = (0, 0) if i == 0 else (rnd.uniform(0.6, 0.85) * base * math.cos(i * 2.3),
-                                     rnd.uniform(0.6, 0.85) * base * math.sin(i * 2.3))
-        sz = (rnd.uniform(1.0, 1.2), rnd.uniform(0.85, 1.0), rnd.uniform(0.62, 0.75))
-        p = blob(r, "Rock", (off[0], off[1], r * sz[2] * 0.72), rot=(0, 0, rnd.uniform(0, 90)),
-                 scale=sz, subdiv=1, jitter=0.18, seed=seed * 7 + i, bevel=r * 0.06, bseg=1)
+        r = base * (1.0 if i == 0 else rnd.uniform(0.5, 0.68))
+        off = (0, 0) if i == 0 else (rnd.uniform(0.62, 0.85) * base * math.cos(i * 2.3),
+                                     rnd.uniform(0.62, 0.85) * base * math.sin(i * 2.3))
+        sz = (rnd.uniform(1.0, 1.25), rnd.uniform(0.9, 1.05), rnd.uniform(0.72, 0.9))
+        p = blob(r, "Rock", (off[0], off[1], r * sz[2] * 0.62), rot=(0, 0, rnd.uniform(0, 90)),
+                 scale=sz, subdiv=1, jitter=0.22, seed=seed * 7 + i, bevel=r * 0.08, bseg=1)
         parts.append(p)
-    return [join(parts, name, smooth_angle=8)]
+    o = join(parts, name, smooth_angle=5)
+    # Lighter top faces (sun lit tops, reference rocks and walls read with a pale top).
+    C.recolor_faces(o, "Stone", lambda poly, i: o.data.materials[poly.material_index].name == "Rock" and poly.normal.z > 0.72)
+    return [o]
 
 
 def rock_a():
@@ -137,14 +142,15 @@ def rock_c():
 
 
 def grass_tuft():
+    """Phase 8: bigger, denser tuft so it reads at game size."""
     rnd = random.Random(8)
     parts = []
-    for i in range(7):
-        a = i / 7 * 360 + rnd.uniform(-15, 15)
-        tilt = rnd.uniform(10, 30)
+    for i in range(10):
+        a = i / 10 * 360 + rnd.uniform(-15, 15)
+        tilt = rnd.uniform(12, 34)
         m = "LeafLight" if i % 3 else "Leaf"
-        parts.append(cyl(0.06, rnd.uniform(0.32, 0.5), m, (0.04 * math.cos(math.radians(a)),
-                                                          0.04 * math.sin(math.radians(a)), 0),
+        parts.append(cyl(0.09, rnd.uniform(0.5, 0.78), m, (0.06 * math.cos(math.radians(a)),
+                                                          0.06 * math.sin(math.radians(a)), 0),
                          rot=(tilt, 0, a), seg=4, r2=0.0, bevel=0, scale=(1, 0.45, 1)))
     return [join(parts, "GrassTuft", smooth_angle=60)]
 
@@ -159,11 +165,11 @@ def flower(name, heads, seed):
         petal_n = 6
         for k in range(petal_n):
             a = k / petal_n * 2 * math.pi + rnd.uniform(0, 0.3)
-            parts.append(sphere(0.06, "Accent", (x * 0.3 + 0.07 * math.cos(a),
-                                                  y * 0.3 + 0.07 * math.sin(a), cz),
+            parts.append(sphere(0.095, "Accent", (x * 0.3 + 0.1 * math.cos(a),
+                                                  y * 0.3 + 0.1 * math.sin(a), cz),
                                 scale=(1.0, 0.7, 0.35), rot=(0, 0, math.degrees(a)),
                                 seg=6, rings=4))
-        parts.append(sphere(0.045, "Wood", (x * 0.3, y * 0.3, cz + 0.015), scale=(1, 1, 0.6),
+        parts.append(sphere(0.065, "Wood", (x * 0.3, y * 0.3, cz + 0.02), scale=(1, 1, 0.6),
                             seg=8, rings=4))
         parts.append(cyl(0.05, 0.03, "LeafLight", (x * 0.3 + 0.04, y * 0.3, h * 0.45),
                          rot=(0, 60, 0), seg=4, r2=0.0, bevel=0, scale=(1, 0.4, 2.5)))
@@ -171,11 +177,11 @@ def flower(name, heads, seed):
 
 
 def flower_a():
-    return flower("Flower_A", [(0, 0, 0.32)], 1)
+    return flower("Flower_A", [(0, 0, 0.4)], 1)
 
 
 def flower_b():
-    return flower("Flower_B", [(0, 0, 0.3), (0.32, 0.18, 0.22), (-0.28, 0.12, 0.25)], 2)
+    return flower("Flower_B", [(0, 0, 0.38), (0.4, 0.22, 0.28), (-0.36, 0.15, 0.32)], 2)
 
 
 def fence():

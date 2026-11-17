@@ -66,36 +66,13 @@ namespace TactileWars.Tests
             while (Time.realtimeSinceStartup < end && !bm.Over && (bm.Elapsed < 7f || ProjectileManager.Instance.ActiveCount < 12)) yield return null;
             int players = squad.AliveCount;
 
-            var mainThread = ProfilerRecorder.StartNew(ProfilerCategory.Internal, "Main Thread", 1);
-            var gcAlloc = ProfilerRecorder.StartNew(ProfilerCategory.Memory, "GC Allocated In Frame", 1);
-            const int frames = 240;
-            var cpu = new List<double>(frames);
-            var main = new List<double>(frames);
-            long gcTotal = 0; int gcFrames = 0;
-            var sw = new System.Diagnostics.Stopwatch();
             int maxProjectiles = 0;
-            for (int i = 0; i < frames; i++)
-            {
-                sw.Restart();
-                cam.Render();
-                yield return null;
-                sw.Stop();
-                cpu.Add(sw.Elapsed.TotalMilliseconds);
-                if (mainThread.Valid && mainThread.LastValue > 0) main.Add(mainThread.LastValue * 1e-6);
-                if (gcAlloc.Valid) { gcTotal += gcAlloc.LastValue; gcFrames++; }
-                maxProjectiles = Mathf.Max(maxProjectiles, ProjectileManager.Instance.ActiveCount);
-            }
-            mainThread.Dispose();
-            gcAlloc.Dispose();
-            cpu.Sort(); main.Sort();
-            double avg = 0; foreach (var v in cpu) avg += v; avg /= cpu.Count;
-            double mavg = 0; foreach (var v in main) mavg += v; if (main.Count > 0) mavg /= main.Count;
+            var sampler = new PerfSampler();
+            yield return sampler.Run(cam, 300, () => maxProjectiles = Mathf.Max(maxProjectiles, ProjectileManager.Instance.ActiveCount));
             string report =
-                $"Editor play mode (batchmode, Apple M2), {frames} frames, Battle.unity in DEFENSE mode on the home map ({props} runtime props)\n" +
+                $"Editor play mode (batchmode, Apple M2), Battle.unity in DEFENSE mode on the home map ({props} runtime props), 1280x720 render target\n" +
                 $"Attackers alive at window start: {players}, defender soldiers at load: {defenders}, structures and traps: {structures}, AI state {BattleSetup.Instance.attackerAI.Current}\n" +
-                $"Wall time per frame incl. extra camera render: avg {avg:0.00} ms, median {cpu[cpu.Count / 2]:0.00} ms, p95 {cpu[(int)(cpu.Count * 0.95f)]:0.00} ms\n" +
-                (main.Count > 0 ? $"Profiler 'Main Thread': avg {mavg:0.00} ms, median {main[main.Count / 2]:0.00} ms, p95 {main[(int)(main.Count * 0.95f)]:0.00} ms\n" : "Profiler 'Main Thread' recorder unavailable\n") +
-                (gcFrames > 0 ? $"GC allocated per frame (editor, includes editor and test overhead): avg {gcTotal / (double)gcFrames:0} bytes\n" : "") +
+                sampler.Report +
                 $"Peak live projectiles: {maxProjectiles}, splats: {PaintSplatManager.Instance.Count}, kills so far: {bm.Kills}, battle time {bm.Elapsed:0.0}s\n";
             Debug.Log("[Perf]\n" + report);
             File.WriteAllText(Path.GetFullPath(Path.Combine(Application.dataPath, "../Logs/perf_defense.txt")), report);
