@@ -1,27 +1,27 @@
 # Tactile Wars Recreation: Reference Comparison
 
-Each row: what the references show, what the recreation targets, and the known deviation. Evidence from `Docs/References/VISUAL_ANALYSIS.md` (VA) and `Docs/References/web/RESEARCH_MECHANICS.md` (RM). Image filenames are relative to `Docs/References/playstore/` (ps_*) and `Docs/References/video_frames/` (f_*, burst_*). Playstore images ps_01 to ps_05 and ps_07 to ps_11 are marketing composites (lower-corner art is promo, not in-game scale). Video frames are 640x360 upscaled to 1280x720 with a streamer facecam bottom right (not UI). Status in the first column: V = verified in references, I = inferred, E = our estimate.
+Each row: what the references show, what the recreation targets, and the known deviation. Evidence from `Docs/References/VISUAL_ANALYSIS.md` (VA) and `Docs/References/web/RESEARCH_MECHANICS.md` (RM). Image filenames are relative to `Docs/References/playstore/` (ps_*) and `Docs/References/video_frames/` (f_*, burst_*). Playstore images ps_01 to ps_05 and ps_07 to ps_11 are marketing composites (lower-corner art is promo, not in-game scale). Video frames are 640x360 upscaled to 1280x720 with a streamer facecam bottom right (not UI). Updated 2026-11-17: the Known deviation column now states what was actually built. Status in the first column: V = verified in references, I = inferred, E = our estimate.
 
 ## 1. Camera
 
 | Evidence | Recreation target | Known deviation |
 |---|---|---|
 | Orthographic or very low perspective: constant hex size top to bottom (ps_12), constant wall width (f_0011) [I, "likely orthographic"] | Orthographic camera | Original is 2D sprites; ours is 3D (owner requirement) |
-| Pitch about 25 to 30 degrees from ring ellipse ratio, ring 450x175 in f_0056, 310x155 in ps_12 [V measurement, I conclusion] | 35 degrees (range 30 to 40) | We chose the higher end so 3D soldiers keep a readable face and top; ring ratio will be about 0.57 at 35 degrees versus 0.39 to 0.5 observed. Tunable. |
-| Soldiers about 3.5 percent of screen height, screen about 25 to 30 soldier-heights tall (ps_12, burst_A_040) [V approx] | orthoSize 14 for 28 units | Exact device resolution unknown |
+| Pitch about 25 to 30 degrees from ring ellipse ratio, ring 450x175 in f_0056, 310x155 in ps_12 [V measurement, I conclusion] | 35 degrees planned, 31 shipped (range 30 to 40) | Lowered from 35 to 31 in the polish pass so the ring ellipse is closer to ps_12; still above the observed 25 to 30. Tunable (`CameraConfig.elevation`). |
+| Soldiers about 3.5 percent of screen height, screen about 25 to 30 soldier-heights tall (ps_12, burst_A_040) [V approx] | orthoSize 14 for 28 units planned; shipped `screenSoldierHeights` 33 | 33 soldier-heights because the 3D helmet dome reads larger than 1.0; soldiers measure about 22 to 28 px tall at 720p. Exact device resolution unknown |
 | Constant zoom, loose follow, squad stays in middle third (f_0010 vs f_0083, f_0033 to f_0048) [V] | Smooth damp follow on centroid | Follow smoothing time is E |
 | Off-screen allies and enemies shown as edge-clamped helmet badges (f_0056, f_0080) [V] | Same, colored per team | None known |
-| Pre-battle map is a zoomed-out hex territory view (f_0004, f_0005, ps_09) [V] | Simple hex map screen in MainMenu | Our map is a stub list of AI bases, not a Colors War map |
+| Pre-battle map is a zoomed-out hex territory view (f_0004, f_0005, ps_09) [V] | Simple hex map screen in MainMenu | Not built as a map: a card list of ten AI bases (Attack screen) over a menu backdrop; no Colors War map |
 
 ## 2. Characters
 
 | Evidence | Recreation target | Known deviation |
 |---|---|---|
 | Chibi, helmet about half the height, white face, two dot eyes, tiny body (ps_01, ps_05, ps_06, ps_12) [V from promo, small in game] | Soldier.fbx with the same proportions | In-game sprite detail is too small to verify legs, walk cycle or outline width (VA section 9); ours is invented |
-| Thin white rim on helmet in game (f_0056, ps_12) [V] | Rim light or outline in shader | Rim is a shader effect rather than a sprite outline |
+| Thin white rim on helmet in game (f_0056, ps_12) [V] | Rim light or outline in shader | Built as an inverted-hull outline (`TW/ToonOutline`); the white edge is heavier than the reference rim (Comparisons/NOTES.md 03) |
 | Chunky grey gun, almost body length (ps_01, ps_05) [V promo] | Soldier gun mesh | In game it is a dark stub (ps_06); our gun is slightly larger for 3D readability |
 | Teams are recolors of one soldier (ps_12 teal, f_0056 red, ps_06 green) [V] | `TeamColor` material swap | Purple hex not trusted (VA section 8); ours is E |
-| Leader/mercenary with pointed helmet spike (ps_04, f_0080) [V] | Optional mercenary with a spiked helmet | Names and abilities UNVERIFIED |
+| Leader/mercenary with pointed helmet spike (ps_04, f_0080) [V] | Optional mercenary with a spiked helmet | Built as Hero.fbx (squad leader) and three mercenaries Brick, Banner, Spark that all reuse the Hero model; names and abilities are ours (ability is a text label) |
 | Soft blob shadow under units (ps_12) [V] | Blob shadow quad | None |
 | Squad 40 to 60 on screen (ps_08 about 50, ps_12 about 50 to 60, f_0056) [V approx] | Start 40, cap 60 | Real cap and rules unknown |
 
@@ -30,8 +30,8 @@ Each row: what the references show, what the recreation targets, and the known d
 | Evidence | Recreation target | Known deviation |
 |---|---|---|
 | Tap to move, draw to change formation (RM section 2) [V] | Same, via `PointerInput` | Tap/drag thresholds E |
-| Heart stroke with inner solid pink line and dashed white outer line (ps_08) [V, promo composite] | `StrokeRenderer` draws solid plus dashed | The in-game video shows only a thin dashed red line (f_0056); we use the promo style, E |
-| Soldiers line up along the stroke, about 1.0 to 1.3 widths apart (ps_08) [V approx] | Spacing 1.15 widths | Heart-spacing measured on a promo image |
+| Heart stroke with inner solid pink line and dashed white outer line (ps_08) [V, promo composite] | `StrokeRenderer` draws solid plus dashed | The in-game video shows only a thin dashed red line (f_0056); we use the promo style, E; ours also has a soft glow ribbon the reference lacks |
+| Soldiers line up along the stroke, about 1.0 to 1.3 widths apart (ps_08) [V approx] | Spacing 1.15 widths planned; `minSpacing` 0.7 shipped | Min spacing lowered to 0.7 so helmets do not overlap; heart-spacing was measured on a promo image |
 | Idle blob 0.4 to 0.7 widths apart (f_0056, burst_A_040) [V approx] | 0.55 widths | None known |
 | Chain formation: soldiers march onto the line single file, forming C, spiral, line, arc, ring (f_0056, f_0061, f_0063, f_0077, ps_06) [V] | Staggered slot arrival along the stroke | Timing "1 to 2 s" from 10 fps burst of a 30 fps 360p source, so sub-second behavior is E |
 | Ring with spiral blot at the squad anchor; ring lags the squad (f_0056, burst_A_001 to 040) [V] | `SquadRing` prefab, `settleSeconds` 1.5 | Exact ring size and lag E |
@@ -57,14 +57,14 @@ Each row: what the references show, what the recreation targets, and the known d
 
 | Evidence | Recreation target | Known deviation |
 |---|---|---|
-| Small tanks with exhaust puffs (f_0045 to f_0052, burst_B) [V] | Tank.fbx | Behavior E |
+| Small tanks with exhaust puffs (f_0045 to f_0052, burst_B) [V] | Tank.fbx | Behavior E; Sniper tower and Geyser were added later as own designs (their behaviour is tested) |
 | Stone bunker with arched door (f_0041) [V] | Bunker.fbx | Behavior E |
 | Turrets with tank treads, octopus emblem, large barrel (ps_03, ps_09 promo and map icons only) [V look, in-game behavior UNVERIFIED] | Turret.fbx without the emblem | Our own design |
 | Fenced enclosures with soldiers in a grid and flags (f_0038 to f_0040, burst_C_001) [V] | Enemy squad formations around a flag | Not a separate structure type in our build |
 | Long beige crenellated walls, wooden X barricades, cardboard boxes (f_0011, f_0017, ps_12) [V] | Wall, Fence, Crate, Sandbags | Wall HP and function UNVERIFIED |
 | Spawn pad holes with skull (ps_06, ps_12) [V] | Decal prop | Function unknown, decorative or spawn use |
 | Dark disc skull marks on the ground (ps_12) [V look] | Mine.fbx | Mines "in motion" and detonation never seen (VA section 9); behavior E |
-| Cannon, tesla antenna (names in RM section 4) [V names] | Our own designs | Appearance UNVERIFIED |
+| Cannon, tesla antenna (names in RM section 4) [V names] | Our own designs | Appearance UNVERIFIED; Tesla is now a working defense (`Tesla.prefab`); heli-tower, tracker, vannon, robotank and trapped slab are not implemented |
 | HQ building not distinctly seen (VA section 5) | Optional HQ.fbx | UNVERIFIED that it exists |
 | Pickups: gold star coins fall from destruction, parachute crates (f_0037, ps_05) [V] | Star coin pickup | Parachute crates skipped |
 
@@ -72,9 +72,9 @@ Each row: what the references show, what the recreation targets, and the known d
 
 | Evidence | Recreation target | Known deviation |
 |---|---|---|
-| Warm grey-brown hex ground with orange lava cracks (f_0056 #7C6F66, ps_12 #7F7867) [V] | Hex ground shader, secondary biome | Lava is a second map |
+| Warm grey-brown hex ground with orange lava cracks (f_0056 #7C6F66, ps_12 #7F7867) [V] | Hex ground shader, secondary biome | Lava biome NOT built; only the sand biome exists (three sand layouts: Home Base, Canyon Pass, Fort Ridge) |
 | Sand/desert biome #C7B78D to #E5DCBF (ps_02, ps_08, ps_10) [V] | Primary biome, sand/olive per brief | None |
-| Green biome #998D75 with rain (ps_06) [V] | Optional third biome | Rain optional |
+| Green biome #998D75 with rain (ps_06) [V] | Optional third biome | Not built; no rain VFX |
 | Pine and spike trees, tents, barricades (ps_12, f_0010) [V] | Tree_A/B/C, Tent, Fence | Modeled in 3D, flat color |
 | Map boundary walls and dark fog (f_0009, ps_09) [V] | Walls and a dark edge fade | Fog implemented as a vignette plane, E |
 | Soft ambient light, no hard shadows (VA section 6) [V] | Ambient plus faint directional, blob shadows | 3D shading inevitably adds some form shading |
@@ -87,17 +87,17 @@ Each row: what the references show, what the recreation targets, and the known d
 | Round squad badge top-right with partial fill (f_0056, f_0080, ps_12) [V] | Reinforcement meter badge | Meaning inferred |
 | POW hex badge (ps_06, f_0030, f_0080) [V look] | POW summon button | Function E |
 | Chunky rounded outlined display font, white with dark outline (f_0005, ps_01 to ps_03) [V] | OFL font such as Lilita One | Original font is unidentified; ours is an open substitute |
-| Victory card: gold x23, EXP x298, rank, MEDALS, SURVIVORS, COMBOS, TIME, grade letters, ribbon "A" (f_0086) [V] | Same layout with our assets | Grade formula E |
+| Victory card: gold x23, EXP x298, rank, MEDALS, SURVIVORS, COMBOS, TIME, grade letters, ribbon "A" (f_0086) [V] | Same layout with our assets | Layout differs: ours has survivors, time and kills with a rosette and a level-up bar, no medals or combos, REPLAY and CONTINUE buttons; grade formula E |
 | World map with Attack button, locks, 75/140 fractions, tab icons, v1.2.2 (f_0090 to f_0093) [V] | Simple hex map and opponent list | No Colors War map |
 | Colors War menu with six faction hexes (f_0094) [V] | Faction picker | Text sources list Blue and Pink where the menu shows teal and magenta (conflict) |
-| Defeat screen [not seen] | Our design | UNVERIFIED |
-| Pre-battle VS splash with tip bar (f_0008, f_0012) [V] | VS card and tip line | Tip text ours |
+| Defeat screen [not seen] | Our design | Built as our own card (consolation rewards, BACK TO BASE and RETRY); UNVERIFIED against the original |
+| Pre-battle VS splash with tip bar (f_0008, f_0012) [V] | VS card and tip line | NOT built; the attack list starts the battle directly (tips appear on the defeat card and in the tutorial overlay) |
 
 ## 8. Audio
 
 | Evidence | Recreation target | Known deviation |
 |---|---|---|
-| None. No source describes audio or music (RM section 8; VA section 9) | Synthesized soft pops, splats, stingers, two loops | Entire audio direction is E; the video had no usable audio analysis |
+| None. No source describes audio or music (RM section 8; VA section 9) | Synthesized soft pops, splats, stingers, two loops | Built: 42 SFX files and 2 loops. Entire audio direction is E; never listened to by a human |
 
 ## 9. Meta
 
@@ -106,8 +106,8 @@ Each row: what the references show, what the recreation targets, and the known d
 | Gold, Prisms, XP, research locked to level and paid in gold; no energy (RM section 6) [V] | Same | Prisms earned free, no IAP (D13) |
 | Four leagues, rank by wins (RM section 7) [V] | Four placeholder leagues | Names and thresholds E |
 | Six color factions, cannot attack own color (RM section 7) [V] | `TeamColorId` six values | No faction perks |
-| Alliances (App Store, press release) [V advertised], MMOs saw none [conflict] | Stub with synthetic roster | No real alliances |
-| Async PvP against real bases (RM section 1) [V] | Seeded AI bases | No real players |
+| Alliances (App Store, press release) [V advertised], MMOs saw none [conflict] | Stub with synthetic roster | Service stub only (`LocalOfflineProvider.GetAlliances`), no alliance screen; no real alliances |
+| Async PvP against real bases (RM section 1) [V] | Seeded AI bases | Ten AI bases; no real players; raids on your base are simulated and labelled so |
 | Base editing with space and budget caps, consumed defenses rebought with gold (RM section 5) [V] | Same rules | Numbers E, simulated raids to consume defenses |
 | Keys and chests (gamebrain, snippets) [V partial, may be post-launch] | Not included | Out of scope |
 | Release date Aug 13 or 14, 2015, last version 1.7.8 in 2018; shutdown status UNVERIFIED (RM section 9) | n/a | n/a |

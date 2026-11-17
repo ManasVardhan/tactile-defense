@@ -49,3 +49,6 @@ Notes on reading these:
 
 ## Not done
 - No device (iOS or Android) profiling, no GPU timing, no thermal test, no player build memory snapshot.
+
+## Addendum: final regression run, 2026-11-17
+The same two `Perf` tests were re-run as part of the final full PlayMode run (outputs overwrote `Logs/perf_battle.txt` and `Logs/perf_defense.txt`). The numbers above are the earlier run; the final run measured: attack battle CPU main thread 9.60 ms average (p95 10.40 ms), about 4960 draw calls, 4919 batches median, about 1.30 M triangles, 526 bytes GC per frame; heavy defense battle 7.29 ms average (p95 7.89 ms), about 4130 draw calls, about 1.01 M triangles. The two runs agree within about 2 percent on CPU time. Still editor numbers on an M2; no device profiling.
