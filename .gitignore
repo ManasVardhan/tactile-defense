@@ -1,0 +1,15 @@
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+*.csproj
+*.sln
+*.slnx
+.DS_Store
+.unity.lock/
+Docs/References/video_frames/source.mp4
+Tools/blender/out/
+*.blend1
