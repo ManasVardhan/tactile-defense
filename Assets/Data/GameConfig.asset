@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5db3230df95564900a9edfa2e120c20c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Core.GameConfig
+  playerTeam: 3
+  enemyTeam: 6
+  palette: {fileID: 11400000, guid: 56bec7ad47a3347cf894cbc9f1e00421, type: 2}
+  visuals: {fileID: 11400000, guid: 4f322326ad70c4b1e97858c8d5482593, type: 2}
+  mapMin: {x: -18, y: 1}
+  mapMax: {x: 18, y: 108}

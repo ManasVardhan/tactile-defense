@@ -176,3 +176,89 @@ and looked. Record what you verified and how in your final report.
 ## Deviations
 
 (append dated notes here)
+
+### 2026-11-17 Structures and environment props (environment/prop agent)
+
+Scripts: `Tools/blender/tw_env_common.py` (shared helpers), `build_structures.py`,
+`build_environment.py`, `build_lineups.py`, `verify_env_fbx.py`.
+- New material slots: `Canvas` (tent cloth, preview #E6DAB9) and `Stone` (beige wall,
+  bunker, HQ and pad stone, preview #CDBE9B). Unity builders should map them like the others.
+- `Leaf`/`LeafLight` and some props use baked two-tone faceting: faces turned toward the key
+  light use `LeafLight`. Keep `LeafLight` clearly lighter than `Leaf` in Unity.
+- `Sand` is used for sandbags and tent seams (preview #B5A174, darker than the ground #C2B48C).
+  If the ground uses a `Sand` material, keep the prop `Sand` darker or sandbags will vanish.
+- FBX exporter bug workaround: with `bake_space_transform=True`, Blender 5.3's exporter writes
+  wrong local transforms for objects two levels deep (Muzzle under Head under Base, Flag under
+  Pole under Pad). `tw_env_common.patch_fbx_exporter()` monkeypatches
+  `io_scene_fbx.fbx_utils.ObjectWrapper.fbx_object_matrix` at export time so every child gets
+  `G @ local @ G^-1`. Export settings are otherwise exactly the contract ones. Verified by
+  dumping Lcl Translation/Rotation from the FBX files. Any other agent exporting nested
+  non-bone hierarchies with baking is affected by the same bug.
+- Pivots: Turret `Head` origin on the yaw axis at y 0.82; Tank `Turret` at y 0.96; Cannon
+  `Barrel` on the trunnion at y 0.78 with a rest pitch of 8 degrees up (local X rotation).
+  Every `Muzzle` is an empty with identity local rotation, its +Z (Unity) along the bore.
+- CapturePoint hierarchy is `Pad` > `Pole` > `Flag`; `Flag` origin is the attach point at the
+  pole top (local y 3.0 above the Pole origin), cloth extends toward Unity +X.
+- Mine `Paint` cap is a raised ring around the skull emblem.
+- Wall is 2.0 long on X, tiles every 2.0 units; WallCorner is a 0.98 square pillar centered at
+  its origin, to be placed at wall junctions/ends. HQ is 5 x 5, roof top about 3.9, flag mount
+  tip 4.6. Tent.fbx, SpawnHatch.fbx, Wall.fbx, WallCorner.fbx (Structures) and HexTile.fbx
+  (Environment, 3.0 across flats, flats facing Unity +-Z) are extra files not in the folder list.
+
+- 2026-11-17 (character artist, Tools/blender/build_soldier.py, build_flag.py):
+  - Armature node orientation: Blender's FBX exporter does not apply `bake_space_transform`
+    to armatures (it wrote Lcl Rotation -90 X on `Soldier_Rig`). The scripts therefore author
+    the rig object pre-rotated +90 X in Blender so the exported `*_Rig` node, `Root` bone and
+    `*_Mesh` node all have identity transforms (checked with Tools/blender/fbx_inspect.py).
+    Export settings are otherwise exactly the contract ones. FBX GlobalSettings: Y up, +Z front,
+    UnitScaleFactor 100 with meter-valued data (Unity file scale 1). Characters face +Z, Y up.
+  - Takes are exported from NLA strips (`bake_anim_use_nla_strips=True`), so FBX take names
+    are exactly `Idle, Run, Shoot, Hit, Die, Cheer` (Blender's re-importer shows them as
+    `<Rig>|<Take>`; that prefix is Blender import naming only). 30 fps, every frame keyed.
+    Looping takes (Idle 0-60, Run 0-15, Cheer 0-24) have last frame equal to first.
+  - Extra bone `Muzzle` (child of `Gun`, no weights) at the barrel tip. `Root` has no weights;
+    vertex weights are rigid per part except the torso (Hips to Spine blend).
+  - `Skin` is used for the face and the white mitten hands. Hero.fbx has no `Skin` slot
+    (visor face: `Dark` visor with `Accent` eyes).
+  - Variants use the same rig and take names: `SoldierHeavy.fbx` (1.0 tall, shoulder bazooka),
+    `Hero.fbx` (1.5 tall boxy trooper). Flag.fbx has two meshes: `Pole` (origin at base) and
+    `Cloth` (origin at the top attach point, Lcl Translation (0, 1.52, 0); UV.x is 0 at the pole
+    and 1 at the free edge for a vertex-shader wave). Flag is static (no armature).
+
+### 2026-11-17 Unity gameplay and rendering, milestone one (Unity lead agent)
+
+- `TeamColorId` gains `Teal = 6`. The contract names Teal as the default enemy color but the enum
+  lacked it. Player default Red, enemy default Teal (`Assets/Data/GameConfig.asset`).
+- Characters (Soldier, SoldierHeavy, Hero) remap their slots to outlined unit materials `M_U_<Slot>`
+  (shader `TW/ToonOutline`, white inverted hull at about 1.25 px) for readability at tiny size.
+  Props and structures use `M_<Slot>` (`TW/Toon`). Per team shared materials live in
+  `Assets/Art/Materials/M_Team_<Team>_*` and are swapped in by `TeamTint` (no per renderer
+  instances, SRP batcher friendly). `Canvas` and `Stone` slots are mapped like the others.
+- Role mapping: `Hero.fbx` is the player squad leader (one per squad, scale 0.85), `SoldierHeavy.fbx`
+  is the enemy flag bearer, `Flag.fbx` is carried by the bearer and stays inside the bubble.
+- Scale and camera: soldier prefabs use model scale 0.9 and the camera shows 33 soldier heights
+  (`CameraConfig.screenSoldierHeights`), not 25 to 30, because the authored helmet dome reads larger
+  than 1.0 at 35 degrees. Measured result: soldiers are about 22 to 28 px tall at 720 p, matching
+  the reference 3.5 percent. Formation `minSpacing` is 0.7 (task said about 0.6) to avoid helmets
+  overlapping; both are estimates in ScriptableObjects.
+- Units have no colliders. Obstacle avoidance uses `Physics.OverlapSphereNonAlloc` against
+  `Obstacle | Structure`; taps on bubbles raycast the `Pickup` layer (trigger colliders). The ground
+  is not a collider: pointer rays intersect the y = 0 plane mathematically. Collision matrix: unit
+  layers ignore each other and Projectile/Pickup; Projectile ignores Projectile/Pickup; Pickup only
+  receives raycasts; Structure/Obstacle ignore each other.
+- Mines are not targetable (hidden traps); they trigger on proximity only.
+- The flag bearer bubble's ground arc fills in the attacker's (player) color as the bearer takes
+  damage. Interpretation of ps_12 and burst_B_030, where enemy bubbles carry a red arc.
+- Capture points and defender props with TeamColor slots (SpawnHatch, HQ, TeslaAntenna) start in
+  the defender color; a captured point repaints to the player color.
+- Closed strokes always spread evenly around the full loop (spacing may exceed `maxSpacing`);
+  extra rows for closed shapes fill rings inside the loop first, then rings outside it.
+- `AssetBuilder.BuildAll` keeps existing tunable values in `Assets/Data`; `BuildAllResetData` (menu
+  "Build Assets (reset tunables)") rewrites them from builder defaults.
+- `Screenshotter.CaptureAll` runs the PlayMode test category `Screenshots` through the Test Runner
+  API (gameplay needs play mode), then exits in batchmode. Command line equivalent:
+  `-runTests -testPlatform PlayMode -testCategory Screenshots`.
+- One MonoBehaviour or ScriptableObject per file named after the class (Unity serialization rule),
+  so config classes have their own files (WeaponConfig, CombatConfig, CameraConfig, TeamPalette,
+  TeamVisuals, EnemySquadConfig, BattlePrefabs, PooledVfx, ProjectileManager).
+- Only `Boot.unity` and `Battle.unity` exist for milestone one (no MainMenu or BaseEditor yet).

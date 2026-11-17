@@ -1,0 +1,317 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4348711568055691164
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3322724498878254997}
+  - component: {fileID: 3700108703328716594}
+  - component: {fileID: 3992703642354602833}
+  - component: {fileID: 1098600751534297490}
+  - component: {fileID: 7584997350527527493}
+  m_Layer: 9
+  m_Name: Cannon
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3322724498878254997
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4348711568055691164}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 118893789509119920}
+  - {fileID: 8216316009612592299}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3700108703328716594
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4348711568055691164}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b05894599e4114015b840ddf66f36053, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Combat.Health
+  team: 0
+  color: 0
+  kind: 0
+  max: 30
+  targetRadius: 0.35
+  aimHeight: 0.45
+  targetable: 1
+--- !u!114 &3992703642354602833
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4348711568055691164}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60eee5b2c2a584ee1a1213a09c61b9c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Structures.Cannon
+  config: {fileID: 11400000, guid: 06a262036f8464e5ab10d8694f817389, type: 2}
+  team: 1
+  modelRoot: {fileID: 118893789509119920}
+  muzzle: {fileID: 4575609475036689230}
+  tint: {fileID: 1098600751534297490}
+  healthArc: {fileID: 1283528307269361061}
+  bodyRenderers:
+  - {fileID: 1291769590236255455}
+  - {fileID: 3581298814065614879}
+  barrel: {fileID: 3783676516058099689}
+--- !u!114 &1098600751534297490
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4348711568055691164}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05fd1556c5cd44e81ae2169de559f9ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Units.TeamTint
+  baseTeamColor: {fileID: 2100000, guid: d06e0539a76364f5aa5896f140aba25b, type: 2}
+  baseTeamColorDark: {fileID: 2100000, guid: c8206aadf72384d4886c3e7ba1356a8c, type: 2}
+  basePaint: {fileID: 2100000, guid: c39c47ad68e14469490af39835bc3f29, type: 2}
+  unitVariant: 0
+  renderers:
+  - {fileID: 1291769590236255455}
+  - {fileID: 3581298814065614879}
+  applyOnStart: 0
+  startTeam: 1
+--- !u!65 &7584997350527527493
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4348711568055691164}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.054, y: 1.214458, z: 1.821542}
+  m_Center: {x: 0, y: 0.607229, z: -0.0585047}
+--- !u!1 &8837899676932952026
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8216316009612592299}
+  - component: {fileID: 3859370312269523885}
+  - component: {fileID: 2628406232363664562}
+  - component: {fileID: 1283528307269361061}
+  m_Layer: 0
+  m_Name: HealthArc
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8216316009612592299
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8837899676932952026}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0.04, z: 0}
+  m_LocalScale: {x: 3.2930374, y: 3.2930374, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3322724498878254997}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &3859370312269523885
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8837899676932952026}
+  m_Mesh: {fileID: 4300000, guid: 29dfb7ab316e34ecdbe593893c2d0c6e, type: 2}
+--- !u!23 &2628406232363664562
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8837899676932952026}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 4fb199335fdfd44cea30bd52b2795d01, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1283528307269361061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8837899676932952026}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 148351d98dbf2481dabf84b1221e1f44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Structures.HealthArc
+  arc: {fileID: 2628406232363664562}
+  alwaysVisible: 0
+--- !u!1001 &444972600423975003
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 3322724498878254997}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+      propertyPath: m_ReflectionProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -5215299815803115452, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+      propertyPath: m_ReflectionProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+      propertyPath: m_Name
+      value: Model
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+--- !u!4 &118893789509119920 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+  m_PrefabInstance: {fileID: 444972600423975003}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &1291769590236255455 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+  m_PrefabInstance: {fileID: 444972600423975003}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &3581298814065614879 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -5215299815803115452, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+  m_PrefabInstance: {fileID: 444972600423975003}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &3783676516058099689 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3652011956315678642, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+  m_PrefabInstance: {fileID: 444972600423975003}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &4575609475036689230 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4130654817409612565, guid: c3df969c957114266b28ffd212c0e2f9, type: 3}
+  m_PrefabInstance: {fileID: 444972600423975003}
+  m_PrefabAsset: {fileID: 0}

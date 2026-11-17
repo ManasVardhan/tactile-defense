@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d849143a76b6e45eb911275f3e42d3f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Battle.BattleConfig
+  captureRadius: 2.9
+  captureTime: 4
+  captureDecay: 0.08
+  perSoldierBonus: 0.03
+  maxSoldierBonus: 10
+  meterRequired: 30
+  perSoldierKill: 1
+  perStructureKill: 4
+  perSquadWipe: 3
+  reinforcementCount: 10
+  goldBase: 40
+  goldPerKill: 2
+  goldPerStructure: 20
+  goldVictoryBonus: 120
+  xpBase: 25
+  xpPerKill: 3
+  xpVictoryBonus: 150
+  defeatRewardFactor: 0.35

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63364e6ff008e43cd90878682a10ada7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Units.UnitConfig
+  maxHealth: 45
+  targetRadius: 0.32
+  aimHeight: 0.45
+  weapon: {fileID: 11400000, guid: eeffee04d500049448c2fb02975bc2ad, type: 2}
+  maxSpeed: 4.6
+  acceleration: 20
+  deceleration: 26
+  arriveRadius: 1.4
+  deadZone: 0.08
+  separationRadius: 0.48
+  separationStrength: 3.5
+  turnSpeed: 720
+  obstacleRadius: 0.38

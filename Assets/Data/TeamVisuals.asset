@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e82c530109820488294eef822095f90a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Core.TeamVisuals
+  teams:
+  - id: 3
+    teamColor: {fileID: 2100000, guid: b32c54f5689324e3e835e748ffbbb45d, type: 2}
+    teamColorDark: {fileID: 2100000, guid: d9db8c0fb23294be2964f4552d2dc1dd, type: 2}
+    paint: {fileID: 2100000, guid: f6cf2587fcf324be8aa6507948b340bc, type: 2}
+    unitTeamColor: {fileID: 2100000, guid: 342c10ff40ec74fbe9f2ac84e89e8549, type: 2}
+    unitTeamColorDark: {fileID: 2100000, guid: cabbda7480e3c41fab6dba01d41e56a2, type: 2}
+    unitPaint: {fileID: 2100000, guid: 9a94b0e9f9a264b9a8e6d21d232ab18b, type: 2}
+    blot: {fileID: 2100000, guid: 5a9a0f6ed422b4a7eaed1ae2377e5fab, type: 2}
+    ring: {fileID: 2100000, guid: 838e5d687e9014b0d93c09502247b02a, type: 2}
+    splat: {fileID: 2100000, guid: f708bf46b8d234851ba556010a2c5bf4, type: 2}
+    projectile: {fileID: 2100000, guid: 2af056189c5f7462b9a1ebbd28652ad1, type: 2}
+    stroke: {fileID: 2100000, guid: c2003741539c741eb8c5ca1940c6fc4c, type: 2}
+    strokeGlow: {fileID: 2100000, guid: 3de9ff87e6bbe402e9ac7e9b7422ae99, type: 2}
+    arc: {fileID: 2100000, guid: 0395119295b6f485b8ad2cc3eccaac63, type: 2}
+  - id: 6
+    teamColor: {fileID: 2100000, guid: dbb66323950b142ce9c7e4204a420b92, type: 2}
+    teamColorDark: {fileID: 2100000, guid: fb91c09e486a44bb49ca951f94828172, type: 2}
+    paint: {fileID: 2100000, guid: 7addb502a09ac4ca3bf8612e264f2811, type: 2}
+    unitTeamColor: {fileID: 2100000, guid: c3012c16f87e14bc6b414d4dc874803d, type: 2}
+    unitTeamColorDark: {fileID: 2100000, guid: 820fe7296ba584667ac930e2ee8ce029, type: 2}
+    unitPaint: {fileID: 2100000, guid: 1a077e2c7306144279aa044eef201639, type: 2}
+    blot: {fileID: 2100000, guid: 05b01a75e54df4f6ca3035ba836a2a9b, type: 2}
+    ring: {fileID: 2100000, guid: 306f8f14888a64cf6b68745110f4bf55, type: 2}
+    splat: {fileID: 2100000, guid: bf016438ba149449993d4404434469ce, type: 2}
+    projectile: {fileID: 2100000, guid: 4c6bcac6df45349d0becec92a08506a3, type: 2}
+    stroke: {fileID: 2100000, guid: bfefd229750794456985aab6d18493f8, type: 2}
+    strokeGlow: {fileID: 2100000, guid: b98ade24c687e41b0b8b2ef5854b7dbb, type: 2}
+    arc: {fileID: 2100000, guid: 4fb199335fdfd44cea30bd52b2795d01, type: 2}
+  - id: 0
+    teamColor: {fileID: 2100000, guid: b3ce86aa0e611457fbd56ba8206907b4, type: 2}
+    teamColorDark: {fileID: 2100000, guid: 066030cb642a74a828f07f34655a79c6, type: 2}
+    paint: {fileID: 2100000, guid: 6ad0b130c06f848378dfba0d961000af, type: 2}
+    unitTeamColor: {fileID: 2100000, guid: 85c39b0aec378415b8f9d157ef85a236, type: 2}
+    unitTeamColorDark: {fileID: 2100000, guid: 5b08e47195ca9436cac7a2b765f114eb, type: 2}
+    unitPaint: {fileID: 2100000, guid: 9ddc86ecc0d474c198a5fa73fa80649f, type: 2}
+    blot: {fileID: 2100000, guid: 5552b49b7914a4a8192d77d10d02373c, type: 2}
+    ring: {fileID: 2100000, guid: 57a6c6ef5578b4ccfbda63ff79e5a5b5, type: 2}
+    splat: {fileID: 2100000, guid: 0ad860d9255a1498aa1a0745a6b0336b, type: 2}
+    projectile: {fileID: 2100000, guid: d8bef2c64bd6e4103994057f80d01757, type: 2}
+    stroke: {fileID: 2100000, guid: 5155fdb755baa497391bb06c6a58ce6b, type: 2}
+    strokeGlow: {fileID: 2100000, guid: 59ce59a4fa444498594deda333975f25, type: 2}
+    arc: {fileID: 2100000, guid: d29102f4b2a4b44609b68d50cd430478, type: 2}
+  - id: 1
+    teamColor: {fileID: 2100000, guid: c5312fed57ecc4cde8b62c098fb008b7, type: 2}
+    teamColorDark: {fileID: 2100000, guid: 6f968ca51aa3544bda7da57819707625, type: 2}
+    paint: {fileID: 2100000, guid: 3a20b7f64bd1247ef8f1af69ac2ce6e5, type: 2}
+    unitTeamColor: {fileID: 2100000, guid: d266c0737abea4c36a54345f0e15f936, type: 2}
+    unitTeamColorDark: {fileID: 2100000, guid: 36bcbb984bc29479294a6ed6d5a3fb6e, type: 2}
+    unitPaint: {fileID: 2100000, guid: 9a870b4f1e0594434999fe4b4b9bf6c5, type: 2}
+    blot: {fileID: 2100000, guid: 42819b85af8914972a6f39113d249d25, type: 2}
+    ring: {fileID: 2100000, guid: ad0de8d66b23447a5a0a5e4cb6e48e81, type: 2}
+    splat: {fileID: 2100000, guid: 3c3715f9a28fb4f388e1c18cfdbc8dc0, type: 2}
+    projectile: {fileID: 2100000, guid: 7f67e2b3cfeb048f2b9be883f30c1f2c, type: 2}
+    stroke: {fileID: 2100000, guid: d6ec0a074d39149db87c4f86fe086c84, type: 2}
+    strokeGlow: {fileID: 2100000, guid: 8833929954aba4f1e85108711283f900, type: 2}
+    arc: {fileID: 2100000, guid: 993abefbfd3264241af3323f7aad59a2, type: 2}
+  - id: 2
+    teamColor: {fileID: 2100000, guid: 0329d3ebd3ded4462a5654fe901bc19a, type: 2}
+    teamColorDark: {fileID: 2100000, guid: 3e1cf362f1a06496f882844b8e5197e3, type: 2}
+    paint: {fileID: 2100000, guid: 1540a62e224cb40c28fd39f6db901ffd, type: 2}
+    unitTeamColor: {fileID: 2100000, guid: 8458ea1ea21a1428ab1d57b7b0e3941f, type: 2}
+    unitTeamColorDark: {fileID: 2100000, guid: f596f57ce3a80453abb8feacd62fa46b, type: 2}
+    unitPaint: {fileID: 2100000, guid: 09e5fb794ae33411583c9ae390955b4b, type: 2}
+    blot: {fileID: 2100000, guid: 270358173e244480ea9f23732dbda282, type: 2}
+    ring: {fileID: 2100000, guid: 70fae469e43274ed391be13064d78113, type: 2}
+    splat: {fileID: 2100000, guid: 5e531362f75cb4c69b32a59fc9882234, type: 2}
+    projectile: {fileID: 2100000, guid: 29897cde4cb854df983599acea7e5143, type: 2}
+    stroke: {fileID: 2100000, guid: 72fc3942b89f344da947139cdb48ba3c, type: 2}
+    strokeGlow: {fileID: 2100000, guid: a388081f16326494ea7ecdfe5542c451, type: 2}
+    arc: {fileID: 2100000, guid: e89f5d599093a4ae9b4b00963446c66a, type: 2}
+  - id: 4
+    teamColor: {fileID: 2100000, guid: 314c82caada8141ecb75b59b3579bf3e, type: 2}
+    teamColorDark: {fileID: 2100000, guid: 75f32d6a433e949fbbef7be86f4120d2, type: 2}
+    paint: {fileID: 2100000, guid: b2b538867e7234edd90ac1923d316657, type: 2}
+    unitTeamColor: {fileID: 2100000, guid: e3083f9f230a143779709f01bd24a4f3, type: 2}
+    unitTeamColorDark: {fileID: 2100000, guid: cbdd875dbd69e41ab9ce99edbf6a1efe, type: 2}
+    unitPaint: {fileID: 2100000, guid: f779a9edb80e6480b8604973cf3d3c47, type: 2}
+    blot: {fileID: 2100000, guid: bb553866d9f0a434a992018a7e0dcabb, type: 2}
+    ring: {fileID: 2100000, guid: a693f7180e6b64712972fa6eb4e3c4c5, type: 2}
+    splat: {fileID: 2100000, guid: 1f6fb63600755447a82f1efb63cf5714, type: 2}
+    projectile: {fileID: 2100000, guid: 95f088ffba0dc437c9d016439cabcfee, type: 2}
+    stroke: {fileID: 2100000, guid: 847f940e4ff36423aac062a39308823c, type: 2}
+    strokeGlow: {fileID: 2100000, guid: 84f8f091515684f76be7233a077ba8f6, type: 2}
+    arc: {fileID: 2100000, guid: c171e7cb1e42b4256bba2c1d9794f994, type: 2}
+  - id: 5
+    teamColor: {fileID: 2100000, guid: e24c68d0eaf3b4c92beb0ca957dd05e2, type: 2}
+    teamColorDark: {fileID: 2100000, guid: 66f0dbc48c25b44fa95774e649a2457d, type: 2}
+    paint: {fileID: 2100000, guid: b8ab7242280d74962bd9d85c660e7620, type: 2}
+    unitTeamColor: {fileID: 2100000, guid: 4984cc8ec1af8408783ed58bad43b33d, type: 2}
+    unitTeamColorDark: {fileID: 2100000, guid: 7c325f1566d2f493cbc82da75307a644, type: 2}
+    unitPaint: {fileID: 2100000, guid: 1f742ef523f4a4e38854cfa17ffa4a88, type: 2}
+    blot: {fileID: 2100000, guid: 9caca1475af8b4e88ac4ca8d716e371f, type: 2}
+    ring: {fileID: 2100000, guid: 71d3c146db7ae4f5ba1123837f11f8ff, type: 2}
+    splat: {fileID: 2100000, guid: 649824c4c17f241dfa58299416cd275c, type: 2}
+    projectile: {fileID: 2100000, guid: cfacc9c44808d4fa8980440c96e4bb12, type: 2}
+    stroke: {fileID: 2100000, guid: 3d5336ba268094bb380154ae5976ce7e, type: 2}
+    strokeGlow: {fileID: 2100000, guid: 43595aa16c19845b495a284b78a3fd34, type: 2}
+    arc: {fileID: 2100000, guid: 053489a0135214430af935fe5cbf3cc4, type: 2}
+  flash: {fileID: 2100000, guid: 639d6b4ab6637424e935b4a85920ae2f, type: 2}
+  blobShadow: {fileID: 2100000, guid: 7b914b8556f4d40499c60b142647cba3, type: 2}
+  neutralArc: {fileID: 2100000, guid: ec01e3930739d463faf81efc1ef71daa, type: 2}

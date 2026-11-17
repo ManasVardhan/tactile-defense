@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc7ec11d0cddb4dd6a318993d367e1fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Units.EnemySquadConfig
+  soldierCount: 10
+  clusterRadius: 2.4
+  clusterJitter: 0.45
+  aggroRange: 10
+  leashDistance: 7
+  advanceSpeed: 1.3
+  standOffFraction: 0.75
+  soldier: {fileID: 11400000, guid: a8f47bbf17e4441f588434899266020a, type: 2}
+  flagBearer: {fileID: 11400000, guid: 64113ecda2b67424ab50a29cc311580c, type: 2}

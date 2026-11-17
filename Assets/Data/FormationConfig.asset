@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: babc1c546e04c4b3f9c91f69dffda6f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Formation.FormationConfig
+  minSpacing: 0.7
+  maxSpacing: 1.15
+  rowSpacing: 0.72
+  smoothingIterations: 3
+  sampleDistance: 0.2
+  resampleStep: 0.25
+  minStrokeLength: 1
+  tapMaxDuration: 0.3
+  tapMaxTravel: 0.025
+  liveSolveInterval: 0.08
+  closedThreshold: 0.2
+  circleTolerance: 0.16
+  cornerAngle: 55
+  lineStraightness: 0.93
+  snapRecognizedShapes: 1
+  maxStrokePoints: 1024

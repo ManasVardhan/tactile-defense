@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dd7fb9bc1f654382a3d6105a1824ccc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.CameraRig.CameraConfig
+  elevation: 35
+  yaw: 0
+  screenSoldierHeights: 33
+  soldierHeight: 1
+  distance: 60
+  followSmoothTime: 0.45
+  lookAhead: 0.35
+  maxLookAhead: 5
+  forwardBias: 2.5
+  focusMin: {x: -1.5, y: 9}
+  focusMax: {x: 1.5, y: 99}
+  shakeDecay: 2.8
+  shakeFrequency: 22
+  maxShake: 0.6

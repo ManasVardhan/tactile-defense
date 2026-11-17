@@ -1,0 +1,216 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f825743733004f9f9d74dc32cfc326a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Audio.SoundLibrary
+  entries:
+  - id: 0
+    clips:
+    - {fileID: 8300000, guid: 98ea68e1214684d59a8595b3710424a6, type: 3}
+    - {fileID: 8300000, guid: fce774877e4c648e28fa7eba9991b5b2, type: 3}
+    - {fileID: 8300000, guid: 446530ac525e5441f89886c8a2091d1b, type: 3}
+    - {fileID: 8300000, guid: e976a5da8a7f846a49204fdcf5379e90, type: 3}
+    volume: 0.16
+    pitch: {x: 0.9, y: 1.12}
+    maxVoices: 4
+    minInterval: 0.04
+    spatialBlend: 0
+  - id: 1
+    clips:
+    - {fileID: 8300000, guid: e6d5c95a18ade40a79b54a52a603fa31, type: 3}
+    - {fileID: 8300000, guid: 1cda8318e51074fddad2bcbdd5e0a23f, type: 3}
+    volume: 0.45
+    pitch: {x: 0.92, y: 1.08}
+    maxVoices: 2
+    minInterval: 0.1
+    spatialBlend: 0
+  - id: 2
+    clips:
+    - {fileID: 8300000, guid: e6d5c95a18ade40a79b54a52a603fa31, type: 3}
+    - {fileID: 8300000, guid: 1cda8318e51074fddad2bcbdd5e0a23f, type: 3}
+    volume: 0.45
+    pitch: {x: 0.92, y: 1.08}
+    maxVoices: 2
+    minInterval: 0.1
+    spatialBlend: 0
+  - id: 3
+    clips:
+    - {fileID: 8300000, guid: aae3bedfa7a0244e392980d2e78d30aa, type: 3}
+    volume: 0.55
+    pitch: {x: 0.92, y: 1.08}
+    maxVoices: 2
+    minInterval: 0.2
+    spatialBlend: 0
+  - id: 4
+    clips:
+    - {fileID: 8300000, guid: 8eeecdc1390964c1a9713287e3c374ce, type: 3}
+    volume: 0.55
+    pitch: {x: 0.92, y: 1.08}
+    maxVoices: 2
+    minInterval: 0.2
+    spatialBlend: 0
+  - id: 5
+    clips:
+    - {fileID: 8300000, guid: 51065a32ab2d64f989ab653c79f179d6, type: 3}
+    - {fileID: 8300000, guid: 4399e6c2ea113456ea046ef766a12959, type: 3}
+    - {fileID: 8300000, guid: c56804d59e7db4c99a27324ce713efa0, type: 3}
+    - {fileID: 8300000, guid: a79b0b67d45f347698ffb7ac63de2298, type: 3}
+    volume: 0.14
+    pitch: {x: 0.92, y: 1.08}
+    maxVoices: 3
+    minInterval: 0.05
+    spatialBlend: 0
+  - id: 6
+    clips:
+    - {fileID: 8300000, guid: 51065a32ab2d64f989ab653c79f179d6, type: 3}
+    - {fileID: 8300000, guid: 4399e6c2ea113456ea046ef766a12959, type: 3}
+    - {fileID: 8300000, guid: c56804d59e7db4c99a27324ce713efa0, type: 3}
+    - {fileID: 8300000, guid: a79b0b67d45f347698ffb7ac63de2298, type: 3}
+    volume: 0.2
+    pitch: {x: 0.92, y: 1.08}
+    maxVoices: 3
+    minInterval: 0.05
+    spatialBlend: 0
+  - id: 7
+    clips:
+    - {fileID: 8300000, guid: 7e6e83e6312a94cfebe6bcbf1dfd6ff2, type: 3}
+    - {fileID: 8300000, guid: f1fed39af70c146219aa9318430e8a4b, type: 3}
+    - {fileID: 8300000, guid: 5a6c4af816888479bb9461b088b724b8, type: 3}
+    volume: 0.35
+    pitch: {x: 0.92, y: 1.08}
+    maxVoices: 3
+    minInterval: 0.05
+    spatialBlend: 0
+  - id: 8
+    clips:
+    - {fileID: 8300000, guid: b0b22a1d7690a4e19b5e8741b63fb505, type: 3}
+    volume: 0.5
+    pitch: {x: 0.92, y: 1.08}
+    maxVoices: 2
+    minInterval: 0.12
+    spatialBlend: 0
+  - id: 9
+    clips:
+    - {fileID: 8300000, guid: b0b22a1d7690a4e19b5e8741b63fb505, type: 3}
+    volume: 0.65
+    pitch: {x: 0.92, y: 1.08}
+    maxVoices: 2
+    minInterval: 0.1
+    spatialBlend: 0
+  - id: 10
+    clips:
+    - {fileID: 8300000, guid: c3d1b6fcaf11f4c1f851f5ecf2a2ae2d, type: 3}
+    - {fileID: 8300000, guid: 8fcb57c2160d745b7b9952216334a8ac, type: 3}
+    volume: 0.25
+    pitch: {x: 0.92, y: 1.08}
+    maxVoices: 2
+    minInterval: 0.12
+    spatialBlend: 0
+  - id: 11
+    clips:
+    - {fileID: 8300000, guid: 31d993123adfd47248f3309741b4c37f, type: 3}
+    volume: 0.7
+    pitch: {x: 1, y: 1}
+    maxVoices: 2
+    minInterval: 0.2
+    spatialBlend: 0
+  - id: 12
+    clips:
+    - {fileID: 8300000, guid: 9e2d04c9e1f2547eaacbaf3ca1cc32f6, type: 3}
+    volume: 0.25
+    pitch: {x: 1, y: 1}
+    maxVoices: 1
+    minInterval: 0
+    spatialBlend: 0
+  - id: 13
+    clips:
+    - {fileID: 8300000, guid: eeb12a657e89d4a48b2845a0b7ba0ebc, type: 3}
+    volume: 0.45
+    pitch: {x: 0.98, y: 1.02}
+    maxVoices: 1
+    minInterval: 0.08
+    spatialBlend: 0
+  - id: 14
+    clips:
+    - {fileID: 8300000, guid: be5ebf93ca2114169acbbf5c35e4530d, type: 3}
+    volume: 0.35
+    pitch: {x: 1, y: 1}
+    maxVoices: 2
+    minInterval: 0.1
+    spatialBlend: 0
+  - id: 15
+    clips:
+    - {fileID: 8300000, guid: 781271543995640c4843215c74801d1a, type: 3}
+    volume: 0.7
+    pitch: {x: 1, y: 1}
+    maxVoices: 1
+    minInterval: 0.5
+    spatialBlend: 0
+  - id: 16
+    clips:
+    - {fileID: 8300000, guid: 72c3467a965ea4e37af5b27566a8c4b5, type: 3}
+    volume: 0.6
+    pitch: {x: 1, y: 1}
+    maxVoices: 1
+    minInterval: 0.5
+    spatialBlend: 0
+  - id: 17
+    clips:
+    - {fileID: 8300000, guid: 324f85f93edf04435b8b11ce34916a66, type: 3}
+    volume: 0.7
+    pitch: {x: 1, y: 1}
+    maxVoices: 1
+    minInterval: 0.5
+    spatialBlend: 0
+  - id: 18
+    clips:
+    - {fileID: 8300000, guid: c4d1e1253f959428cb46df433503b98e, type: 3}
+    volume: 0.6
+    pitch: {x: 0.92, y: 1.08}
+    maxVoices: 2
+    minInterval: 0.1
+    spatialBlend: 0
+  - id: 19
+    clips:
+    - {fileID: 8300000, guid: 974798a7871b04c36abb3fd2f798dad0, type: 3}
+    volume: 0.8
+    pitch: {x: 1, y: 1}
+    maxVoices: 1
+    minInterval: 1
+    spatialBlend: 0
+  - id: 20
+    clips:
+    - {fileID: 8300000, guid: 4a32cf8b118394bda85db4d25113d12c, type: 3}
+    volume: 0.8
+    pitch: {x: 1, y: 1}
+    maxVoices: 1
+    minInterval: 1
+    spatialBlend: 0
+  - id: 21
+    clips:
+    - {fileID: 8300000, guid: a5bcf4c1a7c744966b0f1772a92dbc11, type: 3}
+    volume: 0.2
+    pitch: {x: 1, y: 1}
+    maxVoices: 1
+    minInterval: 0
+    spatialBlend: 0
+  - id: 22
+    clips:
+    - {fileID: 8300000, guid: 07762b6ac0e6349d58ff3b97a32a1157, type: 3}
+    volume: 0.5
+    pitch: {x: 1, y: 1}
+    maxVoices: 2
+    minInterval: 0.05
+    spatialBlend: 0
+  battleMusic: {fileID: 8300000, guid: 25205a25b336c4bc3bd057d3b1653102, type: 3}
+  musicVolume: 0.35
+  masterVolume: 0.9

@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef8978d8d3db54ddd88cfe0c728a1ed4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Combat.WeaponConfig
+  range: 10
+  fireInterval: 2.4
+  intervalJitter: 0.4
+  damage: 12
+  projectileSpeed: 11
+  spreadDegrees: 4
+  hitRadius: 0.25
+  splashRadius: 1.8
+  projectileScale: 0.5
+  arcHeight: 1.6
+  burstCount: 1
+  burstGap: 0.08
+  hitSplatChance: 0.35
+  missSplatChance: 0.6
+  splatSize: 1.2
+  impactShake: 0.18
+  heavy: 1
+  fireSound: 4
