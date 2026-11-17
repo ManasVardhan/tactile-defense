@@ -95,6 +95,7 @@ namespace TactileWars.EditorTools
             p.projectile = BuildProjectile(mats, meshes);
             BuildVfx(p, mats);
             BuildStructures(p, mats, meshes, data);
+            BuildPhase5Defenses(p, mats, meshes, data);
             BuildEnvironment(p, mats, meshes);
             return p;
         }
@@ -374,6 +375,26 @@ namespace TactileWars.EditorTools
                 s.Add(PS(root.transform, "Cloud", mats.pPuff, 3, new Vector2(0.3f, 0.5f), new Vector2(0.3f, 0.8f), new Vector2(0.5f, 0.8f), Color.white, 0f, sphere, 0.2f, true, true)); t.Add(false);
                 Finish(fx, root, s, t, p);
             }
+            // Geyser: a tall column of the owner's paint, droplets raining around, a white burst at the base.
+            {
+                var fx = VfxRoot(VfxType.Geyser, 1.8f, out var root);
+                var s = new List<ParticleSystem>(); var t = new List<bool>();
+                var col = PS(root.transform, "Column", mats.pDot, 46, new Vector2(0.9f, 1.4f), new Vector2(7f, 11f), new Vector2(0.2f, 0.42f), Color.white, 1.4f, ParticleSystemShapeType.Cone, 0.35f, true, false, 64);
+                var sh = col.shape; sh.angle = 9f;
+                s.Add(col); t.Add(true);
+                s.Add(PS(root.transform, "Rain", mats.pDot, 24, new Vector2(0.7f, 1.1f), new Vector2(3f, 5.5f), new Vector2(0.14f, 0.26f), Color.white, 1.6f, ParticleSystemShapeType.Cone, 0.6f, true, false, 32)); t.Add(true);
+                s.Add(PS(root.transform, "Burst", mats.pStar, 1, new Vector2(0.18f, 0.2f), Vector2.zero, new Vector2(3.2f, 3.4f), Color.white, 0f, sphere, 0.01f)); t.Add(false);
+                s.Add(PS(root.transform, "Steam", mats.pPuff, 6, new Vector2(0.6f, 0.9f), new Vector2(1f, 2.4f), new Vector2(0.9f, 1.5f), new Color(1f, 1f, 1f, 0.8f), -0.15f, hemi, 0.5f, true, true)); t.Add(false);
+                Finish(fx, root, s, t, p);
+            }
+            // Zap: electric spark on a tesla target.
+            {
+                var fx = VfxRoot(VfxType.Zap, 0.4f, out var root);
+                var s = new List<ParticleSystem>(); var t = new List<bool>();
+                s.Add(PS(root.transform, "Sparks", mats.pDot, 8, new Vector2(0.15f, 0.3f), new Vector2(2.5f, 4.5f), new Vector2(0.06f, 0.12f), Color.white, 0.6f, sphere, 0.05f)); t.Add(true);
+                s.Add(PS(root.transform, "Flash", mats.pStar, 1, new Vector2(0.1f, 0.12f), Vector2.zero, new Vector2(1.1f, 1.3f), Color.white, 0f, sphere, 0.01f)); t.Add(false);
+                Finish(fx, root, s, t, p);
+            }
         }
 
         // ------------------------------------------------------------------ structures
@@ -452,16 +473,16 @@ namespace TactileWars.EditorTools
         }
 
         static GameObject BuildDefense<T>(string name, Mats mats, Meshes meshes, StructureConfig cfg, float h, float w,
-            System.Action<T, GameObject> wire, bool collider = true, bool arc = true) where T : StructureBase
+            System.Action<T, GameObject> wire, bool collider = true, bool arc = true, string modelName = null) where T : StructureBase
         {
             var root = new GameObject(name);
-            root.layer = name == "Mine" ? 0 : Layers.Structure;
+            root.layer = !collider ? 0 : Layers.Structure;
             root.AddComponent<Health>();
             var s = root.AddComponent<T>();
             s.config = cfg;
             s.team = Team.Enemy;
-            var model = StructureModel(name, root.transform, mats, meshes, h, w);
-            if (name == "Mine") foreach (var r in model.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = ShadowCastingMode.Off;
+            var model = StructureModel(modelName ?? name, root.transform, mats, meshes, h, w);
+            if (!collider) foreach (var r in model.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = ShadowCastingMode.Off;
             s.modelRoot = model.transform;
             s.tint = AddTint(root, mats, model);
             s.bodyRenderers = model.GetComponentsInChildren<Renderer>(true);
@@ -474,6 +495,51 @@ namespace TactileWars.EditorTools
             wire?.Invoke(s, model);
             if (s.muzzle != null) Debug.Log($"[AssetBuilder] {name} muzzle in root space {root.transform.InverseTransformPoint(s.muzzle.position)} forward {root.transform.InverseTransformDirection(s.muzzle.forward)}");
             return SavePrefabGO(root, PrefabDir + "/Structures/" + name + ".prefab");
+        }
+
+        static LineRenderer Line(Transform parent, string name, Material m, float width)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var lr = go.AddComponent<LineRenderer>();
+            lr.sharedMaterial = m;
+            lr.useWorldSpace = true;
+            lr.widthMultiplier = width;
+            lr.positionCount = 0;
+            lr.numCapVertices = 2;
+            lr.numCornerVertices = 1;
+            lr.textureMode = LineTextureMode.Stretch;
+            lr.alignment = LineAlignment.View;
+            lr.shadowCastingMode = ShadowCastingMode.Off;
+            lr.receiveShadows = false;
+            lr.lightProbeUsage = LightProbeUsage.Off;
+            lr.reflectionProbeUsage = ReflectionProbeUsage.Off;
+            lr.enabled = false;
+            return lr;
+        }
+
+        /// <summary>Tesla antenna, sniper tower and geyser defenses (phase 5).</summary>
+        static void BuildPhase5Defenses(Prefabs p, Mats mats, Meshes meshes, Data data)
+        {
+            p.structures["Tesla"] = BuildDefense<TeslaTower>("Tesla", mats, meshes, data.tesla, 2.6f, 1.2f, (s, model) =>
+            {
+                var tip = new GameObject("ArcOrigin").transform;
+                tip.SetParent(s.transform, false);
+                tip.localPosition = new Vector3(0f, 2.36f, 0f);
+                s.arcOrigin = tip;
+                s.arcGlow = Line(s.transform, "ArcGlow", mats.zap, 0.42f);
+                s.arcCore = Line(s.transform, "ArcCore", mats.zap, 0.12f);
+            }, modelName: "TeslaAntenna");
+            p.structures["Sniper"] = BuildDefense<Sniper>("Sniper", mats, meshes, data.sniper, 2.6f, 1.6f, (s, model) =>
+            {
+                s.head = FindDeep(model.transform, "Head");
+                s.muzzle = FindDeep(model.transform, "Muzzle");
+                s.aimLine = Line(s.transform, "AimLine", mats.beam, 0.05f);
+            });
+            p.structures["Geyser"] = BuildDefense<Geyser>("Geyser", mats, meshes, data.geyser, 0.3f, 1.6f, (s, model) =>
+            {
+                s.vent = FindDeep(model.transform, "Vent");
+            }, collider: false, arc: false);
         }
 
         static GameObject BuildCapturePoint(Mats mats, Meshes meshes)

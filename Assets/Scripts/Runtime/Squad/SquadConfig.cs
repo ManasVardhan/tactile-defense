@@ -13,6 +13,13 @@ namespace TactileWars.Squad
         [Tooltip("Seconds after a death before the formation closes its gaps.")] public float respaceDelay = 0.6f;
         [Tooltip("Start formation: width of the U shaped chain (reference ps_12 shows a U or L chain).")] public float startWidth = 15f;
         [Tooltip("Start formation: length of the U legs.")] public float startDepth = 6.5f;
+
+        [Header("Routing around walls (estimates)")]
+        [Tooltip("Route taps that are blocked by walls through gates on a coarse grid.")] public bool useRouting = true;
+        public float navCell = 1f;
+        [Tooltip("Extra clearance around obstacles when baking the grid.")] public float navClearance = 0.3f;
+        [Tooltip("Spacing of the compact blob the squad uses while routing.")] public float routeBlobSpacing = 0.5f;
+        [Tooltip("Advance to the next waypoint when the squad centroid is this close.")] public float routeAdvanceDistance = 2.2f;
     }
 
     public struct MotorSettings

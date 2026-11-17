@@ -259,6 +259,54 @@ MonoBehaviour:
     maxVoices: 1
     minInterval: 0.5
     spatialBlend: 0
+  - id: 29
+    clips:
+    - {fileID: 8300000, guid: 85a22f99fd6754a44a90eb1daa5f7924, type: 3}
+    volume: 0.35
+    pitch: {x: 0.92, y: 1.08}
+    maxVoices: 2
+    minInterval: 0.3
+    spatialBlend: 0
+  - id: 30
+    clips:
+    - {fileID: 8300000, guid: ca0529342ddfe4dbd8c2350cd11863db, type: 3}
+    volume: 0.55
+    pitch: {x: 0.92, y: 1.08}
+    maxVoices: 2
+    minInterval: 0.1
+    spatialBlend: 0
+  - id: 31
+    clips:
+    - {fileID: 8300000, guid: c575393d484a146a4b3194ffd9b5dd25, type: 3}
+    volume: 0.3
+    pitch: {x: 1, y: 1}
+    maxVoices: 1
+    minInterval: 0.3
+    spatialBlend: 0
+  - id: 32
+    clips:
+    - {fileID: 8300000, guid: 429c98ad97134468aaefb07cd8ef10e0, type: 3}
+    volume: 0.6
+    pitch: {x: 0.92, y: 1.08}
+    maxVoices: 2
+    minInterval: 0.15
+    spatialBlend: 0
+  - id: 33
+    clips:
+    - {fileID: 8300000, guid: e687189587d0b492e8ace6e44b0b4526, type: 3}
+    volume: 0.45
+    pitch: {x: 0.92, y: 1.08}
+    maxVoices: 2
+    minInterval: 0.2
+    spatialBlend: 0
+  - id: 34
+    clips:
+    - {fileID: 8300000, guid: 4ca5ab88b349c46dfa731d8bc0b6f01d, type: 3}
+    volume: 0.7
+    pitch: {x: 0.92, y: 1.08}
+    maxVoices: 2
+    minInterval: 0.15
+    spatialBlend: 0
   battleMusic: {fileID: 8300000, guid: 25205a25b336c4bc3bd057d3b1653102, type: 3}
   menuMusic: {fileID: 8300000, guid: 71b89976d75524d5eb99437a3cec6359, type: 3}
   musicVolume: 0.35

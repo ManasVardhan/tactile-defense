@@ -18,6 +18,11 @@ namespace TactileWars.Meta
         [Tooltip("Base squad stats that research adds to.")] public Squad.SquadConfig squadConfig;
         public BattleConfig battleConfig;
         public Units.UnitConfig playerSoldier;
+        [Header("Phase 5: base defense")]
+        public BaseEditorConfig baseEditor;
+        public DefenseBattleConfig defenseBattle;
+        [Tooltip("The player's own base map.")] public MapLayoutData homeMap;
+        [Tooltip("AI base map variants (the handcrafted lane is the null map).")] public MapLayoutData[] maps = new MapLayoutData[0];
 
         public const string ResourcePath = "MetaDatabase";
         static MetaDatabase cached;

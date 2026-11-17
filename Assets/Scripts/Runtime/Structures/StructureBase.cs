@@ -30,6 +30,12 @@ namespace TactileWars.Structures
         public Health Health => health;
 
         protected virtual bool Targetable => true;
+        /// <summary>Hidden traps report Mine so capture counts and targeting skip them.</summary>
+        protected virtual TargetKind Kind => TargetKind.Structure;
+        /// <summary>Damage multiplier from the owner's research level (player base defenses), set before Start.</summary>
+        public float levelMultiplier = 1f;
+        /// <summary>Team whose units this defense attacks.</summary>
+        protected Team Foe => UnitRegistry.Opponent(team);
 
         protected virtual void Awake()
         {
@@ -41,17 +47,17 @@ namespace TactileWars.Structures
             var gc = BattleContext.Config;
             color = gc != null ? (team == Team.Player ? gc.playerTeam : gc.enemyTeam) : TeamColorId.Teal;
             health.targetable = Targetable;
-            health.kind = this is Mine ? TargetKind.Mine : TargetKind.Structure;
+            health.kind = Kind;
             if (config != null)
             {
                 health.targetRadius = config.targetRadius;
                 health.aimHeight = config.aimHeight;
             }
-            health.Init(team, color, config != null ? config.maxHealth : 100f);
+            health.Init(team, color, (config != null ? config.maxHealth : 100f) * levelMultiplier);
             health.Damaged += OnDamaged;
             health.Died += OnDied;
             targeting = new Targeting(0.2f);
-            weapon = new Weapon(config != null ? config.weapon : null);
+            weapon = new Weapon(config != null ? config.weapon : null) { damageMultiplier = levelMultiplier };
             var vis = BattleContext.Visuals;
             if (tint != null && vis != null) tint.Apply(vis.Get(color));
             if (healthArc != null && vis != null) { var m = vis.Get(color); if (m != null) healthArc.SetMaterial(m.arc); healthArc.SetFill(1f); }

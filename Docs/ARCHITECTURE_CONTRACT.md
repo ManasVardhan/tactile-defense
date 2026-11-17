@@ -319,3 +319,71 @@ UIArtBuilder (+ UIArtRenderer), ProgressionBuilder, then SceneBuilder. UI captur
   yet); AI layouts never place it.
 - Tests: `BattleTestUtil.LoadBattle` now uses a temporary save folder (battles write meta progress). Because the UI
   renders with the main camera, the milestone `battle_*.png` captures now show the HUD.
+
+### 2026-11-17 Phase 5: base defense, base editor, defense battles, new defenses, map variants (gameplay systems agent)
+
+Build: `UIBuild.BuildAll` unchanged as the entry point; `ProgressionBuilder.Build` now also runs `MapBuilder.BuildAll`.
+New `UIBuild.BuildDataAndScenes` (menu "TactileWars/Build Data and Scenes") rebuilds assets, meta data and scenes without
+re-rendering the UI art. `SceneBuilder.BuildAll` always builds `Assets/Scenes/BaseEditor.unity`; build settings are Boot,
+MainMenu, Battle, BaseEditor. Captures: PlayMode category `DefenseScreenshots`; category `Perf` now has two tests.
+
+- Defense battles keep the gameplay roles: `Team.Player` is always the attacker (the SquadController, driven by
+  `Battle/AttackerAI` instead of strokes) and `Team.Enemy` is always the defender (the player's saved defenses). In
+  `BattleLoadout.mode == Defense`, `playerTeam` holds the ATTACKER's color and `enemyTeam` the player's color. BattleSetup
+  spawns the saved placements (tagged with `PlacedDefense`), disables StrokeRecorder input, enables `AttackerAI` and
+  `DefenderStrike` (both added disabled to Battle.unity). `BattleManager.DefenseMode` swaps the victory and defeat sounds
+  and enforces `TimeLimit` (timing out counts as a held defense). `BattleResult` stays attacker side;
+  `MetaGame.ApplyDefenseResult` translates it. `BattleSession` raises `DefenseRewarded(DefenseSummary)` instead of
+  `Rewarded` in this mode. `BattleHUD` is now a partial class (`BattleHUD.Defense.cs`): speed 1x/2x/4x (`Core/GameSpeed`,
+  survives pause), paint strike button, `DefenseResultCard`; shape hints, the tutorial, the POW badge and enemy edge
+  markers are off in defense battles.
+- TEST (base editor) runs a defense battle with no rewards and nothing consumed and returns to the editor. DEFEND! (Base
+  screen) pays when the defense holds and records consumed defenses. Our design; the original's own-base test was a
+  player attack (verified only as "you can attack your own base").
+- Editor economy (our rule, ESTIMATE): edits live in `Meta/BaseEditSession`; placing uses a stocked copy first, else buys
+  one at `goldCost`; gold is paid on Save, Discard reverts everything; Remove returns the defense to stock (no gold
+  refund, re-placing it is free). Defenses consumed in defense battles or raids move to `BaseLayoutSave.destroyed`
+  (wrecks shown in the editor) and are rebought at `goldCost` in place (REBUY, REBUY ALL) or cleared. Save fields added
+  additively (`destroyed`, `stock`, `raidLog`, `lastSeenUtcTicks`, `defenseStats`); the save version stays 2.
+- `DefenseCatalog.Entry` carries the per type economy (gold, budget, space, max count, footprint, range, research id,
+  trap flag). Ids: mine, geyser, turret, squad, tesla, sniper, bunker, cannon, tank. `squad` has no prefab: it spawns an
+  `EnemySquad` (8 soldiers and a bearer, "Defender Squad", no research gate; placed troops are verified by RM section 5).
+- Tesla: new `Prefabs/Structures/Tesla.prefab` (`Structures/TeslaTower` on TeslaAntenna.fbx, `ArcOrigin` child, two
+  LineRenderers). The environment TeslaAntenna prop stays decorative. Research: `def_tesla` moved to levels 8/11/14; new
+  `def_geyser` (3/6/9) and `def_sniper` (6/9/12).
+- New models by `Tools/blender/build_defenses_p5.py`: `Sniper.fbx` (`Base` > `Head` > `Muzzle`, uses
+  `patch_fbx_exporter()`) and `Geyser.fbx` (`Geyser` > `Vent`, the paint pool shown only when the trap wakes). Previews:
+  `Docs/Previews/Sniper.png`, `Geyser.png`. Six SFX added to `Tools/audio/synth_sfx.py` (tesla_charge, tesla_zap,
+  sniper_aim, sniper_shot, geyser_rumble, geyser_erupt); `SoundId` and `VfxType` (Geyser = 8, Zap = 9) appended.
+- `StructureBase`: virtual `Kind` (hidden traps report Mine), `levelMultiplier` (research level of the player's own
+  defenses scales health and damage, +15 percent per level, ESTIMATE) and `Foe`. Mine now uses
+  `UnitRegistry.Opponent(team)` instead of a hard coded Team.Player, so every defense works for either side.
+- Map variants: `Battle/MapLayoutData` (props, ground mask, capture points, spawn hatches, sockets, editor zones) and
+  `Battle/MapApplier`. Editor `MapBuilder` writes `Assets/Data/Maps/Map_home|canyon|ridge.asset` and
+  `Art/Textures/T_GroundMask_<id>.png`. With `BattleLoadout.map` set, BattleSetup clears the handcrafted `Environment`
+  root and spawns the variant's props at runtime (about 700 instances, mostly the forest border), moves the capture points
+  and spawn, swaps the ground mask on a material copy and clones GameConfig and CameraConfig bounds. Bases b01, b02, b05,
+  b08 keep the handcrafted lane (b01 still the handcrafted deployment); b03/b06/b09 use Canyon Pass and b04/b07/b10 Fort
+  Ridge with layouts generated on the map's own sockets. Generated layouts add geysers (difficulty 3+), a sniper tower
+  (4+) and tesla antennas on the lane (5+). The player's base is the Home Base map (`MetaDatabase.homeMap`).
+- Counterattack (ESTIMATE, multiplayer.it mentions waves): `BattleConfig.counterattack*` (on, 3 s delay, 6 soldiers).
+  After the first capture `BattleManager` spawns an `EnemySquad` in the new `assault` mode at the spawn hatch nearest the
+  point (`BattleManager.counterSpawns`, set by SceneBuilder or the map). In defense battles the wave is the defender's.
+- Routing: `Squad/NavGrid` (1 unit cells baked from the Obstacle layer only, A* with 8 neighbours and no corner cutting,
+  line of sight string pulling, preallocated, zero allocations per search: tested). `SquadController.MoveFormationTo`
+  routes only when the straight way is blocked: every soldier follows the waypoints in a compact blob, advancing when it
+  can see its next waypoint, then goes to its slot. Destructible structures are not baked (local slide handles them).
+- `ShapeRecognizer`: a line now also needs max deviation from the chord <= `FormationConfig.lineMaxDeviation` (0.08 of
+  the length, GAMEPLAY_MECHANICS 2.5 rule 2, previously unimplemented). The reported "arc stays Line" case: the capture
+  script's crescent measures straightness 0.926 against a 0.93 threshold, so shallow arcs were classified on a knife
+  edge; no StrokeRecorder state bug was found (the line, arc, circle, line sequence test passes in play mode).
+- Space caps raised to 10 at level 1, +2 every 2 levels (spec: 8, +2 every 3) because traps cost space too; budget caps
+  as specified (60 + 10 per level).
+- Simulated raids: `Meta/RaidSimulator` (documented statistical model, deterministic per seed);
+  `LocalOfflineProvider` implements the new `IRaidService.CheckForRaid` (MainMenu start: at least 30 min since the last
+  menu visit, at most 2 per session, never on an empty base). `UI/Menu/RaidReportCard` is labeled "SIMULATED OFFLINE RAID:
+  NOT A REAL PLAYER". The Base screen no longer auto-loads the editor: it shows a summary, EDIT BASE, DEFEND! and the
+  simulated raid log.
+- UI: `UIIcon` appended FastForward, Rotate, Trash, Move, Save, Grid. `ConfirmDialog.ShowChoice` (two actions plus a
+  close button). Base editor UI in `UI/BaseEditor` (root, HUD, card, display copies). Ghosts, grid and discs use
+  `M_EditorGhost`, `M_EditorGrid`, `M_EditorDisc` (TW/Particle); zap and aim lines use `M_Zap` and `M_AimBeam`.

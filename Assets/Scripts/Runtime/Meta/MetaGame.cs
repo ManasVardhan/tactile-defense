@@ -33,7 +33,7 @@ namespace TactileWars.Meta
 
     /// <summary>All profile changing operations of the meta game. Every change saves immediately (autosave) and
     /// raises Changed so open screens refresh.</summary>
-    public static class MetaGame
+    public static partial class MetaGame
     {
         static MetaDatabase db;
         public static event Action Changed;

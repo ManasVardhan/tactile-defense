@@ -259,3 +259,73 @@ Pans with the squad; constant zoom; loose follow (VERIFIED, VA section 1). Off-s
 | Map bounds clamp | yes | contract | n/a |
 | Shake on explosion | 0.1 units, 0.15 s | ESTIMATE | `CameraConfig.shakeAmplitude/Duration` |
 | Off-screen icons | clamped helmet badge, team-colored | VERIFIED look | n/a |
+
+## 15. Base defense as implemented (phase 5)
+
+VERIFIED concepts (RM sections 1, 4, 5): attacks are asynchronous against AI run defenses laid out by a player; a base has
+a space limit and a budget cap that rises with level; placed defenses are consumed and must be rebought with gold; named
+defenses include mines, geysers, trapped slabs, tesla antennas, turrets, tanks, cannons, robotanks, trackers, snipers,
+bunkers, heli-towers; geysers explode. EVERY NUMBER AND BEHAVIOUR BELOW IS AN ESTIMATE (our design).
+
+### 15.1 Defense economy (`Assets/Data/Meta/DefenseCatalog.asset`, `DefenseCatalog.Entry`)
+
+| Id | Gold | Budget | Space | Max | Footprint | Research | Notes |
+|---|---|---|---|---|---|---|---|
+| mine | 15 | 4 | 1 | 10 | 0.6 | def_mine (start) | single use trap |
+| geyser | 30 | 6 | 1 | 6 | 0.9 | def_geyser (lv 3) | 2 eruptions, then spent (consumed) |
+| turret | 60 | 10 | 1 | 4 | 1.1 | def_turret (lv 2) | |
+| squad | 40 | 8 | 2 | 3 | 2.4 | none | 8 defender soldiers + flag bearer |
+| tesla | 90 | 12 | 1 | 3 | 0.8 | def_tesla (lv 8) | |
+| sniper | 100 | 14 | 1 | 2 | 0.9 | def_sniper (lv 6) | |
+| bunker | 110 | 18 | 3 | 2 | 1.7 | def_bunker (lv 4) | |
+| cannon | 120 | 15 | 2 | 2 | 1.0 | def_cannon (lv 7) | |
+| tank | 150 | 20 | 2 | 2 | 1.4 | def_tank (lv 5) | patrols 3 units to each side |
+
+Budget and space points for turret, tank, cannon, mine, tesla and bunker are those of section 11.
+
+### 15.2 Base editing (`Assets/Data/Meta/BaseEditorConfig.asset`)
+
+| Rule | Value | SO field |
+|---|---|---|
+| Budget cap | 60 at level 1, +10 per level | `budgetCapByLevel[]` |
+| Space cap | 10 at level 1, +2 every 2 levels (section 13 said 8, +2 every 3; raised because traps cost space) | `spaceCapByLevel[]` |
+| Grid | 1.0 unit squares, footprints snap to cell centres | `gridCell` |
+| Zones | placeable rectangle x -15.5 to 15.5, z 18 to 101; attacker start zone z < 18; 3.6 clearance around capture pads; no overlap with blocking props or other defenses | `MapLayoutData.placeable`, `attackerZoneMaxZ`, `padClearance` |
+| Purchase | placing uses a stocked copy, else buys at gold cost; paid on Save | n/a |
+| Remove | back to stock, no gold refund, re-placing is free | n/a |
+| Consumption | destroyed structures, fired mines, spent geysers and wiped defender squads become wrecks; rebuy at gold cost in place | n/a |
+| Research level bonus | +15 percent health and damage per level above 1 in battle | `levelBonus` |
+
+### 15.3 New defense behaviours (`Assets/Data/Structure_Tesla/Sniper/Geyser.asset`)
+
+| Type | Behaviour | Values |
+|---|---|---|
+| Tesla antenna | charges, then a paint lightning arc hits the nearest soldier in range and chains to the nearest unhit soldier within the jump range | charge 2.2 s, range 5.5, up to 4 targets, jump 2.6, 26 damage, x0.8 per jump, 160 HP |
+| Sniper tower | prefers flag bearers, yaws, shows a growing aiming line, then one fast heavy shot | range 16, aim 1.3 s, 50 damage, 45 u/s, cooldown 2.4 s, 140 HP |
+| Geyser | hidden (only a rock ring shows); an attacker within the trigger radius wakes it: rumble warning, then a paint eruption in an area; optional timer | trigger 1.8, warning 0.9 s, radius 2.8, 34 damage, 2 charges, cooldown 4.5 s, not targetable |
+
+Not implemented: trapped slab, robotank, tracker, heli-tower, vannon (names verified, no behaviour).
+
+### 15.4 Defense battles (`Assets/Data/DefenseBattleConfig.asset`)
+
+| Rule | Value |
+|---|---|
+| Attacker squad | 30 + 2 per player level soldiers (max 56), +4 percent health per level above 1, 8 per reinforcement call |
+| Outcome | base falls when both points are captured; defense holds when the attackers are wiped or after 240 s |
+| AI decisions every 0.4 s | engage (line at 5.2 from a defender squad centre or structure within 11, pushes closer after 9 s without kills); spread (ring of radius 5.2 when a visible mine or an already erupted geyser lies within 5 of the next step); capture (ring of radius 1.6 on the active pad); advance (7 unit steps along the grid route); pops bubbles after 0.8 s; calls reinforcements when ready |
+| Defender paint strike | 3 charges, radius 3, 45 damage, 0.7 s fall, 4 s cooldown |
+| Rewards (DEFEND only) | held: 60 gold + 1 per attacker popped, 40 XP; fell: 10 XP; TEST battles pay nothing and consume nothing |
+| Watch speed | 1x, 2x, 4x |
+
+### 15.5 Simulated offline raids (labeled SIMULATED in the UI; not real players)
+
+On returning to the menu after at least 30 minutes (at most 2 per session, never on an empty base):
+strength = sum of placed defenses' budget points x level bonus; attack = (40 + 12 x level) x U(0.7, 1.3);
+P(hold) = strength / (strength + attack). Traps fire (consumed) with 0.55 probability; other defenses are destroyed with
+0.12 (held) or 0.45 (fell). Held: +45 gold x U(0.8, 1.2). Fell: -min(8 percent of gold, 120). Last 6 raids are logged.
+
+### 15.6 Counterattack and routing
+
+After the first capture, 6 soldiers leave the spawn hatch nearest the captured point after 3 s and march on it
+(`BattleConfig.counterattack*`). Taps whose straight path is blocked by walls route the squad through gates on a 1 unit
+obstacle grid (`SquadConfig.useRouting`, `navCell`, `navClearance`, `routeBlobSpacing`, `routeAdvanceDistance`).

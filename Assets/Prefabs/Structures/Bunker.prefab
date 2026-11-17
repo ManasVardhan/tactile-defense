@@ -181,6 +181,7 @@ MonoBehaviour:
   healthArc: {fileID: 3720212826513752055}
   bodyRenderers:
   - {fileID: 6309696635433402492}
+  levelMultiplier: 1
 --- !u!114 &285047626571107108
 MonoBehaviour:
   m_ObjectHideFlags: 0

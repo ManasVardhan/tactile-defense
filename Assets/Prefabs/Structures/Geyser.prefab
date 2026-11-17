@@ -1,0 +1,193 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4219793523477159850
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4935461729291083825}
+  - component: {fileID: 8005275404448826647}
+  - component: {fileID: 4418638334065403924}
+  - component: {fileID: 5209569528651439937}
+  m_Layer: 0
+  m_Name: Geyser
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4935461729291083825
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4219793523477159850}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2272422650309989003}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8005275404448826647
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4219793523477159850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b05894599e4114015b840ddf66f36053, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Combat.Health
+  team: 0
+  color: 0
+  kind: 0
+  max: 30
+  targetRadius: 0.35
+  aimHeight: 0.45
+  targetable: 1
+--- !u!114 &4418638334065403924
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4219793523477159850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73788883c44c145f89294974ddb580af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Structures.Geyser
+  config: {fileID: 11400000, guid: 89691d3e3666b47bfa66edbdd4c85d20, type: 2}
+  team: 1
+  modelRoot: {fileID: 2272422650309989003}
+  muzzle: {fileID: 0}
+  tint: {fileID: 5209569528651439937}
+  healthArc: {fileID: 0}
+  bodyRenderers:
+  - {fileID: 1135584959299889636}
+  - {fileID: 3574464426695585181}
+  levelMultiplier: 1
+  vent: {fileID: 1267160518764553681}
+--- !u!114 &5209569528651439937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4219793523477159850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05fd1556c5cd44e81ae2169de559f9ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Units.TeamTint
+  baseTeamColor: {fileID: 2100000, guid: d06e0539a76364f5aa5896f140aba25b, type: 2}
+  baseTeamColorDark: {fileID: 2100000, guid: c8206aadf72384d4886c3e7ba1356a8c, type: 2}
+  basePaint: {fileID: 2100000, guid: c39c47ad68e14469490af39835bc3f29, type: 2}
+  unitVariant: 0
+  renderers:
+  - {fileID: 1135584959299889636}
+  - {fileID: 3574464426695585181}
+  applyOnStart: 0
+  startTeam: 1
+--- !u!1001 &1730505000787522912
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 4935461729291083825}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+      propertyPath: m_ReflectionProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+      propertyPath: m_Name
+      value: Model
+      objectReference: {fileID: 0}
+    - target: {fileID: 2997410895137593597, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2997410895137593597, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+      propertyPath: m_ReflectionProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+--- !u!23 &1135584959299889636 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+  m_PrefabInstance: {fileID: 1730505000787522912}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1267160518764553681 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 690782362663276721, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+  m_PrefabInstance: {fileID: 1730505000787522912}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2272422650309989003 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+  m_PrefabInstance: {fileID: 1730505000787522912}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &3574464426695585181 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 2997410895137593597, guid: 508816cd9b54641d88760df5b6a349e8, type: 3}
+  m_PrefabInstance: {fileID: 1730505000787522912}
+  m_PrefabAsset: {fileID: 0}

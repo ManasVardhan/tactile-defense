@@ -30,6 +30,9 @@ namespace TactileWars.UI
         public ProfileScreen Profile { get; private set; }
         public SettingsScreen Settings { get; private set; }
         public ConfirmDialog Dialog { get; private set; }
+        public RaidReportCard RaidCard { get; private set; }
+        /// <summary>The simulated raid shown on this menu visit (null when none).</summary>
+        public Save.RaidRecord LastRaid { get; private set; }
         public MenuScreen Current { get; private set; }
         public UIButton AttackButton { get; private set; }
         public readonly List<UIButton> NavButtons = new List<UIButton>();
@@ -49,7 +52,16 @@ namespace TactileWars.UI
             MetaGame.Changed += OnChanged;
             Build();
             if (!p.teamChosen) TeamSelect.Open(true, true);
+            else
+            {
+                // Simulated offline raids on the player's base (labeled as simulated on the card).
+                LastRaid = Online.LocalOfflineProvider.Instance.CheckForRaid(System.DateTime.UtcNow);
+                if (LastRaid != null) RaidCard.Show(LastRaid);
+            }
         }
+
+        void OnApplicationPause(bool paused) { if (paused) MetaGame.MarkSeen(System.DateTime.UtcNow); }
+        void OnApplicationQuit() { MetaGame.MarkSeen(System.DateTime.UtcNow); }
 
         void Build()
         {
@@ -77,6 +89,7 @@ namespace TactileWars.UI
             overlay = UIFactory.Rect(Root.CanvasRect, "Overlay").Stretch();
             TeamSelect = TeamSelectScreen.Create(this, overlay);
             Dialog = ConfirmDialog.Create(overlay);
+            RaidCard = RaidReportCard.Create(this, overlay);
             Toast = UIToast.Create(overlay, 300f);
             Bar.Refresh(false);
         }

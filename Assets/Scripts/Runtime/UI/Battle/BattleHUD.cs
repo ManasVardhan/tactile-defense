@@ -19,7 +19,7 @@ namespace TactileWars.UI
     /// hints, the first battle tutorial, pause and result screens. Listens to BattleEvents only (gameplay never
     /// references UI). Updates are event driven; the per frame edge indicators do not allocate.
     /// </summary>
-    public class BattleHUD : MonoBehaviour
+    public partial class BattleHUD : MonoBehaviour
     {
         public UISkin skin;
         public Camera cam;
@@ -80,7 +80,9 @@ namespace TactileWars.UI
             var gc = BattleContext.Config;
             team = gc != null ? gc.playerTeam : TeamColorId.Red;
             enemy = gc != null ? gc.enemyTeam : TeamColorId.Teal;
-            UIFactory.PlayerTeam = team;
+            defense = BattleSetup.Instance != null && BattleSetup.Instance.DefenseMode;
+            // Defense battles: the AI attacker owns 'team' (badge, capture pips); menus use the player's color.
+            UIFactory.PlayerTeam = defense ? enemy : team;
             var profile = MetaGame.Profile;
             GameSettings.Apply(profile.settings, cam);
 
@@ -89,7 +91,7 @@ namespace TactileWars.UI
             hudGroup = hud.gameObject.AddComponent<CanvasGroup>();
             BuildPauseTab();
             BuildSquadBadge();
-            BuildPow();
+            if (defense) BuildDefenseControls(); else BuildPow();
             BuildObjectives();
             BuildIndicators();
             shapeHint = UIFactory.Text(hud, "ShapeHint", "", 76f, TextStyle.Heading);
@@ -97,12 +99,13 @@ namespace TactileWars.UI
             shapeHint.gameObject.SetActive(false);
             toast = UIToast.Create(Root.Safe, -250f);
             Tutorial = TutorialOverlay.Create(Root.Safe, cam);
-            if (!profile.tutorial.drawStroke) Tutorial.Begin();
+            if (!profile.tutorial.drawStroke && !defense) Tutorial.Begin();
             Pause = PauseMenu.Create(this, Root.Safe);
             Results = ResultScreen.Create(this, Root.Safe);
+            if (defense) DefenseResults = DefenseResultCard.Create(this, Root.Safe);
 
             var found = FindObjectsByType<EnemySquad>(FindObjectsSortMode.None);
-            squads.AddRange(found);
+            if (!defense) squads.AddRange(found);
 
             BattleEvents.SoldierCountChanged += OnSoldierCount;
             BattleEvents.ReinforcementChanged += OnMeter;
@@ -114,6 +117,9 @@ namespace TactileWars.UI
             BattleEvents.Defeat += OnBattleOver;
             BattleEvents.SquadWiped += OnSquadWiped;
             BattleSession.Rewarded += OnRewarded;
+            BattleSession.DefenseRewarded += OnDefenseRewarded;
+            BattleEvents.EnemySquadSpawned += OnEnemySquadSpawned;
+            BattleEvents.Counterattack += OnCounterattack;
 
             OnMeter(bm != null ? bm.Meter.Fill : 0f, bm != null && bm.Meter.Ready);
             ShowStartBanner();
@@ -132,7 +138,11 @@ namespace TactileWars.UI
             BattleEvents.Defeat -= OnBattleOver;
             BattleEvents.SquadWiped -= OnSquadWiped;
             BattleSession.Rewarded -= OnRewarded;
+            BattleSession.DefenseRewarded -= OnDefenseRewarded;
+            BattleEvents.EnemySquadSpawned -= OnEnemySquadSpawned;
+            BattleEvents.Counterattack -= OnCounterattack;
             if (Time.timeScale == 0f) Time.timeScale = 1f;
+            GameSpeed.Reset();
             AudioListener.pause = false;
         }
 
@@ -280,6 +290,7 @@ namespace TactileWars.UI
 
         void ShowStartBanner()
         {
+            if (defense) { ShowDefenseBanner(); return; }
             var lo = BattleLoadout.Pending;
             string name = lo != null && !string.IsNullOrEmpty(lo.baseName) ? lo.baseName : "Training Grounds";
             // Between the objective arrow and the squad, clear of the tutorial finger below.
@@ -300,6 +311,7 @@ namespace TactileWars.UI
 
         void OnMeter(float fill, bool ready)
         {
+            if (powFill == null) return;
             ShownMeter = fill;
             powFill.fillAmount = fill;
             if (ready != powReady)
@@ -341,7 +353,8 @@ namespace TactileWars.UI
         {
             RefreshPips();
             if (i >= 0 && i < 2) UIAnim.Pop(pipFace[i].transform.parent, 0.6f, 0.45f);
-            if (bm != null && i + 1 < bm.capturePoints.Length)
+            if (defense) toast.Show("THE ATTACKERS TOOK POINT " + (i + 1) + "!", UIIcon.Flag, UIColors.WithAlpha(UIColors.RedDark, 0.95f));
+            else if (bm != null && i + 1 < bm.capturePoints.Length)
                 toast.Show("POINT " + (i + 1) + " CAPTURED! NEXT POINT AHEAD", UIIcon.Flag, UIColors.WithAlpha(UIColors.TeamDark(team), 0.95f));
         }
 
@@ -361,6 +374,7 @@ namespace TactileWars.UI
 
         void OnShape(ShapeType s)
         {
+            if (defense) return; // the AI's formations are not the player's strokes
             string t = s switch
             {
                 ShapeType.Line => "LINE!",
@@ -390,7 +404,8 @@ namespace TactileWars.UI
             UIAnim.Fade(hudGroup, 0.35f, 0.4f);
             if (Pause != null) Pause.ForceClose();
             if (Tutorial != null) Tutorial.Hide();
-            if (BattleSession.Last == null) Results.ShowFallback(r);
+            GameSpeed.Reset();
+            if (BattleSession.Last == null && !defense) Results.ShowFallback(r);
         }
 
         void OnRewarded(RewardSummary s) => Results.Show(s);
@@ -415,6 +430,7 @@ namespace TactileWars.UI
                 pow.localScale = Vector3.one * (1f + 0.07f * k);
                 powGlow.color = UIColors.WithAlpha(UIColors.Team(team), 0.35f + 0.4f * k);
             }
+            if (defense) UpdateDefense();
             for (int i = 0; i < 2; i++)
                 if (contested[i]) pipFace[i].color = Color.Lerp(UIColors.Slate, UIColors.Red, 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 10f));
             UpdateIndicators();

@@ -60,11 +60,11 @@ namespace TactileWars.EditorTools
             };
 
             var catalog = Asset<DefenseCatalog>(Dir + "/DefenseCatalog.asset");
-            var entries = new List<DefenseCatalog.Entry>();
-            foreach (var (id, name, prefab) in new[] { ("turret", "Turret", "Turret"), ("mine", "Paint Mine", "Mine"), ("tank", "Tank", "Tank"), ("cannon", "Cannon", "Cannon"), ("bunker", "Bunker", "Bunker") })
-                entries.Add(new DefenseCatalog.Entry { id = id, displayName = name, prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Structures/" + prefab + ".prefab") });
-            entries.Add(new DefenseCatalog.Entry { id = "tesla", displayName = "Tesla Antenna", prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Environment/TeslaAntenna.prefab") });
-            catalog.entries = entries.ToArray();
+            catalog.entries = CatalogEntries();
+
+            maps = MapBuilder.BuildAll();
+            var baseCfg = AssetDatabase.LoadAssetAtPath<BaseEditorConfig>(Dir + "/BaseEditorConfig.asset");
+            if (baseCfg == null) { baseCfg = ScriptableObject.CreateInstance<BaseEditorConfig>(); AssetDatabase.CreateAsset(baseCfg, Dir + "/BaseEditorConfig.asset"); }
 
             var roster = Asset<BaseRoster>(Dir + "/BaseRoster.asset");
             roster.bases = Bases();
@@ -79,9 +79,41 @@ namespace TactileWars.EditorTools
             db.squadConfig = AssetDatabase.LoadAssetAtPath<SquadConfig>("Assets/Data/SquadConfig.asset");
             db.battleConfig = AssetDatabase.LoadAssetAtPath<BattleConfig>("Assets/Data/BattleConfig.asset");
             db.playerSoldier = AssetDatabase.LoadAssetAtPath<UnitConfig>("Assets/Data/Unit_PlayerSoldier.asset");
+            db.baseEditor = baseCfg;
+            db.defenseBattle = AssetDatabase.LoadAssetAtPath<DefenseBattleConfig>("Assets/Data/DefenseBattleConfig.asset");
+            db.homeMap = maps[0];
+            db.maps = new[] { maps[1], maps[2] };
             AssetDatabase.SaveAssets();
             Debug.Log("[UIBuild] meta data: " + research.nodes.Length + " research nodes, " + mercs.Length + " mercenaries, " + roster.bases.Length + " bases");
             return db;
+        }
+
+        static MapLayoutData[] maps;
+
+        static GameObject StructPrefab(string name) => AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Structures/" + name + ".prefab");
+
+        /// <summary>Defense types with their editor economy. Names verified; ALL NUMBERS ARE ESTIMATES (budget and
+        /// space points from GAMEPLAY_MECHANICS section 11, gold costs and limits are our own).</summary>
+        static DefenseCatalog.Entry[] CatalogEntries()
+        {
+            DefenseCatalog.Entry E(string id, string name, string prefab, int gold, int budget, int space, int max, float foot, float range, string research, bool trap, string desc) =>
+                new DefenseCatalog.Entry
+                {
+                    id = id, displayName = name, prefab = prefab != null ? StructPrefab(prefab) : null, goldCost = gold, budget = budget, space = space,
+                    maxCount = max, footprint = foot, range = range, researchId = research, trap = trap, squadSize = id == "squad" ? 8 : 0, description = desc,
+                };
+            return new[]
+            {
+                E("mine", "Paint Mine", "Mine", 15, 4, 1, 10, 0.6f, 1.3f, "def_mine", true, "Hidden disc. Bursts when attackers step close. Single use."),
+                E("geyser", "Geyser", "Geyser", 30, 6, 1, 6, 0.9f, 2.8f, "def_geyser", true, "Hidden vent. Erupts paint twice when attackers come near, then it is spent."),
+                E("turret", "Turret", "Turret", 60, 10, 1, 4, 1.1f, 9f, "def_turret", false, "Rotating paint turret with splash bursts."),
+                E("squad", "Defender Squad", null, 40, 8, 2, 3, 2.4f, 6f, "", false, "Eight pigments and a flag bearer hold this spot."),
+                E("tesla", "Tesla Antenna", "Tesla", 90, 12, 1, 3, 0.8f, 5.5f, "def_tesla", false, "Charges, then a paint lightning arc chains through nearby soldiers."),
+                E("sniper", "Sniper Tower", "Sniper", 100, 14, 1, 2, 0.9f, 16f, "def_sniper", false, "Very long range. Aims, then one heavy shot. Picks flag bearers first."),
+                E("bunker", "Bunker", "Bunker", 110, 18, 3, 2, 1.7f, 8f, "def_bunker", false, "Sturdy block that sprays paint in every direction."),
+                E("cannon", "Cannon", "Cannon", 120, 15, 2, 2, 1.0f, 12.5f, "def_cannon", false, "Long range mortar. Lobbed shells splash an area."),
+                E("tank", "Tank", "Tank", 150, 20, 2, 2, 1.4f, 10f, "def_tank", false, "Patrols sideways and lobs heavy shells."),
+            };
         }
 
         static MercenaryDef Merc(string id, string name, string ability, string desc, int lvl, int unlock, int hire, float hp, float dmg, float rate, float scale, float charge, string accent)
@@ -135,8 +167,12 @@ namespace TactileWars.EditorTools
                 Steps(new[] { 5, 8, 11 }, new[] { 600, 950, 1400 }, new[] { 1f, 2f, 3f }), "tank"),
             Node("def_cannon", "Cannon", "Long range mortar. Squads must dodge.", ResearchBranch.Defense, ResearchEffect.DefenseUnlock, "Target", "Lv {0}", 1f,
                 Steps(new[] { 7, 10, 13 }, new[] { 800, 1200, 1700 }, new[] { 1f, 2f, 3f }), "cannon"),
-            Node("def_tesla", "Tesla Antenna", "Short range zap trap.", ResearchBranch.Defense, ResearchEffect.DefenseUnlock, "Lightning", "Lv {0}", 1f,
-                Steps(new[] { 9, 12, 15 }, new[] { 1000, 1500, 2100 }, new[] { 1f, 2f, 3f }), "tesla"),
+            Node("def_geyser", "Geyser", "Hidden vent that erupts paint on attackers.", ResearchBranch.Defense, ResearchEffect.DefenseUnlock, "Skull", "Lv {0}", 1f,
+                Steps(new[] { 3, 6, 9 }, new[] { 350, 650, 1000 }, new[] { 1f, 2f, 3f }), "geyser"),
+            Node("def_sniper", "Sniper Tower", "Long range shots that pick off flag bearers.", ResearchBranch.Defense, ResearchEffect.DefenseUnlock, "Target", "Lv {0}", 1f,
+                Steps(new[] { 6, 9, 12 }, new[] { 700, 1100, 1600 }, new[] { 1f, 2f, 3f }), "sniper"),
+            Node("def_tesla", "Tesla Antenna", "Charges, then chains lightning through nearby soldiers.", ResearchBranch.Defense, ResearchEffect.DefenseUnlock, "Lightning", "Lv {0}", 1f,
+                Steps(new[] { 8, 11, 14 }, new[] { 900, 1400, 2000 }, new[] { 1f, 2f, 3f }), "tesla"),
         };
 
         // ------------------------------------------------------------------ AI bases
@@ -144,20 +180,21 @@ namespace TactileWars.EditorTools
         struct BaseSpec
         {
             public string id, name, commander; public TeamColorId team; public int diff, level; public float reward, hp, dmg;
+            public string map; // null: handcrafted lane; "canyon" or "ridge": a MapBuilder variant
         }
 
         static readonly BaseSpec[] Specs =
         {
             new BaseSpec { id = "b01", name = "Training Grounds", commander = "Sgt. Puddle", team = TeamColorId.Teal, diff = 1, level = 1, reward = 1.0f, hp = 1f, dmg = 1f },
             new BaseSpec { id = "b02", name = "Pine Outpost", commander = "Cpl. Moss", team = TeamColorId.Green, diff = 2, level = 1, reward = 1.15f, hp = 1f, dmg = 1f },
-            new BaseSpec { id = "b03", name = "Dusty Crossing", commander = "Lt. Amber", team = TeamColorId.Orange, diff = 3, level = 2, reward = 1.3f, hp = 1.05f, dmg = 1.05f },
-            new BaseSpec { id = "b04", name = "Splat Ridge", commander = "Cpt. Violet", team = TeamColorId.Purple, diff = 4, level = 3, reward = 1.5f, hp = 1.1f, dmg = 1.1f },
+            new BaseSpec { id = "b03", name = "Dusty Crossing", commander = "Lt. Amber", team = TeamColorId.Orange, diff = 3, level = 2, reward = 1.3f, hp = 1.05f, dmg = 1.05f , map = "canyon" },
+            new BaseSpec { id = "b04", name = "Splat Ridge", commander = "Cpt. Violet", team = TeamColorId.Purple, diff = 4, level = 3, reward = 1.5f, hp = 1.1f, dmg = 1.1f , map = "ridge" },
             new BaseSpec { id = "b05", name = "Magenta Bastion", commander = "Maj. Rosa", team = TeamColorId.Pink, diff = 5, level = 4, reward = 1.7f, hp = 1.18f, dmg = 1.15f },
-            new BaseSpec { id = "b06", name = "Cobalt Trench", commander = "Col. Indigo", team = TeamColorId.Blue, diff = 6, level = 5, reward = 1.95f, hp = 1.26f, dmg = 1.2f },
-            new BaseSpec { id = "b07", name = "Crimson Gate", commander = "Gen. Scarlet", team = TeamColorId.Red, diff = 7, level = 6, reward = 2.2f, hp = 1.35f, dmg = 1.28f },
+            new BaseSpec { id = "b06", name = "Cobalt Trench", commander = "Col. Indigo", team = TeamColorId.Blue, diff = 6, level = 5, reward = 1.95f, hp = 1.26f, dmg = 1.2f , map = "canyon" },
+            new BaseSpec { id = "b07", name = "Crimson Gate", commander = "Gen. Scarlet", team = TeamColorId.Red, diff = 7, level = 6, reward = 2.2f, hp = 1.35f, dmg = 1.28f , map = "ridge" },
             new BaseSpec { id = "b08", name = "Jade Fortress", commander = "Gen. Celadon", team = TeamColorId.Teal, diff = 8, level = 8, reward = 2.5f, hp = 1.45f, dmg = 1.36f },
-            new BaseSpec { id = "b09", name = "Thunder Camp", commander = "Marshal Ochre", team = TeamColorId.Orange, diff = 9, level = 10, reward = 2.85f, hp = 1.55f, dmg = 1.45f },
-            new BaseSpec { id = "b10", name = "Prism Citadel", commander = "Warlord Lilac", team = TeamColorId.Purple, diff = 10, level = 12, reward = 3.3f, hp = 1.7f, dmg = 1.55f },
+            new BaseSpec { id = "b09", name = "Thunder Camp", commander = "Marshal Ochre", team = TeamColorId.Orange, diff = 9, level = 10, reward = 2.85f, hp = 1.55f, dmg = 1.45f , map = "canyon" },
+            new BaseSpec { id = "b10", name = "Prism Citadel", commander = "Warlord Lilac", team = TeamColorId.Purple, diff = 10, level = 12, reward = 3.3f, hp = 1.7f, dmg = 1.55f , map = "ridge" },
         };
 
         static BaseDefinition[] Bases()
@@ -170,6 +207,7 @@ namespace TactileWars.EditorTools
                 b.id = s.id; b.displayName = s.name; b.commanderName = s.commander; b.enemyTeam = s.team;
                 b.difficulty = s.diff; b.requiredLevel = s.level; b.rewardMultiplier = s.reward;
                 b.enemyHealthMult = s.hp; b.enemyDamageMult = s.dmg;
+                b.map = MapFor(s.map);
                 if (i == 0)
                 {
                     b.layout = null; // handcrafted deployment of Battle.unity
@@ -178,7 +216,7 @@ namespace TactileWars.EditorTools
                 }
                 else
                 {
-                    b.layout = Layout(s, 1000 + i * 37);
+                    b.layout = Layout(s, 1000 + i * 37, b.map);
                     b.enemySquads = b.layout.squads.Length;
                     b.defenses = b.layout.defenses.Length;
                 }
@@ -187,22 +225,54 @@ namespace TactileWars.EditorTools
             return list;
         }
 
-        /// <summary>Seeded deployment on prop free sockets of the lane (from SceneBuilder), scaled by difficulty.</summary>
-        static BaseLayoutData Layout(BaseSpec s, int seed)
+        static MapLayoutData MapFor(string id)
+        {
+            if (string.IsNullOrEmpty(id) || maps == null) return null;
+            foreach (var m in maps) if (m != null && m.id == id) return m;
+            return null;
+        }
+
+        struct SquadSock { public Vector3 pos; public bool holdOnly; }
+        struct HeavySock { public Vector3 pos; public float yaw; public bool allowTank; }
+
+        /// <summary>Seeded deployment on prop free sockets (the handcrafted lane's from SceneBuilder, or the map
+        /// variant's from MapBuilder), scaled by difficulty. Higher difficulties add geysers (d3+), sniper towers
+        /// (d4+) and tesla antennas (d5+). All counts are estimates.</summary>
+        static BaseLayoutData Layout(BaseSpec s, int seed, MapLayoutData map)
         {
             var l = Asset<BaseLayoutData>(LayoutDir + "/Layout_" + s.id + ".asset");
             l.seed = seed;
             var rng = new System.Random(seed);
             int d = s.diff;
 
-            // Squads: more and bigger with difficulty; always one near each capture point.
-            var squadSockets = new List<SceneBuilder.SquadSocket>(SceneBuilder.SquadSockets);
+            var squadSockets = new List<SquadSock>();
+            var mines = new List<Vector3>();
+            var heavy = new List<HeavySock>();
+            Vector3 cp1 = new Vector3(0, 0, 43f), cp2 = new Vector3(0, 0, 94f);
+            if (map == null)
+            {
+                foreach (var k in SceneBuilder.SquadSockets) squadSockets.Add(new SquadSock { pos = k.pos, holdOnly = k.holdOnly });
+                mines.AddRange(SceneBuilder.MineSockets);
+                foreach (var k in SceneBuilder.DefenseSockets) heavy.Add(new HeavySock { pos = k.pos, yaw = k.yaw, allowTank = k.allowTank });
+            }
+            else
+            {
+                cp1 = map.capturePoints[0]; cp2 = map.capturePoints[1];
+                foreach (var p in map.squadSockets) squadSockets.Add(new SquadSock { pos = p, holdOnly = rng.NextDouble() < 0.4 });
+                mines.AddRange(map.mineSockets);
+                foreach (var p in map.defenseSockets)
+                {
+                    // Face the incoming lane (south, toward the path).
+                    float yaw = 180f + Mathf.Clamp(-p.x * 3f, -45f, 45f);
+                    heavy.Add(new HeavySock { pos = p, yaw = yaw, allowTank = Mathf.Abs(p.x) < 8f });
+                }
+            }
             Shuffle(squadSockets, rng);
             int squadCount = Mathf.Clamp(4 + d / 2 + (d >= 8 ? 1 : 0), 4, squadSockets.Count);
+            var chosen = new List<SquadSock>();
             // Guarantee coverage of both capture points.
-            var chosen = new List<SceneBuilder.SquadSocket>();
-            foreach (var sk in squadSockets) if (sk.pos.z > 40f && sk.pos.z < 60f) { chosen.Add(sk); break; }
-            foreach (var sk in squadSockets) if (sk.pos.z > 85f) { chosen.Add(sk); break; }
+            foreach (var sk in squadSockets) if (Vector3.Distance(sk.pos, cp1) < 14f) { chosen.Add(sk); break; }
+            foreach (var sk in squadSockets) if (Vector3.Distance(sk.pos, cp2) < 14f && !chosen.Contains(sk)) { chosen.Add(sk); break; }
             foreach (var sk in squadSockets) { if (chosen.Count >= squadCount) break; if (!chosen.Contains(sk)) chosen.Add(sk); }
             var squads = new List<EnemySquadPlacement>();
             for (int i = 0; i < chosen.Count; i++)
@@ -214,20 +284,23 @@ namespace TactileWars.EditorTools
             l.squads = squads.ToArray();
 
             var defs = new List<DefensePlacementData>();
-            // Mines: a few on the lane, more with difficulty.
-            var mines = new List<Vector3>(SceneBuilder.MineSockets);
+            // Traps on the lane: mines, plus geysers from difficulty 3, tesla antennas (short range) from 5.
             Shuffle(mines, rng);
-            int mineCount = Mathf.Clamp(3 + d, 3, mines.Count);
-            for (int i = 0; i < mineCount; i++) defs.Add(new DefensePlacementData { defenseId = "mine", position = mines[i], yaw = (float)rng.NextDouble() * 360f });
-            // Heavy defenses on the authored structure sockets (sandbag nests and pads), unlocked by difficulty.
-            var heavy = new List<SceneBuilder.DefenseSocket>(SceneBuilder.DefenseSockets);
+            int geysers = d >= 3 ? 1 + (d - 3) / 3 : 0;
+            int teslas = d >= 5 ? 1 + (d - 5) / 3 : 0;
+            int mineCount = Mathf.Clamp(3 + d, 3, Mathf.Max(3, mines.Count - geysers - teslas));
+            int mi = 0;
+            for (int i = 0; i < teslas && mi < mines.Count; i++) defs.Add(new DefensePlacementData { defenseId = "tesla", position = mines[mi++], yaw = 180f });
+            for (int i = 0; i < geysers && mi < mines.Count; i++) defs.Add(new DefensePlacementData { defenseId = "geyser", position = mines[mi++], yaw = (float)rng.NextDouble() * 360f });
+            for (int i = 0; i < mineCount && mi < mines.Count; i++) defs.Add(new DefensePlacementData { defenseId = "mine", position = mines[mi++], yaw = (float)rng.NextDouble() * 360f });
+            // Heavy defenses on the structure sockets, unlocked by difficulty; one sniper tower from difficulty 4.
             Shuffle(heavy, rng);
             int heavyCount = Mathf.Clamp(1 + (d + 1) / 2, 1, heavy.Count);
-            string[] pool = d < 3 ? new[] { "turret", "bunker" } : d < 6 ? new[] { "turret", "bunker", "cannon" } : new[] { "turret", "bunker", "cannon", "tank" };
+            string[] pool = d < 3 ? new[] { "turret", "bunker" } : d < 6 ? new[] { "turret", "bunker", "cannon" } : new[] { "turret", "bunker", "cannon", "tank", "sniper" };
             for (int i = 0; i < heavyCount; i++)
             {
                 var sk = heavy[i];
-                string id = sk.allowTank && d >= 6 && rng.NextDouble() < 0.5 ? "tank" : pool[rng.Next(pool.Length)];
+                string id = i == 0 && d >= 4 ? "sniper" : (sk.allowTank && d >= 6 && rng.NextDouble() < 0.5 ? "tank" : pool[rng.Next(pool.Length)]);
                 if (id == "tank" && !sk.allowTank) id = "turret";
                 var p = new DefensePlacementData { defenseId = id, position = sk.pos, yaw = sk.yaw };
                 if (id == "tank") { p.patrolA = sk.pos + new Vector3(-6f, 0f, 0f); p.patrolB = sk.pos + new Vector3(6f, 0f, 0f); }

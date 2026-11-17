@@ -41,6 +41,12 @@ namespace TactileWars.Battle
         public static event Action<ShapeType> ShapeRecognized;
         public static event Action<Team, TargetKind, Vector3> UnitKilled;
         public static event Action<EnemySquad> SquadWiped;
+        /// <summary>An enemy squad joined mid battle (counterattack wave).</summary>
+        public static event Action<EnemySquad> EnemySquadSpawned;
+        /// <summary>(world position) a counterattack wave is marching on a captured point.</summary>
+        public static event Action<Vector3> Counterattack;
+        /// <summary>(world position) the defender's paint strike landed.</summary>
+        public static event Action<Vector3> StrikeLanded;
 
         public static void RaiseBattleStarted() => BattleStarted?.Invoke();
         public static void RaiseCaptureProgress(int i, float p, bool contested) => CaptureProgress?.Invoke(i, p, contested);
@@ -53,6 +59,9 @@ namespace TactileWars.Battle
         public static void RaiseShapeRecognized(ShapeType s) => ShapeRecognized?.Invoke(s);
         public static void RaiseUnitKilled(Team t, TargetKind k, Vector3 p) => UnitKilled?.Invoke(t, k, p);
         public static void RaiseSquadWiped(EnemySquad s) => SquadWiped?.Invoke(s);
+        public static void RaiseEnemySquadSpawned(EnemySquad s) => EnemySquadSpawned?.Invoke(s);
+        public static void RaiseCounterattack(Vector3 p) => Counterattack?.Invoke(p);
+        public static void RaiseStrikeLanded(Vector3 p) => StrikeLanded?.Invoke(p);
 
         /// <summary>Drops every subscriber (scene reloads, tests).</summary>
         public static void ClearAll()
@@ -60,6 +69,7 @@ namespace TactileWars.Battle
             BattleStarted = null; CaptureProgress = null; PointCaptured = null; SoldierCountChanged = null;
             ReinforcementChanged = null; Reinforced = null; Victory = null; Defeat = null; ShapeRecognized = null;
             UnitKilled = null; SquadWiped = null;
+            EnemySquadSpawned = null; Counterattack = null; StrikeLanded = null;
         }
     }
 }

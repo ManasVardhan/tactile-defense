@@ -77,6 +77,12 @@ MonoBehaviour:
   - {fileID: 21300000, guid: c1a53e8bed747451483643811963f0a5, type: 3}
   - {fileID: 21300000, guid: 0fa7ba4dd6ee642b687f14fb1899d32b, type: 3}
   - {fileID: 21300000, guid: e2a474663a52242a3bd3e273c464ace5, type: 3}
+  - {fileID: 21300000, guid: 5ddd5110a3ccc4d4282189be8d040954, type: 3}
+  - {fileID: 21300000, guid: afe08906d88f74f1c82a14f2c12d209e, type: 3}
+  - {fileID: 21300000, guid: 078342e1011864e0bb2be186400096ea, type: 3}
+  - {fileID: 21300000, guid: 36edd31ec70fb44b79118bc596606bd7, type: 3}
+  - {fileID: 21300000, guid: c30fa42eadb1d4382b9e951d9bfc258f, type: 3}
+  - {fileID: 21300000, guid: 51e42472a1b934e75b84bbc19bd7bc22, type: 3}
   busts:
   - {fileID: 21300000, guid: bedb14025f95b4bc0aba72dc4ca3162a, type: 3}
   - {fileID: 21300000, guid: 0d3598a5602114022b4f60289cefcec8, type: 3}
@@ -114,6 +120,10 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 362dd5c23bbfd41a48ffef3f3d554cfa, type: 3}
   - key: def_tesla_Blue
     sprite: {fileID: 21300000, guid: d1f304e6f62364d6fb6e04e654f9deca, type: 3}
+  - key: def_sniper_Blue
+    sprite: {fileID: 21300000, guid: bf7c8ca5fd4de483caefd53990311262, type: 3}
+  - key: def_geyser_Blue
+    sprite: {fileID: 21300000, guid: 9c906d5f9530d425c9d8449e01d4d385, type: 3}
   - key: hq_Blue
     sprite: {fileID: 21300000, guid: 4dc6421489afc4f0588381aa3c0eba94, type: 3}
   - key: def_turret_Green
@@ -128,6 +138,10 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 0c83a11a5c80c411e932c6e81a61035c, type: 3}
   - key: def_tesla_Green
     sprite: {fileID: 21300000, guid: 34cb36ff39b7546eb8ef32ad6a80494e, type: 3}
+  - key: def_sniper_Green
+    sprite: {fileID: 21300000, guid: 50ae643a481bb478e864677b6cadd9c0, type: 3}
+  - key: def_geyser_Green
+    sprite: {fileID: 21300000, guid: 89a57797f97dd4c07b68c33da4afaef2, type: 3}
   - key: hq_Green
     sprite: {fileID: 21300000, guid: 8ee657977d3ff443a87ed296e5586ee5, type: 3}
   - key: def_turret_Orange
@@ -142,6 +156,10 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 209dd6210e33b4ff79576d18894994dd, type: 3}
   - key: def_tesla_Orange
     sprite: {fileID: 21300000, guid: b4e0c8fe48bb74c47a18c75986d3cbb1, type: 3}
+  - key: def_sniper_Orange
+    sprite: {fileID: 21300000, guid: 1e93f76a2f5424b7388ad242ef322aa5, type: 3}
+  - key: def_geyser_Orange
+    sprite: {fileID: 21300000, guid: fa617288ff9454c5fa393f4a1b4affee, type: 3}
   - key: hq_Orange
     sprite: {fileID: 21300000, guid: 5f9845a31db2c4928b7c1f92756775a8, type: 3}
   - key: def_turret_Red
@@ -156,6 +174,10 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 75113646f4be24c9fa68cfd3b8db5d2b, type: 3}
   - key: def_tesla_Red
     sprite: {fileID: 21300000, guid: 506b9225350584f99be311c475d8401e, type: 3}
+  - key: def_sniper_Red
+    sprite: {fileID: 21300000, guid: 6d1736b1bab0047a8a6aed2758d8a071, type: 3}
+  - key: def_geyser_Red
+    sprite: {fileID: 21300000, guid: 672216778314c41b981a9eebe9994e08, type: 3}
   - key: hq_Red
     sprite: {fileID: 21300000, guid: fd7ef1a47a51b4f85870a61473857ff1, type: 3}
   - key: def_turret_Pink
@@ -170,6 +192,10 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 4719b2c324ab242e4b0e855ed37b54b4, type: 3}
   - key: def_tesla_Pink
     sprite: {fileID: 21300000, guid: 18cbafd27bd824766b3eac1a3a04801b, type: 3}
+  - key: def_sniper_Pink
+    sprite: {fileID: 21300000, guid: 784773d38749e48ce9836764db800676, type: 3}
+  - key: def_geyser_Pink
+    sprite: {fileID: 21300000, guid: fae8746f137974f4ab9b773df7cf47df, type: 3}
   - key: hq_Pink
     sprite: {fileID: 21300000, guid: 4bb1de712e9354e5d97a9318f25f3f98, type: 3}
   - key: def_turret_Purple
@@ -184,6 +210,10 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 514b996f5055c483883056e06741e1c8, type: 3}
   - key: def_tesla_Purple
     sprite: {fileID: 21300000, guid: 70076d2ec4f654491b4eb6204f284841, type: 3}
+  - key: def_sniper_Purple
+    sprite: {fileID: 21300000, guid: 4b3dd9403ae1c46ce8e72ca8ca615aeb, type: 3}
+  - key: def_geyser_Purple
+    sprite: {fileID: 21300000, guid: 49ad2b0136f6340b9a13725dd4982f41, type: 3}
   - key: hq_Purple
     sprite: {fileID: 21300000, guid: eb793d5405176451794d83483bace529, type: 3}
   - key: def_turret_Teal
@@ -198,6 +228,10 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 0661ec107904f4005a3f4a3b99bce4c5, type: 3}
   - key: def_tesla_Teal
     sprite: {fileID: 21300000, guid: 2c66cdeb9787943cb8306e6d57d1bc5c, type: 3}
+  - key: def_sniper_Teal
+    sprite: {fileID: 21300000, guid: 04bfa539993554cffa5e00c1db480434, type: 3}
+  - key: def_geyser_Teal
+    sprite: {fileID: 21300000, guid: d1020d62a40fe411abbfe9475abe037f, type: 3}
   - key: hq_Teal
     sprite: {fileID: 21300000, guid: 48fc75a57cae24e6787139e3770d7abb, type: 3}
   palette: {fileID: 11400000, guid: 56bec7ad47a3347cf894cbc9f1e00421, type: 2}

@@ -359,6 +359,73 @@ def defeat():
     return trim(out, d)
 
 
+# ------------------------------------------------------------------ phase 5 defenses
+def tesla_charge():
+    d = 0.55
+    t = tarr(d)
+    hum = sweep(180, 720, d) * (0.4 + 0.6 * t / d)
+    buzz = np.sign(np.sin(TWO_PI * sweep_phase_safe(90, 360, d))) * 0.18
+    crackle = band(white(d, 700), 2500, 7000) * env_gauss(d, d * 0.8, 0.15) * 0.35
+    x = fft_filter(0.5 * hum + buzz + crackle, lp=6000) * env_gate(d, 0.05, 0.04)
+    return trim(sat(x, 1.4), d)
+
+
+def sweep_phase_safe(f0, f1, d):
+    t = tarr(d)
+    return f0 * t + (f1 - f0) * t * t / (2 * d)
+
+
+def tesla_zap():
+    d = 0.32
+    r = rng(710)
+    out = buf(d)
+    for k in range(9):
+        t0 = k * 0.026 + r.uniform(0, 0.01)
+        c = band(white(0.03, 720 + k), 1800, 9000) * env_exp(0.03, 0.008, 0.0005)
+        mix_at(out, c, t0, 0.9)
+    snap = sweep(2400, 300, 0.08) * env_exp(0.08, 0.02, 0.0005) * 0.6
+    hum = np.sin(TWO_PI * 120 * tarr(d)) * env_exp(d, 0.12, 0.002) * 0.3
+    x = out + hum
+    x[:len(snap)] += snap
+    return trim(fft_filter(sat(x, 1.8), lp=10000), d)
+
+
+def sniper_aim():
+    d = 0.4
+    beep = sine(1650, d) * env_gate(d, 0.01, 0.05) * (0.5 + 0.5 * (np.sin(TWO_PI * 14 * tarr(d)) > 0))
+    return trim(beep * 0.6, d)
+
+
+def sniper_shot():
+    d = 0.55
+    crack = band(white(d, 740), 800, 7000) * env_exp(d, 0.03, 0.0005)
+    boom = sweep(320, 60, d) * env_exp(d, 0.12, 0.001) * 0.8
+    tail = band(white(d, 741), 300, 2500) * env_exp(d, 0.2, 0.02) * 0.25
+    x = sat(crack + boom + tail, 1.7)
+    w = np.concatenate([x, np.zeros(ns(0.2))])
+    w = reverb(w, 0.25, 0.45, 742, lp=4500)
+    return trim(w, d)
+
+
+def geyser_rumble():
+    d = 0.9
+    rum = fft_filter(white(d, 750), lp=220) * 3.0 * env_gate(d, 0.3, 0.1)
+    bub = bubbles(d, 751, 14, 250, 700, 0.35, tmin=0.05, tmax=0.8)
+    x = rum + bub * gurgle(d, 752, 40)
+    return trim(sat(x, 1.4), d)
+
+
+def geyser_erupt():
+    d = 1.0
+    whoosh = band(white(d, 760), 300, 4000) * env_exp(d, 0.35, 0.03) * gurgle(d, 761, 60)
+    thump = sweep(150, 40, d) * env_exp(d, 0.18, 0.002)
+    bub = bubbles(d, 762, 12, 350, 1100, 0.3, tmin=0.1, tmax=0.8)
+    x = sat(whoosh + thump + bub, 1.6)
+    w = np.concatenate([x, np.zeros(ns(0.3))])
+    w = reverb(w, 0.25, 0.4, 763, lp=4000)
+    return trim(w, d)
+
+
 # ------------------------------------------------------------------ table
 def build():
     items = {}
@@ -385,13 +452,17 @@ def build():
                      ("ui_purchase", ui_purchase), ("ui_error", ui_error), ("level_up", level_up),
                      ("victory", victory), ("defeat", defeat)]:
         items[name] = fn()
+    for name, fn in [("tesla_charge", tesla_charge), ("tesla_zap", tesla_zap), ("sniper_aim", sniper_aim),
+                     ("sniper_shot", sniper_shot), ("geyser_rumble", geyser_rumble), ("geyser_erupt", geyser_erupt)]:
+        items[name] = fn()
     return items
 
 
 LOOPS = {"footsteps_loop": footsteps_loop, "stroke_draw_loop": stroke_draw_loop}
 # longer tails need a longer final fade so reverb/decay ends smoothly
 FADE_OUT = {"victory": 0.15, "defeat": 0.15, "capture_complete": 0.05, "level_up": 0.05,
-            "cannon_shot": 0.05, "tank_shot": 0.05, "mine_explosion": 0.06, "building_destroyed": 0.08}
+            "cannon_shot": 0.05, "tank_shot": 0.05, "mine_explosion": 0.06, "building_destroyed": 0.08,
+            "sniper_shot": 0.06, "geyser_erupt": 0.08, "geyser_rumble": 0.08}
 
 
 def main():

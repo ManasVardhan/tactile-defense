@@ -53,6 +53,15 @@ namespace TactileWars.Squad
         int lastReportedCount = -1;
         int startCount;
 
+        // Routing (anchor follows grid waypoints in a compact blob, then re-forms at the destination).
+        NavGrid nav;
+        bool navBuilt;
+        readonly List<Vector3> route = new List<Vector3>(64);
+        int[] soldierWp = new int[128];   // per soldier waypoint index; route.Count - 1 means "go to your slot"
+        int routeTick;
+        bool routing;
+        static readonly Vector3[] blobOffsets = BuildBlob(160);
+
         public IReadOnlyList<Soldier> Soldiers => soldiers;
         public int AliveCount { get; private set; }
         public Vector3 Anchor => anchor;
@@ -62,6 +71,36 @@ namespace TactileWars.Squad
         public int StartCount => startCount;
         public int SlotCount => slotCount;
         public FormationSlot GetSlotFor(int soldierIndex) => slots[assignment[soldierIndex]];
+        /// <summary>True while the squad follows grid waypoints around an obstacle.</summary>
+        public bool IsRouting => routing;
+        public IReadOnlyList<Vector3> Route => route;
+        /// <summary>Coarse obstacle grid (built on first use from the Obstacle layer).</summary>
+        public NavGrid Nav { get { EnsureNav(); return nav; } }
+
+        static Vector3[] BuildBlob(int n)
+        {
+            var a = new Vector3[n];
+            for (int i = 0; i < n; i++)
+            {
+                float r = Mathf.Sqrt(i + 0.5f);
+                float ang = i * 2.39996f;
+                a[i] = new Vector3(Mathf.Cos(ang) * r, 0f, Mathf.Sin(ang) * r);
+            }
+            return a;
+        }
+
+        void EnsureNav()
+        {
+            if (navBuilt) return;
+            navBuilt = true;
+            var gc = BattleContext.Config;
+            Vector2 min = gc != null ? gc.mapMin : new Vector2(-20f, 0f);
+            Vector2 max = gc != null ? gc.mapMax : new Vector2(20f, 110f);
+            nav = NavGrid.Build(min - Vector2.one, max + Vector2.one, config != null ? config.navCell : 1f, config != null ? config.navClearance : 0.3f, 1 << Layers.Obstacle);
+        }
+
+        /// <summary>Drops the cached grid (call after the map's props change).</summary>
+        public void InvalidateNav() { navBuilt = false; nav = null; }
 
         void Awake() { Instance = this; }
         void OnDestroy() { if (Instance == this) Instance = null; }
@@ -143,6 +182,7 @@ namespace TactileWars.Squad
             s.Motor.Teleport(pos);
             soldiers.Add(s);
             EnsureCapacity(soldiers.Count);
+            soldierWp[soldiers.Count - 1] = int.MaxValue / 2; // newcomers are not routing
             return s;
         }
 
@@ -153,6 +193,7 @@ namespace TactileWars.Squad
             System.Array.Resize(ref slots, c);
             System.Array.Resize(ref assignment, c);
             System.Array.Resize(ref positions, c);
+            System.Array.Resize(ref soldierWp, c);
         }
 
         void SetPath(List<Vector3> pts, bool closed)
@@ -162,7 +203,7 @@ namespace TactileWars.Squad
             pathClosed = closed;
         }
 
-        void SolveAndAssign(Vector3 behindHint)
+        void SolveAndAssign(Vector3 behindHint, bool keepRoute = false)
         {
             int n = soldiers.Count;
             if (n == 0) return;
@@ -171,11 +212,13 @@ namespace TactileWars.Squad
             slotCount = solver.Solve(pathPts, pathClosed, n, p, behindHint, slots);
             for (int i = 0; i < n; i++) positions[i] = soldiers[i].transform.position;
             solver.Assign(positions, n, slots, assignment);
-            ApplyTargets();
+            ApplyTargets(!keepRoute);
+            if (keepRoute && routing) ApplyRouteTargets();
         }
 
-        void ApplyTargets()
+        void ApplyTargets(bool cancelRoute = true)
         {
+            if (cancelRoute) routing = false;
             Vector3 sum = Vector3.zero;
             for (int i = 0; i < soldiers.Count; i++)
             {
@@ -216,7 +259,7 @@ namespace TactileWars.Squad
             AudioManager.SetLoop(SoundId.StrokeDraw, false);
             var f = formation;
             var settings = f != null
-                ? new ShapeRecognizer.Settings { closedThreshold = f.closedThreshold, circleTolerance = f.circleTolerance, cornerAngle = f.cornerAngle, lineStraightness = f.lineStraightness }
+                ? new ShapeRecognizer.Settings { closedThreshold = f.closedThreshold, circleTolerance = f.circleTolerance, cornerAngle = f.cornerAngle, lineStraightness = f.lineStraightness, lineMaxDeviation = f.lineMaxDeviation }
                 : ShapeRecognizer.Settings.Default;
             work.Clear();
             for (int i = 0; i < raw.Count; i++) work.Add(raw[i]);
@@ -270,6 +313,22 @@ namespace TactileWars.Squad
             MoveFormationTo(world);
         }
 
+        /// <summary>Sets a formation from a world path (the AI attacker's "drawn" shape): same solver as a stroke,
+        /// shows the painted stroke and raises ShapeRecognized. Closed paths form rings.</summary>
+        public void SetFormation(List<Vector3> pts, bool closed, ShapeType shape)
+        {
+            if (pts == null || pts.Count < 2) return;
+            work.Clear();
+            for (int i = 0; i < pts.Count; i++) { var p = pts[i]; p.y = 0f; work.Add(p); }
+            PathResampler.ResampleBySpacing(work, closed, formation != null ? formation.resampleStep : 0.25f, scratch);
+            SetPath(scratch, closed);
+            SolveAndAssign(Centroid);
+            LastShape = shape;
+            if (strokeRenderer != null) strokeRenderer.ShowFinal(pathPts, closed);
+            if (ring != null) ring.Pulse();
+            BattleEvents.RaiseShapeRecognized(shape);
+        }
+
         /// <summary>Translates the current formation so the slot centroid lands on 'world'.</summary>
         public void MoveFormationTo(Vector3 world)
         {
@@ -292,8 +351,73 @@ namespace TactileWars.Squad
             for (int i = 0; i < slotCount; i++) slots[i].position += delta;
             solver.Path.Translate(delta);
             ApplyTargets();
+            TryRoute(anchor);
             if (ring != null) ring.Pulse();
             AudioManager.Play(SoundId.FormationSet, world);
+        }
+
+        /// <summary>When walls block the straight way to 'dest', follow grid waypoints as a compact blob first.</summary>
+        void TryRoute(Vector3 dest)
+        {
+            if (config != null && !config.useRouting) return;
+            if (AliveCount == 0 && soldiers.Count == 0) return;
+            Vector3 from = AliveCount > 0 ? Centroid : anchor;
+            var g = Nav;
+            if (g == null || g.LineClear(from, dest)) return;
+            if (!g.FindPath(from, dest, route) || route.Count < 2) return;
+            routing = true;
+            for (int i = 0; i < soldiers.Count; i++) soldierWp[i] = 0;
+            ApplyRouteTargets();
+        }
+
+        /// <summary>Every soldier follows the shared waypoints on its own (advancing when it reaches its waypoint
+        /// or can see the next one), then heads for its formation slot. Stragglers never get sent straight at a wall.</summary>
+        void ApplyRouteTargets()
+        {
+            for (int i = 0; i < soldiers.Count; i++) SetRouteTarget(i);
+        }
+
+        void SetRouteTarget(int i)
+        {
+            int last = route.Count - 1;
+            int k = soldierWp[i];
+            var m = soldiers[i].Motor;
+            if (k >= last)
+            {
+                var slot = slots[assignment[i]];
+                m.Target = slot.position;
+                m.RestFacing = slot.facing;
+                return;
+            }
+            float sp = (config != null ? config.routeBlobSpacing : 0.5f) * 0.45f;
+            Vector3 wp = route[k];
+            Vector3 dir = route[k + 1] - wp; dir.y = 0f;
+            m.Target = wp + blobOffsets[i % blobOffsets.Length] * sp;
+            m.RestFacing = dir.sqrMagnitude > 1e-4f ? dir.normalized : Vector3.forward;
+        }
+
+        void TickRoute()
+        {
+            if (!routing) return;
+            int last = route.Count - 1;
+            float adv = config != null ? config.routeAdvanceDistance : 2.2f;
+            int done = 0;
+            routeTick++;
+            for (int i = 0; i < soldiers.Count; i++)
+            {
+                int k = soldierWp[i];
+                if (k >= last) { done++; continue; }
+                if (((i + routeTick) & 1) != 0) continue;   // half the soldiers per frame
+                Vector3 pos = soldiers[i].transform.position;
+                Vector3 d = pos - route[k]; d.y = 0f;
+                Vector3 next = k + 1 >= last ? slots[assignment[i]].position : route[k + 1];
+                if (d.magnitude < adv * 0.6f || (nav != null && nav.LineClear(pos, next, 0.7f)))
+                {
+                    soldierWp[i] = k + 1;
+                    SetRouteTarget(i);
+                }
+            }
+            if (done >= soldiers.Count) routing = false;
         }
 
         /// <summary>Spawns backup soldiers behind the squad and re-solves the formation.</summary>
@@ -328,6 +452,7 @@ namespace TactileWars.Squad
                 int last = soldiers.Count - 1;
                 soldiers[i] = soldiers[last];
                 assignment[i] = assignment[last];
+                soldierWp[i] = soldierWp[last];
                 soldiers.RemoveAt(last);
                 removed = true;
             }
@@ -335,7 +460,7 @@ namespace TactileWars.Squad
             if (respaceTimer > 0f)
             {
                 respaceTimer -= dt;
-                if (respaceTimer <= 0f && !IsDrawing && soldiers.Count > 0) SolveAndAssign(Centroid + (Centroid - anchor));
+                if (respaceTimer <= 0f && !IsDrawing && soldiers.Count > 0) SolveAndAssign(Centroid + (Centroid - anchor), routing);
             }
 
             int n = soldiers.Count;
@@ -348,6 +473,8 @@ namespace TactileWars.Squad
             }
             AliveCount = alive;
             if (alive > 0) Centroid = sum / alive;
+
+            if (routing && alive > 0) TickRoute();
 
             if (soldierConfig != null)
             {
@@ -374,6 +501,7 @@ namespace TactileWars.Squad
         /// <summary>Debug and test hook: snap every soldier onto its slot.</summary>
         public void TeleportToSlots()
         {
+            routing = false;
             for (int i = 0; i < soldiers.Count; i++)
                 if (soldiers[i] != null && soldiers[i].IsAlive) soldiers[i].Motor.Teleport(slots[assignment[i]].position);
             ringSnap = true;

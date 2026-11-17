@@ -22,5 +22,6 @@ MonoBehaviour:
   enemyHealthMult: 1.7
   enemyDamageMult: 1.55
   layout: {fileID: 11400000, guid: 94aa9c97b52284442adc7f3530de1c05, type: 2}
+  map: {fileID: 11400000, guid: c4130c810929f4bd3bb3df7af67234cf, type: 2}
   enemySquads: 10
-  defenses: 19
+  defenses: 22

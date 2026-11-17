@@ -24,3 +24,9 @@ MonoBehaviour:
   squadConfig: {fileID: 11400000, guid: 5d3a04598ecfd4cdb97b9d3c6c691f51, type: 2}
   battleConfig: {fileID: 11400000, guid: 27a40089f34c74a30baf988458688e67, type: 2}
   playerSoldier: {fileID: 11400000, guid: 27a57207c0cf04dd68ca27d37bc2ccfa, type: 2}
+  baseEditor: {fileID: 11400000, guid: e2932b5f3fd444355b626a79a73c7281, type: 2}
+  defenseBattle: {fileID: 11400000, guid: 8d3a7efaa57554e5e94786a488d81957, type: 2}
+  homeMap: {fileID: 11400000, guid: 9cb5bff4a18914ee4a8d0e334a0f833c, type: 2}
+  maps:
+  - {fileID: 11400000, guid: 34eab83668f3647808993a774755e220, type: 2}
+  - {fileID: 11400000, guid: c4130c810929f4bd3bb3df7af67234cf, type: 2}

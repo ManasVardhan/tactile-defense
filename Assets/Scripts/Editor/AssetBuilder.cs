@@ -77,7 +77,7 @@ namespace TactileWars.EditorTools
 
         // ------------------------------------------------------------------ textures and meshes
 
-        public class Tex { public Texture2D splat, ring, blot, dash, glow, dot, soft, puff, ghost, star; }
+        public class Tex { public Texture2D splat, ring, blot, dash, glow, dot, soft, puff, ghost, star, beam, grid, white; }
 
         static Tex BuildTextures()
         {
@@ -93,6 +93,9 @@ namespace TactileWars.EditorTools
                 puff = TextureGen.Puff(),
                 ghost = TextureGen.Ghost(),
                 star = TextureGen.Star(),
+                beam = TextureGen.Write("T_Beam", 16, 64, (u, v) => { float a = Mathf.Clamp01(1f - Mathf.Abs(v - 0.5f) * 2f); a = a * a * (3f - 2f * a); return new Color(1f, 1f, 1f, a); }),
+                grid = TextureGen.Write("T_EditorGrid", 64, 64, (u, v) => { float e = Mathf.Min(Mathf.Min(u, 1f - u), Mathf.Min(v, 1f - v)); float a = e < 0.03f ? 0.9f : (e < 0.06f ? 0.35f : 0f); return new Color(1f, 1f, 1f, a); }, false, TextureWrapMode.Repeat),
+                white = TextureGen.Write("T_White", 8, 8, (u, v) => Color.white),
             };
         }
 
@@ -120,6 +123,7 @@ namespace TactileWars.EditorTools
             public Dictionary<TeamColorId, TeamMaterials> teams = new Dictionary<TeamColorId, TeamMaterials>();
             public Material flash, blobShadow, ground, bubble, neutralArc;
             public Material pDot, pPuff, pGhost, pStar, pSoft;
+            public Material zap, beam, ghostEdit, gridEdit, discEdit;
         }
 
         static Shader Find(string n)
@@ -251,6 +255,11 @@ namespace TactileWars.EditorTools
             mats.pGhost = Mat("M_P_Ghost", particle, m => { m.SetTexture("_MainTex", t.ghost); m.renderQueue = 3012; });
             mats.pStar = Mat("M_P_Star", particle, m => { m.SetTexture("_MainTex", t.star); m.SetFloat("_Emission", 0.8f); m.renderQueue = 3013; });
             mats.pSoft = Mat("M_P_Soft", particle, m => { m.SetTexture("_MainTex", t.soft); m.renderQueue = 3011; });
+            mats.zap = Mat("M_Zap", particle, m => { m.SetTexture("_MainTex", t.beam); m.SetFloat("_Emission", 1.2f); m.renderQueue = 3014; });
+            mats.beam = Mat("M_AimBeam", particle, m => { m.SetTexture("_MainTex", t.beam); m.SetFloat("_Emission", 0.4f); m.renderQueue = 3014; });
+            mats.ghostEdit = Mat("M_EditorGhost", particle, m => { m.SetTexture("_MainTex", t.white); m.renderQueue = 3015; });
+            mats.gridEdit = Mat("M_EditorGrid", particle, m => { m.SetTexture("_MainTex", t.grid); m.renderQueue = 3001; });
+            mats.discEdit = Mat("M_EditorDisc", particle, m => { m.SetTexture("_MainTex", t.soft); m.renderQueue = 3002; });
             return mats;
         }
 

@@ -22,6 +22,12 @@ namespace TactileWars.Battle
         public float perSquadWipe = 3f;
         public int reinforcementCount = 10;
 
+        [Header("Counterattack after the first capture (ESTIMATE: multiplayer.it mentions defending against waves)")]
+        public bool counterattackEnabled = true;
+        [Tooltip("Seconds after the first capture before the wave leaves the nearest spawn hatch.")] public float counterattackDelay = 3f;
+        public int counterattackSize = 6;
+        [Tooltip("March speed of the wave's anchor.")] public float counterattackSpeed = 2.2f;
+
         [Header("Rewards (estimates)")]
         public int goldBase = 40;
         public int goldPerKill = 2;

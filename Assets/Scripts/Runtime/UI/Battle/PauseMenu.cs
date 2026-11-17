@@ -108,8 +108,9 @@ namespace TactileWars.UI
 
         public void Quit()
         {
+            string scene = BattleLaunch.ReturnScene;
             BattleLaunch.Clear();
-            ScreenTransition.Load(BattleLaunch.MenuScene, UIFactory.PlayerTeam);
+            ScreenTransition.Load(scene, UIFactory.PlayerTeam);
         }
 
         void ShowSettings()

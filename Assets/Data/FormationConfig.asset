@@ -26,5 +26,6 @@ MonoBehaviour:
   circleTolerance: 0.16
   cornerAngle: 55
   lineStraightness: 0.93
+  lineMaxDeviation: 0.08
   snapRecognizedShapes: 1
   maxStrokePoints: 1024

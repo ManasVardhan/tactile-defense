@@ -9,7 +9,9 @@ namespace TactileWars.Audio
         BuildingHit, BuildingDestroyed, StrokeDraw, FormationSet, CaptureTick, CaptureComplete,
         ReinforcementReady, ReinforcementCall, BubblePop, Victory, Defeat, Footsteps, UiClick,
         // Appended for the UI phase (keep order: values are serialized as ints).
-        UiBack, UiOpen, UiPurchase, UiError, CoinPickup, LevelUp
+        UiBack, UiOpen, UiPurchase, UiError, CoinPickup, LevelUp,
+        // Appended for phase 5 defenses.
+        TeslaCharge, TeslaZap, SniperAim, SniperShot, GeyserRumble, GeyserErupt
     }
 
     [Serializable]

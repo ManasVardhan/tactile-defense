@@ -12,6 +12,7 @@ namespace TactileWars.Battle
         public int seed;
         public EnemySquadPlacement[] squads = Array.Empty<EnemySquadPlacement>();
         public DefensePlacementData[] defenses = Array.Empty<DefensePlacementData>();
+        [Tooltip("Optional: counterattack hatches for this layout (empty keeps the map's).")] public Vector3[] counterSpawnsOverride = Array.Empty<Vector3>();
     }
 
     [Serializable]
@@ -26,7 +27,7 @@ namespace TactileWars.Battle
     [Serializable]
     public struct DefensePlacementData
     {
-        [Tooltip("DefenseCatalog id: turret, mine, tank, cannon, bunker.")] public string defenseId;
+        [Tooltip("DefenseCatalog id: turret, mine, tank, cannon, bunker, tesla, sniper, geyser.")] public string defenseId;
         public Vector3 position;
         public float yaw;
         [Tooltip("Tank only: patrol end points.")] public Vector3 patrolA, patrolB;

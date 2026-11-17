@@ -290,9 +290,47 @@ MonoBehaviour:
     - requiredLevel: 13
       goldCost: 1700
       value: 3
+  - id: def_geyser
+    displayName: Geyser
+    description: Hidden vent that erupts paint on attackers.
+    branch: 2
+    effect: 8
+    icon: Skull
+    defenseId: geyser
+    valueFormat: Lv {0}
+    displayScale: 1
+    steps:
+    - requiredLevel: 3
+      goldCost: 350
+      value: 1
+    - requiredLevel: 6
+      goldCost: 650
+      value: 2
+    - requiredLevel: 9
+      goldCost: 1000
+      value: 3
+  - id: def_sniper
+    displayName: Sniper Tower
+    description: Long range shots that pick off flag bearers.
+    branch: 2
+    effect: 8
+    icon: Target
+    defenseId: sniper
+    valueFormat: Lv {0}
+    displayScale: 1
+    steps:
+    - requiredLevel: 6
+      goldCost: 700
+      value: 1
+    - requiredLevel: 9
+      goldCost: 1100
+      value: 2
+    - requiredLevel: 12
+      goldCost: 1600
+      value: 3
   - id: def_tesla
     displayName: Tesla Antenna
-    description: Short range zap trap.
+    description: Charges, then chains lightning through nearby soldiers.
     branch: 2
     effect: 8
     icon: Lightning
@@ -300,12 +338,12 @@ MonoBehaviour:
     valueFormat: Lv {0}
     displayScale: 1
     steps:
-    - requiredLevel: 9
-      goldCost: 1000
+    - requiredLevel: 8
+      goldCost: 900
       value: 1
-    - requiredLevel: 12
-      goldCost: 1500
+    - requiredLevel: 11
+      goldCost: 1400
       value: 2
-    - requiredLevel: 15
-      goldCost: 2100
+    - requiredLevel: 14
+      goldCost: 2000
       value: 3

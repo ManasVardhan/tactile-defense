@@ -454,6 +454,40 @@ namespace TactileWars.EditorTools
                 P(p => Circle(p, z, 0.8f), Blue),
                 D(p => Mathf.Min(Circle(p, new Vector2(0f, 0.38f), 0.12f), Box(p, new Vector2(0f, -0.18f), new Vector2(0.1f, 0.34f), 0.05f)), W)));
 
+            // ---- phase 5 icons
+            var ffA = new[] { new Vector2(-0.78f, 0.52f), new Vector2(0.02f, 0f), new Vector2(-0.78f, -0.52f) };
+            var ffB = new[] { new Vector2(-0.06f, 0.52f), new Vector2(0.74f, 0f), new Vector2(-0.06f, -0.52f) };
+            Set(UIIcon.FastForward, Icon("fast_forward", P(p => Mathf.Min(RoundPoly(p, ffA, 0.08f), RoundPoly(p, ffB, 0.08f)), W)));
+
+            float rb = 60f * Mathf.Deg2Rad;
+            Vector2 r0 = new Vector2(Mathf.Cos(rb), Mathf.Sin(rb)) * 0.5f;
+            Vector2 rt = new Vector2(-Mathf.Sin(rb), Mathf.Cos(rb));
+            Vector2 rn = new Vector2(Mathf.Cos(rb), Mathf.Sin(rb));
+            var rhead = new[] { r0 - rt * 0.32f, r0 + rt * 0.06f + rn * 0.27f, r0 + rt * 0.06f - rn * 0.27f };
+            Set(UIIcon.Rotate, Icon("rotate", P(p => Arc(p, z, 0.5f, 0.13f, 75f, 330f), W), P(p => RoundPoly(p, rhead, 0.04f), W)));
+
+            var can = new[] { new Vector2(-0.5f, 0.38f), new Vector2(0.5f, 0.38f), new Vector2(0.4f, -0.74f), new Vector2(-0.4f, -0.74f) };
+            Set(UIIcon.Trash, Icon("trash",
+                P(p => RoundPoly(p, can, 0.06f), Red),
+                P(p => Box(p, new Vector2(0f, 0.52f), new Vector2(0.62f, 0.09f), 0.05f), Red),
+                P(p => Box(p, new Vector2(0f, 0.66f), new Vector2(0.18f, 0.08f), 0.05f), Red),
+                D(p => Mathf.Min(Box(p, new Vector2(-0.18f, -0.18f), new Vector2(0.045f, 0.36f), 0.03f), Box(p, new Vector2(0.18f, -0.18f), new Vector2(0.045f, 0.36f), 0.03f)), A(W, 0.85f))));
+
+            Func<Vector2, Vector2, float> arrowHead = (q, c) => RoundPoly(q - c, new[] { new Vector2(0f, 0.26f), new Vector2(0.22f, 0f), new Vector2(-0.22f, 0f) }, 0.03f);
+            Set(UIIcon.Move, Icon("move", P(p => Mathf.Min(Mathf.Min(Segment(p, new Vector2(0f, -0.56f), new Vector2(0f, 0.56f), 0.1f), Segment(p, new Vector2(-0.56f, 0f), new Vector2(0.56f, 0f), 0.1f)),
+                Mathf.Min(Mathf.Min(arrowHead(p, new Vector2(0f, 0.52f)), arrowHead(new Vector2(p.x, -p.y), new Vector2(0f, 0.52f))),
+                          Mathf.Min(arrowHead(new Vector2(p.y, p.x), new Vector2(0f, 0.52f)), arrowHead(new Vector2(p.y, -p.x), new Vector2(0f, 0.52f))))), W)));
+
+            Set(UIIcon.Save, Icon("save",
+                P(p => Box(p, z, new Vector2(0.66f, 0.66f), 0.12f), Blue),
+                D(p => Box(p, new Vector2(0f, 0.36f), new Vector2(0.36f, 0.2f), 0.04f), W),
+                D(p => Box(p, new Vector2(0.14f, 0.36f), new Vector2(0.07f, 0.13f), 0.02f), Blue),
+                D(p => Box(p, new Vector2(0f, -0.3f), new Vector2(0.44f, 0.24f), 0.05f), BlueL)));
+
+            Set(UIIcon.Grid, Icon("grid", P(p => Box(p, z, new Vector2(0.7f, 0.7f), 0.1f), SteelL),
+                D(p => Mathf.Min(Mathf.Min(Box(p, new Vector2(-0.24f, 0f), new Vector2(0.04f, 0.62f)), Box(p, new Vector2(0.24f, 0f), new Vector2(0.04f, 0.62f))),
+                                 Mathf.Min(Box(p, new Vector2(0f, -0.24f), new Vector2(0.62f, 0.04f)), Box(p, new Vector2(0f, 0.24f), new Vector2(0.62f, 0.04f)))), A(Ink, 0.55f))));
+
             for (int i = 0; i < n; i++) if (icons[i] == null) Debug.LogWarning("[UIBuild] icon missing: " + (UIIcon)i);
             skin.icons = icons;
         }

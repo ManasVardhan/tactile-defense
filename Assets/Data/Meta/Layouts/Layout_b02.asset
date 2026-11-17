@@ -14,23 +14,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Battle.BaseLayoutData
   seed: 1037
   squads:
-  - position: {x: 5.5, y: 0, z: 57}
-    advance: 1
+  - position: {x: -1, y: 0, z: 52}
+    advance: 0
     count: 8
     seed: 1037
   - position: {x: 6.5, y: 0, z: 99}
     advance: 0
     count: 9
     seed: 1044
-  - position: {x: 8.5, y: 0, z: 28}
+  - position: {x: 5.5, y: 0, z: 57}
     advance: 0
     count: 10
     seed: 1051
-  - position: {x: 0, y: 0, z: 73}
+  - position: {x: 8.5, y: 0, z: 28}
     advance: 0
     count: 10
     seed: 1058
-  - position: {x: -1, y: 0, z: 52}
+  - position: {x: 0, y: 0, z: 73}
     advance: 0
     count: 10
     seed: 1065
@@ -70,3 +70,4 @@ MonoBehaviour:
     yaw: 200
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
+  counterSpawnsOverride: []

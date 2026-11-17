@@ -39,63 +39,74 @@ MonoBehaviour:
     count: 12
     seed: 1183
   defenses:
-  - defenseId: mine
+  - defenseId: tesla
     position: {x: 4.5, y: 0, z: 63.5}
+    yaw: 180
+    patrolA: {x: 0, y: 0, z: 0}
+    patrolB: {x: 0, y: 0, z: 0}
+  - defenseId: geyser
+    position: {x: 2, y: 0, z: 70}
     yaw: 266.9931
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: 2, y: 0, z: 70}
+    position: {x: 5, y: 0, z: 34}
     yaw: 338.52
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: 5, y: 0, z: 34}
+    position: {x: -1.5, y: 0, z: 81}
     yaw: 286.34018
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: -1.5, y: 0, z: 81}
+    position: {x: -4.5, y: 0, z: 30}
     yaw: 295.2269
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: -4.5, y: 0, z: 30}
+    position: {x: -7, y: 0, z: 79.5}
     yaw: 236.7857
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: -7, y: 0, z: 79.5}
+    position: {x: 7, y: 0, z: 79}
     yaw: 339.6124
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: 7, y: 0, z: 79}
+    position: {x: 2.5, y: 0, z: 90}
     yaw: 66.860756
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: 2.5, y: 0, z: 90}
+    position: {x: 1.5, y: 0, z: 62}
     yaw: 62.640083
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
-  - defenseId: turret
-    position: {x: 8.5, y: 0, z: 46.5}
-    yaw: 200
+  - defenseId: mine
+    position: {x: -1.5, y: 0, z: 64.5}
+    yaw: 276.98846
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
-  - defenseId: cannon
-    position: {x: 11, y: 0, z: 67}
-    yaw: 210
-    patrolA: {x: 0, y: 0, z: 0}
-    patrolB: {x: 0, y: 0, z: 0}
-  - defenseId: bunker
+  - defenseId: sniper
     position: {x: 0, y: 0, z: 83.5}
     yaw: 90
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
-  - defenseId: turret
-    position: {x: -9.5, y: 0, z: 98.5}
-    yaw: 160
+  - defenseId: cannon
+    position: {x: 8.5, y: 0, z: 46.5}
+    yaw: 200
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
+  - defenseId: bunker
+    position: {x: -12, y: 0, z: 52}
+    yaw: 140
+    patrolA: {x: 0, y: 0, z: 0}
+    patrolB: {x: 0, y: 0, z: 0}
+  - defenseId: turret
+    position: {x: 11, y: 0, z: 67}
+    yaw: 210
+    patrolA: {x: 0, y: 0, z: 0}
+    patrolB: {x: 0, y: 0, z: 0}
+  counterSpawnsOverride: []

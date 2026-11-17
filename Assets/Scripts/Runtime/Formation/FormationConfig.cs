@@ -35,6 +35,8 @@ namespace TactileWars.Formation
         public float cornerAngle = 55f;
         [Tooltip("Endpoint distance / length ratio above which an open stroke is a line.")]
         public float lineStraightness = 0.93f;
+        [Tooltip("Estimate (GAMEPLAY_MECHANICS 2.5: 0.08). Max deviation from the chord, as a fraction of length, for a line.")]
+        public float lineMaxDeviation = 0.08f;
         [Tooltip("Snap recognized lines and circles to their ideal shape.")]
         public bool snapRecognizedShapes = true;
         [Tooltip("Max number of stroke samples kept while drawing.")]

@@ -50,8 +50,46 @@ namespace TactileWars.Meta
                 lo.enemyDamageMult = b.enemyDamageMult;
                 lo.rewardMult = b.rewardMultiplier;
                 lo.difficulty = b.difficulty;
+                lo.map = b.map;
             }
             if (lo.enemyTeam == lo.playerTeam) lo.enemyTeam = AlternateEnemy(lo.playerTeam);
+            return lo;
+        }
+
+        /// <summary>Defense battle against the player's saved base: an AI squad (scaled with the player's level)
+        /// attacks. Roles stay as in attacks: playerTeam is the ATTACKER color, enemyTeam is the player's color.</summary>
+        public static BattleLoadout BuildDefense(PlayerProfile p, MetaDatabase db, bool test, int seed)
+        {
+            var lo = new BattleLoadout { mode = BattleMode.Defense, defenseTest = test };
+            var rng = new System.Random(seed);
+            var cfg = db != null ? db.defenseBattle : null;
+            var bcfg = db != null ? db.baseEditor : null;
+            lo.enemyTeam = p.team;
+            lo.playerTeam = RaidSimulator.PickAttackerTeam(p.team, rng);
+            lo.attackerName = RaidSimulator.AttackerNames[rng.Next(RaidSimulator.AttackerNames.Length)];
+            lo.baseId = "home";
+            lo.baseName = "Your base";
+            lo.map = db != null ? db.homeMap : null;
+            int lvl = Mathf.Max(1, p.level);
+            lo.squadSize = cfg != null ? Mathf.Clamp(cfg.attackerBaseSize + cfg.attackerSizePerLevel * lvl, 6, cfg.attackerMaxSize) : 32;
+            lo.soldierHealthMult = 1f + (cfg != null ? cfg.attackerHealthPerLevel : 0.04f) * (lvl - 1);
+            lo.reinforcementCount = 8;
+            lo.defenseTimeLimit = cfg != null ? cfg.timeLimit : 240f;
+            lo.defenderSquadSize = cfg != null ? cfg.defenderSquadSize : 8;
+            lo.strikeCharges = cfg != null ? cfg.strikeCharges : 3;
+            var placements = p.BaseLayout.placements;
+            for (int i = 0; i < placements.Count; i++)
+            {
+                var d = placements[i];
+                int rl = 1;
+                if (db != null && db.defenses != null && db.defenses.TryGet(d.defenseId, out var e) && !string.IsNullOrEmpty(e.researchId))
+                    rl = Mathf.Max(1, p.GetResearch(e.researchId));
+                lo.defenderSpawns.Add(new DefenseSpawn
+                {
+                    defenseId = d.defenseId, position = new Vector3(d.x, 0f, d.z), yaw = d.rotation,
+                    levelMult = bcfg != null ? bcfg.LevelMult(rl) : 1f, placementIndex = i,
+                });
+            }
             return lo;
         }
 
@@ -75,8 +113,25 @@ namespace TactileWars.Meta
         public const string BattleScene = "Battle";
         public const string MenuScene = "MainMenu";
 
+        public const string BaseEditorScene = "BaseEditor";
+
         public static BaseDefinition CurrentBase { get; private set; }
         public static bool LastMercenaryUnpaid { get; private set; }
+        /// <summary>True when the pending battle defends the player's base.</summary>
+        public static bool IsDefense => BattleLoadout.Pending != null && BattleLoadout.Pending.mode == BattleMode.Defense;
+        /// <summary>Where the result screen returns to (the base editor after a defense test).</summary>
+        public static string ReturnScene => IsDefense && BattleLoadout.Pending.defenseTest ? BaseEditorScene : MenuScene;
+
+        /// <summary>Prepares a defense battle on the player's saved base (test: no rewards, nothing consumed).</summary>
+        public static BattleLoadout PrepareDefense(bool test, int seed = -1)
+        {
+            if (seed < 0) seed = System.Environment.TickCount & 0x7fffffff;
+            var lo = LoadoutBuilder.BuildDefense(MetaGame.Profile, MetaGame.Db, test, seed);
+            CurrentBase = null;
+            LastMercenaryUnpaid = false;
+            BattleLoadout.Pending = lo;
+            return lo;
+        }
 
         public static BattleLoadout Prepare(BaseDefinition b)
         {

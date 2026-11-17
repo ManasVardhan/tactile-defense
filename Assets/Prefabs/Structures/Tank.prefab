@@ -78,6 +78,7 @@ MonoBehaviour:
   bodyRenderers:
   - {fileID: 2493548768939788962}
   - {fileID: 589799528536152805}
+  levelMultiplier: 1
   hull: {fileID: 0}
   turret: {fileID: 6587336645220596057}
   patrolA: {x: 0, y: 0, z: 0}

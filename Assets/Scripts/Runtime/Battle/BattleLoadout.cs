@@ -1,7 +1,23 @@
 using TactileWars.Core;
 
+using System.Collections.Generic;
+using UnityEngine;
+
 namespace TactileWars.Battle
 {
+    public enum BattleMode { Attack = 0, Defense = 1 }
+
+    /// <summary>One defense of the player's saved base, resolved for the battle scene.</summary>
+    public struct DefenseSpawn
+    {
+        public string defenseId;
+        public Vector3 position;
+        public float yaw;
+        /// <summary>Research driven multiplier for health and damage (ESTIMATE: +15 percent per level above 1).</summary>
+        public float levelMult;
+        /// <summary>Index into the saved placements (consumption is reported per index).</summary>
+        public int placementIndex;
+    }
     /// <summary>Everything the meta game decides about a battle before it starts (research levels, hired mercenary,
     /// chosen opponent). Built by Meta.LoadoutBuilder from the player profile; applied by BattleSetup at scene start.
     /// Gameplay only reads it, it never references the meta layer.</summary>
@@ -36,6 +52,20 @@ namespace TactileWars.Battle
         public float enemyDamageMult = 1f;
         public float rewardMult = 1f;
         public int difficulty = 1;
+
+        // Map variant. Null keeps the handcrafted dressing of Battle.unity.
+        public MapLayoutData map;
+
+        // Defense battles: the player's base is defended by AI; an AI squad (the SquadController) attacks it.
+        // In this mode playerTeam is the ATTACKER's color and enemyTeam is the player's color, so every gameplay
+        // system keeps its roles (Team.Player attacks, Team.Enemy defends).
+        public BattleMode mode = BattleMode.Attack;
+        public bool defenseTest;
+        public string attackerName = "";
+        public readonly List<DefenseSpawn> defenderSpawns = new List<DefenseSpawn>();
+        [Tooltip("Defense battles end as held after this many seconds (attackers retreat). ESTIMATE.")] public float defenseTimeLimit = 240f;
+        public int defenderSquadSize = 8;
+        public int strikeCharges = 3;
     }
 
     public class MercenaryLoadout

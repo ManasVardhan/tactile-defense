@@ -19,6 +19,7 @@ namespace TactileWars.Meta
         public float enemyHealthMult = 1f;
         public float enemyDamageMult = 1f;
         [Tooltip("Null keeps the handcrafted deployment of Battle.unity (base number one).")] public BaseLayoutData layout;
+        [Tooltip("Map variant. Null keeps the handcrafted lane of Battle.unity.")] public MapLayoutData map;
         [Tooltip("Display only: rough enemy count for the card.")] public int enemySquads = 7;
         public int defenses = 15;
     }

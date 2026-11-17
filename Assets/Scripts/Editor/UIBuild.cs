@@ -19,6 +19,17 @@ namespace TactileWars.EditorTools
             Debug.Log("[UIBuild] done");
         }
 
+        /// <summary>Assets, meta data (maps, catalog, bases) and scenes, without re-rendering the UI art.</summary>
+        [MenuItem("TactileWars/Build Data and Scenes")]
+        public static void BuildDataAndScenes()
+        {
+            AssetBuilder.BuildAll();
+            ProgressionBuilder.Build();
+            SceneBuilder.BuildAll();
+            AssetDatabase.SaveAssets();
+            Debug.Log("[UIBuild] data and scenes done");
+        }
+
         /// <summary>Rebuilds only the UI art (faster iteration on icons and shapes).</summary>
         [MenuItem("TactileWars/Build UI Art Only")]
         public static void BuildArtOnly()

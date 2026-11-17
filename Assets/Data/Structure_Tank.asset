@@ -26,3 +26,23 @@ MonoBehaviour:
   patrolSpeed: 1.1
   patrolPause: 1.5
   hullTurnSpeed: 70
+  teslaChargeTime: 2.2
+  teslaRange: 5.5
+  teslaChainCount: 4
+  teslaChainRange: 2.6
+  teslaDamage: 26
+  teslaChainFalloff: 0.8
+  teslaArcTime: 0.28
+  sniperRange: 16
+  sniperAimTime: 1.3
+  sniperCooldown: 2.4
+  sniperDamage: 50
+  sniperShotSpeed: 45
+  geyserTriggerRadius: 1.8
+  geyserWarnTime: 0.9
+  geyserRadius: 2.8
+  geyserDamage: 34
+  geyserCharges: 2
+  geyserCooldown: 4.5
+  geyserTimerInterval: 0
+  displayRange: 0

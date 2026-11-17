@@ -22,6 +22,10 @@ MonoBehaviour:
   perStructureKill: 4
   perSquadWipe: 3
   reinforcementCount: 10
+  counterattackEnabled: 1
+  counterattackDelay: 3
+  counterattackSize: 6
+  counterattackSpeed: 2.2
   goldBase: 40
   goldPerKill: 2
   goldPerStructure: 20

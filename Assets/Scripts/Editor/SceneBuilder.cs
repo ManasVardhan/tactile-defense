@@ -107,6 +107,7 @@ namespace TactileWars.EditorTools
             Directory.CreateDirectory("Assets/Scenes");
             BuildBattle();
             BuildMainMenu();
+            BuildBaseEditor();
             BuildBoot();
             var list = new List<EditorBuildSettingsScene>
             {
@@ -114,7 +115,6 @@ namespace TactileWars.EditorTools
                 new EditorBuildSettingsScene(MenuPath, true),
                 new EditorBuildSettingsScene(BattlePath, true),
             };
-            // The base editor (next phase) is picked up automatically once its scene exists.
             if (File.Exists(BaseEditorPath)) list.Add(new EditorBuildSettingsScene(BaseEditorPath, true));
             EditorBuildSettings.scenes = list.ToArray();
             AssetDatabase.SaveAssets();
@@ -339,6 +339,23 @@ namespace TactileWars.EditorTools
             setup.defensesRoot = defenses.transform;
             setup.catalog = AssetDatabase.LoadAssetAtPath<DefenseCatalog>(ProgressionBuilder.Dir + "/DefenseCatalog.asset");
             setup.enemySquadConfig = data.enemySquad;
+            setup.groundRenderer = gr;
+            setup.cameraRig = bc;
+            bm.enemiesRoot = enemies.transform;
+            bm.counterSquadConfig = data.enemySquad;
+            bm.counterSpawns = new[] { new Vector3(-12f, 0, 44f), new Vector3(12.5f, 0, 81f), new Vector3(-10f, 0, 92f) };
+            // Defense battles only (BattleSetup enables them): the AI attacker and the defender's paint strike.
+            var ai = systems.AddComponent<AttackerAI>();
+            ai.config = data.defense;
+            ai.squad = squad;
+            ai.battle = bm;
+            ai.enabled = false;
+            var strike = systems.AddComponent<DefenderStrike>();
+            strike.config = data.defense;
+            strike.cam = cam;
+            strike.enabled = false;
+            setup.attackerAI = ai;
+            setup.strike = strike;
             systems.AddComponent<BattleSession>();
             var hud = new GameObject("BattleHUD").AddComponent<BattleHUD>();
             hud.skin = AssetDatabase.LoadAssetAtPath<UISkin>(UIArtBuilder.SkinPath);
@@ -348,6 +365,7 @@ namespace TactileWars.EditorTools
             // ---------------- dressing
             var env = new GameObject("Environment");
             Dress(env.transform);
+            setup.environmentRoot = env.transform;
 
             Lightmapping.bakedGI = false;
             Lightmapping.realtimeGI = false;
@@ -513,6 +531,88 @@ namespace TactileWars.EditorTools
             Lightmapping.bakedGI = false;
             Lightmapping.realtimeGI = false;
             EditorSceneManager.SaveScene(scene, MenuPath);
+        }
+
+        // ---------------------------------------------------------------- base editor
+
+        static void BuildBaseEditor()
+        {
+            var data = AssetBuilder.LastData;
+            var mats = AssetBuilder.LastMats;
+            var meshes = AssetBuilder.LastMeshes;
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            var lighting = new GameObject("Lighting");
+            var sunGo = new GameObject("Sun");
+            sunGo.transform.SetParent(lighting.transform);
+            sunGo.transform.rotation = Quaternion.LookRotation(new Vector3(0.5f, -0.82f, -0.28f).normalized);
+            var sun = sunGo.AddComponent<Light>();
+            sun.type = LightType.Directional;
+            sun.color = AssetBuilder.Hex("#FFF4E2");
+            sun.intensity = 1.05f;
+            sun.shadows = LightShadows.Soft;
+            sun.shadowStrength = 0.55f;
+            lighting.AddComponent<SceneLighting>().Apply();
+            RenderSettings.fog = false;
+            RenderSettings.sun = sun;
+            var volGo = new GameObject("GlobalVolume");
+            volGo.transform.SetParent(lighting.transform);
+            var vol = volGo.AddComponent<Volume>();
+            vol.isGlobal = true;
+            vol.sharedProfile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(ProjectSetup.VolumePath);
+            Lightmapping.lightingSettings = GetLightingSettings();
+
+            // Ground: the battle ground material; the home map's mask is applied at runtime (MapApplier).
+            var ground = new GameObject("Ground");
+            ground.layer = Layers.Ground;
+            ground.AddComponent<MeshFilter>().sharedMesh = MeshGen.GroundPlane("M_GroundPlane", new Vector2(MapRect.x, MapRect.y), new Vector2(MapRect.x + MapRect.z, MapRect.y + MapRect.w), 32, 64);
+            var gr = ground.AddComponent<MeshRenderer>();
+            gr.sharedMaterial = mats.ground;
+            gr.shadowCastingMode = ShadowCastingMode.Off;
+            gr.receiveShadows = true;
+
+            var rig = new GameObject("CameraRig");
+            var camGo = new GameObject("Main Camera");
+            camGo.tag = "MainCamera";
+            camGo.transform.SetParent(rig.transform, false);
+            var cam = camGo.AddComponent<Camera>();
+            cam.orthographic = true;
+            cam.orthographicSize = 13.5f;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = AssetBuilder.Hex("#C3B48E");
+            cam.nearClipPlane = 1f;
+            cam.farClipPlane = 160f;
+            camGo.transform.rotation = Quaternion.Euler(35f, 0f, 0f);
+            camGo.transform.position = new Vector3(0f, 0f, 34f) - camGo.transform.rotation * Vector3.forward * 60f;
+            camGo.AddComponent<AudioListener>();
+            var camData = cam.GetUniversalAdditionalCameraData();
+            camData.renderPostProcessing = true;
+            camData.antialiasing = AntialiasingMode.None;
+            camData.renderShadows = true;
+
+            var am = new GameObject("Audio").AddComponent<AudioManager>();
+            am.library = data.sounds;
+            am.menuMusic = true;
+
+            var world = new GameObject("World");
+            var root = new GameObject("BaseEditor").AddComponent<BaseEditorRoot>();
+            root.skin = AssetDatabase.LoadAssetAtPath<UISkin>(UIArtBuilder.SkinPath);
+            root.cam = cam;
+            root.database = AssetDatabase.LoadAssetAtPath<MetaDatabase>(ProgressionBuilder.DbPath);
+            root.visuals = data.visuals;
+            root.prefabs = data.prefabs;
+            root.ground = gr;
+            root.worldRoot = world.transform;
+            root.capturePointPrefab = Str("CapturePoint");
+            root.quad = meshes.quad;
+            root.ghostMaterial = mats.ghostEdit;
+            root.gridMaterial = mats.gridEdit;
+            root.discMaterial = mats.discEdit;
+            root.ringMaterial = mats.neutralArc;
+
+            Lightmapping.bakedGI = false;
+            Lightmapping.realtimeGI = false;
+            EditorSceneManager.SaveScene(scene, BaseEditorPath);
         }
 
         /// <summary>Menu props are decoration: unpack the prefab and drop gameplay scripts, keep tints and animators.</summary>

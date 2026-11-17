@@ -8,5 +8,7 @@ namespace TactileWars.UI
         ArrowLeft, ArrowRight, ArrowUp, Sword, Shield, Flask, Mercenary, Home, Trophy, Close,
         Plus, Flag, Skull, Clock, Finger, Pencil, Star, Play, Replay, Crown,
         Lightning, Heart, Boot, Target, Users, Globe, Pow, Medal, Info, Minus,
+        // Phase 5 (base editor and defense battles).
+        FastForward, Rotate, Trash, Move, Save, Grid,
     }
 }

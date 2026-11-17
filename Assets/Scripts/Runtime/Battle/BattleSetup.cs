@@ -21,23 +21,40 @@ namespace TactileWars.Battle
         public Transform defensesRoot;
         public DefenseCatalog catalog;
         public EnemySquadConfig enemySquadConfig;
+        [Header("Map variants and defense battles")]
+        [Tooltip("Handcrafted set dressing, replaced when the loadout carries a map variant.")] public Transform environmentRoot;
+        public Renderer groundRenderer;
+        public CameraRig.BattleCamera cameraRig;
+        [Tooltip("Drives the attacking squad in defense battles (disabled otherwise).")] public AttackerAI attackerAI;
+        [Tooltip("The defender's limited paint strike in defense battles (disabled otherwise).")] public DefenderStrike strike;
 
+        public static BattleSetup Instance { get; private set; }
         public BattleLoadout Applied { get; private set; }
+        public MapLayoutData Map { get; private set; }
+        public bool DefenseMode { get; private set; }
+        readonly List<PlacedDefense> placed = new List<PlacedDefense>();
+        public IReadOnlyList<PlacedDefense> Placed => placed;
+        Material groundClone;
 
         readonly Dictionary<Object, Object> clones = new Dictionary<Object, Object>();
 
         void Awake()
         {
+            Instance = this;
             var lo = BattleLoadout.Pending;
             if (lo == null || battleManager == null) return;
             Applied = lo;
             ApplyTeams(lo);
+            if (lo.map != null) ApplyMap(lo.map);
             ApplyPlayer(lo);
-            ApplyEnemies(lo);
+            if (lo.mode == BattleMode.Defense) ApplyDefense(lo);
+            else ApplyEnemies(lo);
         }
 
         void OnDestroy()
         {
+            if (Instance == this) Instance = null;
+            if (groundClone != null) Destroy(groundClone);
             foreach (var kv in clones) if (kv.Value != null) Destroy(kv.Value);
             clones.Clear();
         }
@@ -46,6 +63,7 @@ namespace TactileWars.Battle
         {
             if (src == null) return null;
             if (clones.TryGetValue(src, out var c)) return (T)c;
+            if (clones.ContainsValue(src)) return src; // already a runtime copy
             var copy = Instantiate(src);
             copy.name = src.name + "_Runtime";
             clones[src] = copy;
@@ -145,6 +163,7 @@ namespace TactileWars.Battle
                 if (squadCfg.flagBearer != null) squadCfg.flagBearer = ScaledUnit(enemySquadConfig.flagBearer, lo.enemyHealthMult, lo.enemyDamageMult, 1f, 1f, "_Bearer");
             }
 
+            if (squadCfg != null) battleManager.counterSquadConfig = squadCfg;
             if (lo.layout != null)
             {
                 Clear(enemiesRoot);
@@ -175,6 +194,114 @@ namespace TactileWars.Battle
             }
         }
 
+        // ------------------------------------------------------------ map variants
+
+        void ApplyMap(MapLayoutData map)
+        {
+            Map = map;
+            if (environmentRoot != null)
+            {
+                Clear(environmentRoot);
+                MapApplier.SpawnProps(map, environmentRoot);
+            }
+            groundClone = MapApplier.ApplyGround(map, groundRenderer);
+            var cps = battleManager.capturePoints;
+            for (int i = 0; i < cps.Length && i < map.capturePoints.Length; i++)
+                if (cps[i] != null) cps[i].transform.position = map.capturePoints[i];
+            if (squad != null && squad.spawnPoint != null) squad.spawnPoint.position = map.playerSpawn;
+            if (squad != null && squad.ring != null) squad.ring.transform.position = map.playerSpawn;
+            var gc = Clone(battleManager.gameConfig);
+            gc.mapMin = map.mapMin;
+            gc.mapMax = map.mapMax;
+            battleManager.gameConfig = gc;
+            if (cameraRig != null && cameraRig.config != null)
+            {
+                var cc = Clone(cameraRig.config);
+                cc.focusMin = map.focusMin;
+                cc.focusMax = map.focusMax;
+                cameraRig.config = cc;
+                cameraRig.transform.position = map.playerSpawn;
+            }
+            battleManager.counterSpawns = map.spawnHatches;
+            if (squad != null) squad.InvalidateNav();
+        }
+
+        // ------------------------------------------------------------ defense battles
+
+        void ApplyDefense(BattleLoadout lo)
+        {
+            DefenseMode = true;
+            Clear(enemiesRoot);
+            Clear(defensesRoot);
+            battleManager.DefenseMode = true;
+            battleManager.TimeLimit = lo.defenseTimeLimit;
+            if (battleManager.recorder != null) battleManager.recorder.InputEnabled = false;
+            if (attackerAI != null) { attackerAI.squad = squad; attackerAI.battle = battleManager; attackerAI.enabled = true; }
+            if (strike != null) { strike.charges = lo.strikeCharges; strike.enabled = lo.strikeCharges > 0; }
+            for (int i = 0; i < lo.defenderSpawns.Count; i++)
+            {
+                var d = lo.defenderSpawns[i];
+                PlacedDefense pd;
+                if (d.defenseId == DefenseCatalog.SquadId)
+                {
+                    var g = new GameObject("Defenders_" + i);
+                    g.transform.SetParent(enemiesRoot != null ? enemiesRoot : defensesRoot, false);
+                    g.transform.position = d.position;
+                    var es = g.AddComponent<EnemySquad>();
+                    es.config = ScaledSquad(d.levelMult);
+                    es.advance = false;
+                    es.soldierCountOverride = Mathf.Max(1, lo.defenderSquadSize);
+                    es.seed = 300 + i * 13;
+                    pd = g.AddComponent<PlacedDefense>();
+                    pd.squad = es;
+                }
+                else
+                {
+                    var prefab = catalog != null ? catalog.Get(d.defenseId) : null;
+                    if (prefab == null) continue;
+                    var go = Instantiate(prefab, d.position, Quaternion.Euler(0f, d.yaw, 0f), defensesRoot);
+                    go.name = d.defenseId + "_" + i;
+                    var sb = go.GetComponent<StructureBase>();
+                    if (sb != null) { sb.levelMultiplier = d.levelMult; sb.team = Team.Enemy; }
+                    var tank = go.GetComponent<Tank>();
+                    if (tank != null)
+                    {
+                        Vector3 side = Quaternion.Euler(0f, d.yaw, 0f) * Vector3.right * 3f;
+                        tank.patrolA = d.position - side;
+                        tank.patrolB = d.position + side;
+                    }
+                    pd = go.AddComponent<PlacedDefense>();
+                    pd.structure = sb;
+                }
+                pd.placementIndex = d.placementIndex;
+                pd.defenseId = d.defenseId;
+                placed.Add(pd);
+            }
+        }
+
+        readonly Dictionary<float, EnemySquadConfig> squadByLevel = new Dictionary<float, EnemySquadConfig>();
+
+        EnemySquadConfig ScaledSquad(float mult)
+        {
+            if (enemySquadConfig == null) return null;
+            if (Mathf.Approximately(mult, 1f)) return enemySquadConfig;
+            if (squadByLevel.TryGetValue(mult, out var c)) return c;
+            c = Instantiate(enemySquadConfig);
+            clones[c] = c;
+            if (enemySquadConfig.soldier != null) c.soldier = ScaledUnit(enemySquadConfig.soldier, mult, mult, 1f, 1f, "_Def");
+            if (enemySquadConfig.flagBearer != null) c.flagBearer = ScaledUnit(enemySquadConfig.flagBearer, mult, mult, 1f, 1f, "_DefBearer");
+            squadByLevel[mult] = c;
+            return c;
+        }
+
+        /// <summary>Placement indices of the player's defenses consumed so far (destroyed, fired or wiped).</summary>
+        public void CollectConsumed(List<int> into)
+        {
+            into.Clear();
+            for (int i = 0; i < placed.Count; i++)
+                if (placed[i] == null || placed[i].Consumed) into.Add(placed[i] != null ? placed[i].placementIndex : -1);
+        }
+
         static void Clear(Transform root)
         {
             if (root == null) return;
@@ -201,6 +328,7 @@ namespace TactileWars.Battle
                 es.seed = s.seed;
             }
             if (catalog == null) return;
+            if (layout.counterSpawnsOverride != null && layout.counterSpawnsOverride.Length > 0) battleManager.counterSpawns = layout.counterSpawnsOverride;
             for (int i = 0; i < layout.defenses.Length; i++)
             {
                 var d = layout.defenses[i];

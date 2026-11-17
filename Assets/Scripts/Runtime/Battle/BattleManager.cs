@@ -21,6 +21,18 @@ namespace TactileWars.Battle
         public CapturePoint[] capturePoints = new CapturePoint[0];
         public SquadController squad;
         public StrokeRecorder recorder;
+        [Tooltip("Spawn hatches: the counterattack wave starts at the one nearest the captured point.")] public Vector3[] counterSpawns = new Vector3[0];
+        public Units.EnemySquadConfig counterSquadConfig;
+        public Transform enemiesRoot;
+
+        /// <summary>Defense battle: the AI attacks the player's base (roles unchanged: Team.Player attacks).
+        /// Attackers wiped or time out means the defense held; both points captured means the base fell.</summary>
+        public bool DefenseMode { get; set; }
+        /// <summary>Seconds before the battle ends as a failed attack (0 = no limit). Used by defense battles.</summary>
+        public float TimeLimit { get; set; }
+        public bool TimedOut { get; private set; }
+        public int CounterattacksLaunched { get; private set; }
+        public Units.EnemySquad LastCounterattack { get; private set; }
 
         public ReinforcementMeter Meter { get; private set; }
         public int Kills { get; private set; }
@@ -97,15 +109,70 @@ namespace TactileWars.Battle
             {
                 CurrentPointIndex = next;
                 capturePoints[next].SetActive(true);
+                if (index == 0) ScheduleCounterattack(capturePoints[index].transform.position);
             }
             else End(true);
+        }
+
+        // ---------------- counterattack wave (ESTIMATE, BattleConfig.counterattack*)
+
+        float counterTimer = -1f;
+        Vector3 counterTarget;
+
+        void ScheduleCounterattack(Vector3 point)
+        {
+            var c = battleConfig;
+            if (c == null || !c.counterattackEnabled || c.counterattackSize <= 0 || counterSpawns == null || counterSpawns.Length == 0) return;
+            counterTarget = point;
+            counterTimer = Mathf.Max(0f, c.counterattackDelay);
+        }
+
+        void TickCounterattack(float dt)
+        {
+            if (counterTimer < 0f) return;
+            counterTimer -= dt;
+            if (counterTimer >= 0f) return;
+            LaunchCounterattack(counterTarget);
+        }
+
+        /// <summary>Spawns the wave at the hatch nearest 'point' and sends it at the point. Returns the squad.</summary>
+        public Units.EnemySquad LaunchCounterattack(Vector3 point)
+        {
+            counterTimer = -1f;
+            var c = battleConfig;
+            if (counterSquadConfig == null || counterSpawns == null || counterSpawns.Length == 0) return null;
+            Vector3 best = counterSpawns[0];
+            float bd = float.MaxValue;
+            foreach (var h in counterSpawns)
+            {
+                float d = (h - point).sqrMagnitude;
+                if (d < bd) { bd = d; best = h; }
+            }
+            var g = new GameObject("Counterattack_" + (CounterattacksLaunched + 1));
+            if (enemiesRoot != null) g.transform.SetParent(enemiesRoot, false);
+            g.transform.position = best;
+            var es = g.AddComponent<Units.EnemySquad>();
+            es.config = counterSquadConfig;
+            es.advance = true;
+            es.assault = true;
+            es.assaultPoint = point;
+            es.assaultSpeed = c != null ? c.counterattackSpeed : 2.2f;
+            es.soldierCountOverride = c != null ? c.counterattackSize : 6;
+            es.seed = 900 + CounterattacksLaunched;
+            CounterattacksLaunched++;
+            LastCounterattack = es;
+            BattleEvents.RaiseEnemySquadSpawned(es);
+            BattleEvents.RaiseCounterattack(best);
+            return es;
         }
 
         void Update()
         {
             if (Over) return;
             Elapsed += Time.deltaTime;
-            if (PointerInput.ReinforceRequested) CallReinforcements();
+            TickCounterattack(Time.deltaTime);
+            if (!DefenseMode && PointerInput.ReinforceRequested) CallReinforcements();
+            if (TimeLimit > 0f && Elapsed >= TimeLimit) { TimedOut = true; End(false); return; }
             if (squad != null && squad.StartCount > 0 && squad.AliveCount == 0 && Elapsed > 0.5f) End(false);
         }
 
@@ -150,15 +217,17 @@ namespace TactileWars.Battle
             }
             Result = r;
             if (recorder != null) recorder.InputEnabled = false;
+            counterTimer = -1f;
             if (victory)
             {
                 if (squad != null) squad.SetCheer(true);
-                AudioManager.Play(SoundId.Victory, Vector3.zero);
+                // In a defense battle the attackers winning is the player's loss.
+                AudioManager.Play(DefenseMode ? SoundId.Defeat : SoundId.Victory, Vector3.zero);
                 BattleEvents.RaiseVictory(r);
             }
             else
             {
-                AudioManager.Play(SoundId.Defeat, Vector3.zero);
+                AudioManager.Play(DefenseMode ? SoundId.Victory : SoundId.Defeat, Vector3.zero);
                 BattleEvents.RaiseDefeat(r);
             }
             Debug.Log("[Battle] " + r);

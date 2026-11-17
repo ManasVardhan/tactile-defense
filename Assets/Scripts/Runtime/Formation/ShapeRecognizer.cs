@@ -27,10 +27,13 @@ namespace TactileWars.Formation
             public float circleTolerance;
             public float cornerAngle;
             public float lineStraightness;
+            /// <summary>Max perpendicular deviation from the chord, as a fraction of the stroke length, for a line
+            /// (GAMEPLAY_MECHANICS 2.5 rule 2). 0 disables the check. Shallow arcs fail it and stay Free.</summary>
+            public float lineMaxDeviation;
 
             public static Settings Default => new Settings
             {
-                closedThreshold = 0.2f, circleTolerance = 0.16f, cornerAngle = 55f, lineStraightness = 0.93f
+                closedThreshold = 0.2f, circleTolerance = 0.16f, cornerAngle = 55f, lineStraightness = 0.93f, lineMaxDeviation = 0.08f
             };
         }
 
@@ -56,7 +59,9 @@ namespace TactileWars.Formation
 
             if (!r.closed)
             {
-                r.type = r.straightness >= s.lineStraightness ? ShapeType.Line : ShapeType.Free;
+                bool straight = r.straightness >= s.lineStraightness;
+                if (straight && s.lineMaxDeviation > 0f && MaxDeviation(raw) > s.lineMaxDeviation * len) straight = false;
+                r.type = straight ? ShapeType.Line : ShapeType.Free;
                 r.center = (raw[0] + raw[raw.Count - 1]) * 0.5f;
                 return r;
             }
@@ -83,6 +88,24 @@ namespace TactileWars.Formation
             else if (cv <= s.circleTolerance) r.type = ShapeType.Circle;
             else r.type = ShapeType.Free;
             return r;
+        }
+
+        /// <summary>Largest perpendicular distance (XZ) of any point from the chord between the end points.</summary>
+        public static float MaxDeviation(List<Vector3> pts)
+        {
+            if (pts == null || pts.Count < 3) return 0f;
+            Vector3 a = pts[0], b = pts[pts.Count - 1];
+            float dx = b.x - a.x, dz = b.z - a.z;
+            float len = Mathf.Sqrt(dx * dx + dz * dz);
+            if (len < 1e-4f) return 0f;
+            float max = 0f;
+            for (int i = 1; i < pts.Count - 1; i++)
+            {
+                float px = pts[i].x - a.x, pz = pts[i].z - a.z;
+                float d = Mathf.Abs(px * dz - pz * dx) / len;
+                if (d > max) max = d;
+            }
+            return max;
         }
 
         /// <summary>Counts sharp turns on a closed resampled loop using a +-2 sample window, merging neighbours.</summary>

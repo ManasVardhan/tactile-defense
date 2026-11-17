@@ -1,89 +1,149 @@
+using System;
+using TactileWars.Battle;
 using TactileWars.Meta;
+using TactileWars.Save;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace TactileWars.UI
 {
-    /// <summary>Entry to the base editor. Loads BaseEditor.unity when that scene is in the build settings
-    /// (next phase); until then shows an "under construction" card with the defenses unlocked so far.</summary>
+    /// <summary>Base hub: a summary of the player's base, EDIT BASE (loads BaseEditor.unity), DEFEND (a defense battle
+    /// against a simulated AI attacker) and the log of SIMULATED offline raids. Falls back to an "under construction"
+    /// card when the editor scene is not in the build.</summary>
     public class BaseDefenseScreen : MenuScreen
     {
         public const string EditorScene = "BaseEditor";
         public override string Title => "BASE DEFENSE";
-        protected override Vector2 CardSize => new Vector2(1360f, 760f);
+        protected override Vector2 CardSize => new Vector2(1400f, 770f);
 
-        RectTransform defenseRow;
+        RectTransform defenseRow, raidList;
+        TextMeshProUGUI headText, statsText, rebuyText;
+        public UIButton EditButton { get; private set; }
+        public UIButton DefendButton { get; private set; }
 
         public static bool EditorAvailable => Application.CanStreamedLevelBeLoaded(EditorScene);
 
         protected override void Build()
         {
             var skin = UIFactory.Skin;
+            var team = UIFactory.PlayerTeam;
             var left = UIFactory.Panel(Body, "Art", UIColors.CardInner, 28f);
-            var lrt = ((RectTransform)left.transform).At(0f, 0.5f, 0f, 0f, 520f, 630f, 0f, 0.5f);
-            var glow = UIFactory.Img(lrt, "Glow", skin.glow, UIColors.WithAlpha(UIColors.Gold, 0.45f));
-            ((RectTransform)glow.transform).At(0.5f, 0.5f, 0f, 30f, 520f, 520f);
-            var hq = UIFactory.Img(lrt, "HQ", skin.Render("hq_" + UIFactory.PlayerTeam) ?? skin.Render("hq_Red"), Color.white);
-            ((RectTransform)hq.transform).At(0.5f, 0.5f, 0f, 40f, 440f, 440f);
-            var tag = UIFactory.Tag(lrt, "Tag", "UNDER CONSTRUCTION", UIColors.Gold, 54f, 30f);
-            tag.At(0.5f, 0f, 0f, 46f, tag.sizeDelta.x, 54f, 0.5f, 0f);
-            tag.localRotation = Quaternion.Euler(0f, 0f, -4f);
-            var stripes = tag.GetComponentInChildren<TextMeshProUGUI>();
-            stripes.color = UIColors.Ink;
-            stripes.fontSharedMaterial = skin.headingFont.material;
+            var lrt = ((RectTransform)left.transform).At(0f, 0.5f, 0f, 0f, 500f, 630f, 0f, 0.5f);
+            var glow = UIFactory.Img(lrt, "Glow", skin.glow, UIColors.WithAlpha(UIColors.Team(team), 0.35f));
+            ((RectTransform)glow.transform).At(0.5f, 0.5f, 0f, 60f, 520f, 520f);
+            var hq = UIFactory.Img(lrt, "HQ", skin.Render("hq_" + team) ?? skin.Render("hq_Red"), Color.white);
+            ((RectTransform)hq.transform).At(0.5f, 0.5f, 0f, 70f, 420f, 420f);
+            defenseRow = UIFactory.Rect(lrt, "Defenses").At(0.5f, 0f, 0f, 22f, 470f, 120f, 0.5f, 0f);
 
-            var h = UIFactory.Text(Body, "Head", "Your base is being built", 46f, TextStyle.HeadingDark, TextAlignmentOptions.TopLeft);
-            ((RectTransform)h.transform).At(0f, 1f, 560f, -10f, 720f, 60f, 0f, 1f);
-            var p = UIFactory.Paragraph(Body, "Text",
-                "Soon you will place mines, turrets, tanks, cannons, bunkers and tesla antennas on your own lane, " +
-                "within a budget that grows with your level. Unlock defenses now in Research, Defense branch.",
-                29f, UIColors.Muted);
-            ((RectTransform)p.transform).At(0f, 1f, 560f, -86f, 720f, 170f, 0f, 1f);
-            var sub = UIFactory.Text(Body, "DefHead", "UNLOCKED DEFENSES", 30f, TextStyle.HeadingDark, TextAlignmentOptions.MidlineLeft);
-            ((RectTransform)sub.transform).At(0f, 1f, 560f, -280f, 600f, 40f, 0f, 1f);
-            defenseRow = UIFactory.Rect(Body, "Defenses").At(0f, 1f, 560f, -330f, 720f, 140f, 0f, 1f);
-            var go = UIFactory.Button(Body, "OpenResearch", "OPEN RESEARCH", ButtonColor.Blue, 420f, 100f, UIIcon.Flask, 36f);
-            ((RectTransform)go.transform).At(0f, 0f, 560f, 10f, 420f, 100f, 0f, 0f);
-            go.onClick = () => { Menu.Open(Menu.Research); Menu.Research.SetBranch(ResearchBranch.Defense); };
+            headText = UIFactory.Text(Body, "Head", "Your base", 46f, TextStyle.HeadingDark, TextAlignmentOptions.TopLeft);
+            ((RectTransform)headText.transform).At(0f, 1f, 540f, -6f, 780f, 60f, 0f, 1f);
+            statsText = UIFactory.Paragraph(Body, "Stats", "", 29f, UIColors.Muted);
+            ((RectTransform)statsText.transform).At(0f, 1f, 540f, -70f, 780f, 120f, 0f, 1f);
+            rebuyText = UIFactory.Text(Body, "Rebuy", "", 27f, TextStyle.Body, TextAlignmentOptions.MidlineLeft);
+            rebuyText.color = UIColors.RedDark;
+            ((RectTransform)rebuyText.transform).At(0f, 1f, 540f, -182f, 780f, 36f, 0f, 1f);
+
+            EditButton = UIFactory.Button(Body, "EditBase", "EDIT BASE", ButtonColor.Green, 380f, 104f, UIIcon.Pencil, 40f);
+            ((RectTransform)EditButton.transform).At(0f, 1f, 540f, -232f, 380f, 104f, 0f, 1f);
+            EditButton.sound = Audio.SoundId.UiOpen;
+            EditButton.onClick = OpenEditor;
+            DefendButton = UIFactory.Button(Body, "Defend", "DEFEND!", ButtonColor.Team, 380f, 104f, UIIcon.Shield, 40f);
+            ((RectTransform)DefendButton.transform).At(0f, 1f, 940f, -232f, 380f, 104f, 0f, 1f);
+            DefendButton.sound = Audio.SoundId.UiOpen;
+            DefendButton.onClick = StartDefense;
+            var cap = UIFactory.Text(Body, "DefendCaption", "An AI squad attacks your saved base", 22f, TextStyle.BodyMuted, TextAlignmentOptions.MidlineLeft);
+            ((RectTransform)cap.transform).At(0f, 1f, 944f, -344f, 380f, 30f, 0f, 1f);
+
+            var rh = UIFactory.Text(Body, "RaidHead", "WHILE YOU WERE AWAY", 30f, TextStyle.HeadingDark, TextAlignmentOptions.MidlineLeft);
+            ((RectTransform)rh.transform).At(0f, 1f, 540f, -392f, 500f, 40f, 0f, 1f);
+            var tag = UIFactory.Tag(Body, "SimTag", "SIMULATED OFFLINE RAIDS", UIColors.Slate, 36f, 20f);
+            tag.At(0f, 1f, 900f, -394f, tag.sizeDelta.x, 36f, 0f, 1f);
+            raidList = UIFactory.Rect(Body, "Raids").At(0f, 1f, 540f, -440f, 780f, 200f, 0f, 1f);
         }
 
-        public override void OnOpened()
+        void OpenEditor()
         {
-            if (EditorAvailable)
+            if (!EditorAvailable) { Menu.ShowToast("The base editor is not in this build", UIIcon.Lock, UIColors.RedDark); return; }
+            ScreenTransition.Load(EditorScene, MetaGame.Profile.team);
+        }
+
+        void StartDefense()
+        {
+            if (ScreenTransition.Busy) return;
+            if (MetaGame.Profile.BaseLayout.placements.Count == 0)
             {
-                ScreenTransition.Load(EditorScene, MetaGame.Profile.team);
+                Menu.ShowToast("Place some defenses in your base first", UIIcon.Shield, UIColors.RedDark);
+                return;
             }
+            BattleLaunch.PrepareDefense(false);
+            if (Menu.backdrop != null) Menu.backdrop.CheerAll();
+            ScreenTransition.Load(BattleLaunch.BattleScene, MetaGame.Profile.team);
         }
 
         public override void Refresh()
         {
+            var p = MetaGame.Profile;
+            var layout = p.BaseLayout;
+            var cat = MetaGame.Defenses;
+            int budget = 0, space = 0;
+            foreach (var d in layout.placements) if (cat != null && cat.TryGet(d.defenseId, out var e)) { budget += e.budget; space += e.space; }
+            headText.text = p.playerName + "'s base";
+            int n = layout.placements.Count;
+            statsText.text = (n == 0 ? "No defenses yet. Open the editor and place mines and turrets on your lane." : n + (n == 1 ? " defense placed" : " defenses placed")) +
+                "\nBudget " + budget + " / " + MetaGame.BudgetCap + "   Space " + space + " / " + MetaGame.SpaceCap +
+                "\nDefenses held " + p.defenseStats.battlesHeld + "   raids held " + p.defenseStats.raidsHeld;
+            int wrecks = layout.destroyed.Count;
+            rebuyText.text = wrecks > 0 ? wrecks + (wrecks == 1 ? " defense was" : " defenses were") + " destroyed: rebuy in the editor" : "";
+            EditButton.SetInteractable(EditorAvailable);
+            DefendButton.SetInteractable(n > 0);
+
+            // Defense type icons (unlocked ones bright).
             UIFactory.ClearChildren(defenseRow);
-            var tree = MetaGame.Db != null ? MetaGame.Db.research : null;
-            if (tree == null) return;
             var skin = UIFactory.Skin;
-            int i = 0;
-            foreach (var n in tree.nodes)
+            if (cat != null)
             {
-                if (n.branch != ResearchBranch.Defense || string.IsNullOrEmpty(n.defenseId)) continue;
-                int lvl = MetaGame.ResearchLevel(n.id);
-                var cell = UIFactory.Rect(defenseRow, n.defenseId).At(0f, 0.5f, i * 118f, 0f, 108f, 128f, 0f, 0.5f);
-                var bg = UIFactory.Panel(cell, "Bg", lvl > 0 ? UIColors.CardInner : UIColors.CardLine, 18f);
-                ((RectTransform)bg.transform).Stretch();
-                var img = UIFactory.Img(cell, "Render", skin.Defense(n.defenseId, MetaGame.Profile.team), lvl > 0 ? Color.white : new Color(0.35f, 0.35f, 0.4f, 0.55f));
-                ((RectTransform)img.transform).At(0.5f, 1f, 0f, 2f, 104f, 104f, 0.5f, 1f);
-                if (lvl > 0)
+                int i = 0, total = 0;
+                foreach (var e in cat.entries) if (e.id != DefenseCatalog.SquadId) total++;
+                float cell = Mathf.Min(64f, 470f / Mathf.Max(1, total));
+                foreach (var e in cat.entries)
                 {
-                    var t = UIFactory.Text(cell, "Lv", "Lv " + lvl, 22f, TextStyle.HeadingDark);
-                    ((RectTransform)t.transform).At(0.5f, 0f, 0f, 4f, 100f, 26f, 0.5f, 0f);
+                    if (e.id == DefenseCatalog.SquadId) continue;
+                    bool on = MetaGame.DefenseLevel(e.id) > 0;
+                    var img = UIFactory.Img(defenseRow, e.id, skin.Defense(e.id, p.team), on ? Color.white : new Color(0.35f, 0.35f, 0.4f, 0.5f));
+                    ((RectTransform)img.transform).At(0f, 0.5f, i * cell, 0f, cell, cell, 0f, 0.5f);
+                    i++;
                 }
-                else
-                {
-                    var l = UIFactory.Icon(cell, UIIcon.Lock, 40f);
-                    ((RectTransform)l.transform).At(0.5f, 0f, 0f, 6f, 40f, 40f, 0.5f, 0f);
-                }
-                i++;
             }
+
+            // Raid log (simulated).
+            UIFactory.ClearChildren(raidList);
+            if (p.raidLog.Count == 0)
+            {
+                var t = UIFactory.Text(raidList, "None", "No raids yet. Simulated attackers visit while you are away.", 26f, TextStyle.BodyMuted, TextAlignmentOptions.TopLeft);
+                ((RectTransform)t.transform).At(0f, 1f, 4f, 0f, 760f, 34f, 0f, 1f);
+                return;
+            }
+            for (int k = 0; k < p.raidLog.Count && k < 3; k++)
+            {
+                var r = p.raidLog[k];
+                var row = UIFactory.Panel(raidList, "Raid" + k, UIColors.CardInner, 18f);
+                var rr = ((RectTransform)row.transform).At(0f, 1f, 0f, -k * 64f, 780f, 56f, 0f, 1f);
+                var ic = UIFactory.Icon(rr, r.held ? UIIcon.Shield : UIIcon.Skull, 42f);
+                ((RectTransform)ic.transform).At(0f, 0.5f, 10f, 0f, 42f, 42f, 0f, 0.5f);
+                string when = Ago(r.utcTicks);
+                var t = UIFactory.Text(rr, "Text", (r.held ? "Held vs " : "Fell to ") + r.attackerName + "  " + (r.goldDelta >= 0 ? "+" : "") + r.goldDelta + " gold, " + r.consumed.Count + " lost  (" + when + ")", 24f, TextStyle.Body, TextAlignmentOptions.MidlineLeft);
+                ((RectTransform)t.transform).Stretch(62f, 0f, 10f, 2f);
+            }
+        }
+
+        static string Ago(long ticks)
+        {
+            if (ticks <= 0) return "earlier";
+            var span = DateTime.UtcNow - new DateTime(ticks, DateTimeKind.Utc);
+            if (span.TotalMinutes < 2) return "just now";
+            if (span.TotalHours < 1) return (int)span.TotalMinutes + " min ago";
+            if (span.TotalDays < 1) return (int)span.TotalHours + " h ago";
+            return (int)span.TotalDays + " d ago";
         }
     }
 }

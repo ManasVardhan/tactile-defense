@@ -18,3 +18,8 @@ MonoBehaviour:
   respaceDelay: 0.6
   startWidth: 15
   startDepth: 6.5
+  useRouting: 1
+  navCell: 1
+  navClearance: 0.3
+  routeBlobSpacing: 0.5
+  routeAdvanceDistance: 2.2

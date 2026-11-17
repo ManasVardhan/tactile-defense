@@ -9,8 +9,9 @@ namespace TactileWars.UI
     {
         UIPanelAnim anim;
         TextMeshProUGUI title, message;
-        UIButton ok, cancel;
-        Action onOk;
+        UIButton ok, cancel, close;
+        Action onOk, onCancel;
+        public bool IsOpen => anim != null && anim.IsShown;
 
         public static ConfirmDialog Create(Transform parent)
         {
@@ -27,7 +28,12 @@ namespace TactileWars.UI
             d.cancel = UIFactory.Button(face, "Cancel", "CANCEL", ButtonColor.Slate, 300f, 100f);
             ((RectTransform)d.cancel.transform).At(0.5f, 0f, -170f, 34f, 300f, 100f, 0.5f, 0f);
             d.cancel.sound = Audio.SoundId.UiBack;
-            d.cancel.onClick = () => d.Close();
+            d.cancel.onClick = () => { var a = d.onCancel; d.Close(); a?.Invoke(); };
+            d.close = UIFactory.IconButton(face, "Close", UIIcon.Close, 70f, ButtonColor.Slate);
+            ((RectTransform)d.close.transform).At(1f, 1f, -18f, -16f, 70f, 70f, 1f, 1f);
+            d.close.sound = Audio.SoundId.UiBack;
+            d.close.onClick = () => d.Close();
+            d.close.gameObject.SetActive(false);
             d.ok = UIFactory.Button(face, "Confirm", "OK", ButtonColor.Red, 300f, 100f);
             ((RectTransform)d.ok.transform).At(0.5f, 0f, 170f, 34f, 300f, 100f, 0.5f, 0f);
             d.ok.onClick = () => { var a = d.onOk; d.Close(); a?.Invoke(); };
@@ -46,11 +52,33 @@ namespace TactileWars.UI
             if (l != null) l.text = okText;
             ok.SetColor(okColor);
             onOk = confirm;
+            onCancel = null;
+            var cl = cancel.Label();
+            if (cl != null) cl.text = "CANCEL";
+            cancel.gameObject.SetActive(true);
+            close.gameObject.SetActive(false);
             transform.SetAsLastSibling();
             anim.Show();
         }
 
-        public void Close() => anim.Hide();
+        /// <summary>Two actions plus a close button that cancels both (unsaved changes prompts).
+        /// A null altText hides the second action.</summary>
+        public void ShowChoice(string titleText, string messageText, string okText, ButtonColor okColor, Action confirm, string altText, Action alt)
+        {
+            Show(titleText, messageText, okText, okColor, confirm);
+            onCancel = alt;
+            close.gameObject.SetActive(true);
+            if (altText == null) cancel.gameObject.SetActive(false);
+            else { var cl = cancel.Label(); if (cl != null) cl.text = altText; }
+            ((RectTransform)ok.transform).anchoredPosition = new Vector2(altText == null ? 0f : 170f, 34f);
+        }
+
+        public void Close()
+        {
+            anim.Hide();
+            ((RectTransform)ok.transform).anchoredPosition = new Vector2(170f, 34f);
+        }
+        public UIButton CancelButton => cancel;
         public UIButton ConfirmButton => ok;
     }
 }

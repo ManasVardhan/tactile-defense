@@ -75,13 +75,11 @@ namespace TactileWars.EditorTools
                     soldiers[k] = Shoot(soldierPrefab, team, "soldier_" + team, 256, 296, Shot.Full, 14f, 212f);
                 }
                 if (heroPrefab != null) heroes[k] = Shoot(heroPrefab, team, "hero_" + team, 256, 256, Shot.Bust, 12f, 205f);
-                foreach (var def in new[] { "Turret", "Tank", "Cannon", "Mine", "Bunker" })
+                foreach (var def in new[] { "Turret", "Tank", "Cannon", "Mine", "Bunker", "Tesla", "Sniper", "Geyser" })
                 {
                     var p = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Structures/" + def + ".prefab");
                     if (p != null) renders.Add(new NamedSprite { key = "def_" + def.ToLowerInvariant() + "_" + team, sprite = Shoot(p, team, "def_" + def.ToLowerInvariant() + "_" + team, 256, 256, Shot.Prop, 32f, 215f) });
                 }
-                var tesla = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Environment/TeslaAntenna.prefab");
-                if (tesla != null) renders.Add(new NamedSprite { key = "def_tesla_" + team, sprite = Shoot(tesla, team, "def_tesla_" + team, 256, 256, Shot.Prop, 26f, 215f) });
                 var hq = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Environment/HQ.prefab");
                 if (hq != null) renders.Add(new NamedSprite { key = "hq_" + team, sprite = Shoot(hq, team, "hq_" + team, 512, 512, Shot.Prop, 30f, 215f) });
             }

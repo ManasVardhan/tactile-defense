@@ -74,6 +74,7 @@ MonoBehaviour:
   healthArc: {fileID: 0}
   bodyRenderers:
   - {fileID: 5107227233028252620}
+  levelMultiplier: 1
   cap: {fileID: 0}
 --- !u!114 &8323911258902629202
 MonoBehaviour:

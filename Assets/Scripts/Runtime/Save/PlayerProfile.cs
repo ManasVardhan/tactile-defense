@@ -30,6 +30,11 @@ namespace TactileWars.Save
         public TutorialFlags tutorial = new TutorialFlags();
         public PlayerStats stats = new PlayerStats();
         public BaseLayoutSave baseLayout = new BaseLayoutSave();
+        /// <summary>SIMULATED offline raids on the player's base (newest first, capped). Not real players.</summary>
+        public List<RaidRecord> raidLog = new List<RaidRecord>();
+        /// <summary>UTC ticks of the last time the player was in the menu (raid "time away" check).</summary>
+        public long lastSeenUtcTicks;
+        public DefenseStats defenseStats = new DefenseStats();
 
         /// <summary>The player's own base (placements of defenses). Owned by the base editor (next phase).</summary>
         public BaseLayoutSave BaseLayout => baseLayout ??= new BaseLayoutSave();
@@ -63,6 +68,10 @@ namespace TactileWars.Save
             stats ??= new PlayerStats();
             baseLayout ??= new BaseLayoutSave();
             baseLayout.placements ??= new List<DefensePlacement>();
+            baseLayout.destroyed ??= new List<DefensePlacement>();
+            baseLayout.stock ??= new List<StockEntry>();
+            raidLog ??= new List<RaidRecord>();
+            defenseStats ??= new DefenseStats();
             if (string.IsNullOrWhiteSpace(playerName)) playerName = "Commander";
             if (level < 1) level = 1;
             if (gold < 0) gold = 0;
@@ -111,11 +120,66 @@ namespace TactileWars.Save
         public float fastestVictory;
     }
 
-    /// <summary>The player's base layout: defenses placed on the lane map. Reserved for the base editor.</summary>
+    /// <summary>The player's base layout (base editor). 'placements' are live defenses; 'destroyed' were consumed
+    /// in defense battles or simulated raids and wait to be rebought with gold at the same spot; 'stock' holds
+    /// bought but unplaced defenses (removing a placed defense returns it to stock).</summary>
     [Serializable]
     public class BaseLayoutSave
     {
         public List<DefensePlacement> placements = new List<DefensePlacement>();
+        public List<DefensePlacement> destroyed = new List<DefensePlacement>();
+        public List<StockEntry> stock = new List<StockEntry>();
+
+        public int StockOf(string id)
+        {
+            if (stock == null) return 0;
+            for (int i = 0; i < stock.Count; i++) if (stock[i].id == id) return stock[i].count;
+            return 0;
+        }
+
+        public void SetStock(string id, int count)
+        {
+            stock ??= new List<StockEntry>();
+            for (int i = 0; i < stock.Count; i++)
+                if (stock[i].id == id)
+                {
+                    if (count <= 0) stock.RemoveAt(i); else stock[i].count = count;
+                    return;
+                }
+            if (count > 0) stock.Add(new StockEntry { id = id, count = count });
+        }
+    }
+
+    [Serializable]
+    public class StockEntry
+    {
+        public string id;
+        public int count;
+    }
+
+    /// <summary>One simulated raid result ("While you were away"). isSimulated is always true in this build.</summary>
+    [Serializable]
+    public class RaidRecord
+    {
+        public long utcTicks;
+        public string attackerName = "";
+        public TeamColorId attackerTeam = TeamColorId.Teal;
+        public bool held;
+        public int goldDelta;
+        public List<string> consumed = new List<string>();
+        public bool isSimulated = true;
+        public bool seen;
+    }
+
+    [Serializable]
+    public class DefenseStats
+    {
+        public int battlesHeld;
+        public int battlesLost;
+        public int raidsHeld;
+        public int raidsLost;
+        public int defensesConsumed;
+        public int goldFromDefense;
     }
 
     [Serializable]

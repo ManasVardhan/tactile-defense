@@ -16,6 +16,9 @@ namespace TactileWars.Units
         public bool advance = true;
         public int soldierCountOverride = 0;
         public int seed = 1;
+        [Tooltip("Counterattack wave: marches on 'assaultPoint' with no leash and engages anything on the way.")] public bool assault;
+        public Vector3 assaultPoint;
+        public float assaultSpeed = 2.2f;
 
         readonly List<Soldier> members = new List<Soldier>(16);
         Vector3[] offsets;
@@ -118,7 +121,17 @@ namespace TactileWars.Units
                 else if (engaged && UnitRegistry.FindNearest(Team.Player, center, config.aggroRange * 2f) == null) engaged = false;
             }
 
-            if (engaged && advance && config != null && config.soldier != null && config.soldier.weapon != null)
+            if (assault && config != null)
+            {
+                // March on the objective; stop at weapon stand off when something is in range.
+                float range = config.soldier != null && config.soldier.weapon != null ? config.soldier.weapon.range : 6f;
+                var near = UnitRegistry.FindNearest(Team.Player, center, range * 0.8f);
+                engaged = true;
+                Vector3 goal = near != null ? center : assaultPoint;
+                Vector3 to = goal - center; to.y = 0f;
+                if (to.magnitude > 0.5f) center += to.normalized * Mathf.Min(to.magnitude, assaultSpeed * dt);
+            }
+            else if (engaged && advance && config != null && config.soldier != null && config.soldier.weapon != null)
             {
                 Vector3 to = threat - center; to.y = 0f;
                 float standOff = config.soldier.weapon.range * config.standOffFraction;

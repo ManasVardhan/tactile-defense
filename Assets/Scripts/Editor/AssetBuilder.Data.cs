@@ -25,8 +25,9 @@ namespace TactileWars.EditorTools
             public FormationConfig formation;
             public SquadConfig squad;
             public UnitConfig playerSoldier, enemySoldier, flagBearer;
-            public WeaponConfig wSoldier, wEnemy, wTurret, wTank, wCannon, wBunker;
-            public StructureConfig turret, tank, cannon, bunker, mine;
+            public WeaponConfig wSoldier, wEnemy, wTurret, wTank, wCannon, wBunker, wSniper;
+            public StructureConfig turret, tank, cannon, bunker, mine, tesla, sniper, geyser;
+            public DefenseBattleConfig defense;
             public EnemySquadConfig enemySquad;
             public BattleConfig battle;
             public CombatConfig combat;
@@ -101,6 +102,13 @@ namespace TactileWars.EditorTools
                 w.projectileScale = 0.22f; w.fireSound = SoundId.Shoot;
             });
 
+            d.wSniper = Asset<WeaponConfig>("Weapon_Sniper", reset, w =>
+            {
+                w.range = 16f; w.fireInterval = 2.4f; w.intervalJitter = 0f; w.damage = 50f; w.projectileSpeed = 45f; w.spreadDegrees = 0.5f;
+                w.projectileScale = 0.42f; w.hitRadius = 0.35f; w.hitSplatChance = 1f; w.missSplatChance = 1f; w.splatSize = 0.9f; w.heavy = true;
+                w.fireSound = SoundId.SniperShot; w.impactShake = 0.06f;
+            });
+
             d.playerSoldier = Asset<UnitConfig>("Unit_PlayerSoldier", reset, u => { u.maxHealth = 45f; u.maxSpeed = 4.6f; });
             d.enemySoldier = Asset<UnitConfig>("Unit_EnemySoldier", reset, u => { u.maxHealth = 30f; u.maxSpeed = 3.2f; });
             d.flagBearer = Asset<UnitConfig>("Unit_FlagBearer", reset, u => { u.maxHealth = 70f; u.maxSpeed = 2.2f; u.targetRadius = 0.45f; });
@@ -113,6 +121,11 @@ namespace TactileWars.EditorTools
             d.cannon = Asset<StructureConfig>("Structure_Cannon", reset, s => { s.maxHealth = 170f; s.targetRadius = 0.8f; s.aimHeight = 0.8f; s.aimTurnSpeed = 70f; s.fireCone = 10f; });
             d.bunker = Asset<StructureConfig>("Structure_Bunker", reset, s => { s.maxHealth = 380f; s.targetRadius = 1.5f; s.aimHeight = 0.9f; });
             d.mine = Asset<StructureConfig>("Structure_Mine", reset, s => { s.maxHealth = 1f; s.targetRadius = 0.35f; s.triggerRadius = 1.3f; s.armDelay = 0.45f; s.explosionRadius = 2.6f; s.explosionDamage = 46f; });
+            d.tesla = Asset<StructureConfig>("Structure_Tesla", reset, s => { s.maxHealth = 160f; s.targetRadius = 0.7f; s.aimHeight = 1.2f; s.displayRange = 5.5f; });
+            d.sniper = Asset<StructureConfig>("Structure_Sniper", reset, s => { s.maxHealth = 140f; s.targetRadius = 0.9f; s.aimHeight = 1.6f; s.aimTurnSpeed = 110f; s.displayRange = 16f; });
+            d.geyser = Asset<StructureConfig>("Structure_Geyser", reset, s => { s.maxHealth = 1f; s.targetRadius = 0.5f; s.displayRange = 2.8f; });
+            d.sniper.weapon = d.wSniper;
+            d.defense = Asset<DefenseBattleConfig>("DefenseBattleConfig", reset, null);
             d.turret.weapon = d.wTurret; d.tank.weapon = d.wTank; d.cannon.weapon = d.wCannon; d.bunker.weapon = d.wBunker;
 
             d.enemySquad = Asset<EnemySquadConfig>("EnemySquadConfig", reset, null);
@@ -204,6 +217,12 @@ namespace TactileWars.EditorTools
             Add(SoundId.UiError, "ui_error", 0.5f, 1, 0.1f, 1f, 1f);
             Add(SoundId.CoinPickup, "coin_pickup", 0.5f, 3, 0.05f, 0.95f, 1.1f);
             Add(SoundId.LevelUp, "level_up", 0.8f, 1, 0.5f, 1f, 1f);
+            Add(SoundId.TeslaCharge, "tesla_charge", 0.35f, 2, 0.3f);
+            Add(SoundId.TeslaZap, "tesla_zap", 0.55f, 2, 0.1f);
+            Add(SoundId.SniperAim, "sniper_aim", 0.3f, 1, 0.3f, 1f, 1f);
+            Add(SoundId.SniperShot, "sniper_shot", 0.6f, 2, 0.15f);
+            Add(SoundId.GeyserRumble, "geyser_rumble", 0.45f, 2, 0.2f);
+            Add(SoundId.GeyserErupt, "geyser_erupt", 0.7f, 2, 0.15f);
             lib.entries = entries.ToArray();
             lib.menuMusic = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/menu_theme.ogg");
             lib.battleMusic = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/battle_theme.ogg");

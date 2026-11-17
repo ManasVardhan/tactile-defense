@@ -182,6 +182,7 @@ MonoBehaviour:
   bodyRenderers:
   - {fileID: 5769733395590663851}
   - {fileID: 116567600185617012}
+  levelMultiplier: 1
   head: {fileID: 3071140050751911751}
 --- !u!114 &3170408174980224156
 MonoBehaviour:

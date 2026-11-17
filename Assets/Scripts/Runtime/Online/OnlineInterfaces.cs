@@ -68,4 +68,13 @@ namespace TactileWars.Online
         /// <summary>Opponents available to attack (AI bases from the roster in this build).</summary>
         void GetOpponents(List<OpponentBase> into);
     }
+
+    /// <summary>Incoming raids on the player's base. Offline build: SIMULATED results only (LocalOfflineProvider),
+    /// generated from a documented statistical model, never real players.</summary>
+    public interface IRaidService
+    {
+        bool IsSimulated { get; }
+        /// <summary>Returns a raid that happened while the player was away (already applied to the profile), or null.</summary>
+        TactileWars.Save.RaidRecord CheckForRaid(System.DateTime utcNow);
+    }
 }

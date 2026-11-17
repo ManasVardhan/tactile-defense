@@ -11,6 +11,10 @@ namespace TactileWars.Meta
     {
         public static RewardSummary Last { get; private set; }
         public static event Action<RewardSummary> Rewarded;
+        /// <summary>Defense battles: the outcome for the player's base (rewards applied and saved).</summary>
+        public static DefenseSummary LastDefense { get; private set; }
+        public static event Action<DefenseSummary> DefenseRewarded;
+        readonly System.Collections.Generic.List<int> consumed = new System.Collections.Generic.List<int>();
 
         bool done;
 
@@ -26,12 +30,26 @@ namespace TactileWars.Meta
             BattleEvents.Defeat -= OnEnd;
         }
 
-        void Start() { Last = null; done = false; }
+        void Start() { Last = null; LastDefense = null; done = false; }
 
         void OnEnd(BattleResult r)
         {
             if (done) return;
             done = true;
+            var setup = BattleSetup.Instance;
+            if (setup != null && setup.DefenseMode)
+            {
+                var lo = setup.Applied;
+                setup.CollectConsumed(consumed);
+                var bm = BattleManager.Instance;
+                int lost = 0;
+                if (bm != null) foreach (var cp in bm.capturePoints) if (cp != null && cp.Captured) lost++;
+                LastDefense = MetaGame.ApplyDefenseResult(r, consumed, lo != null && lo.defenseTest, lo != null ? lo.attackerName : "",
+                    BattleContext.Config != null ? BattleContext.Config.playerTeam : Core.TeamColorId.Teal, lost, bm != null && bm.TimedOut);
+                Debug.Log($"[Meta] defense {(LastDefense.held ? "held" : "fell")} test={LastDefense.test} consumed {LastDefense.consumed.Count} gold {LastDefense.gold} popped {LastDefense.attackersPopped}/{LastDefense.attackersTotal}");
+                DefenseRewarded?.Invoke(LastDefense);
+                return;
+            }
             var b = BattleLaunch.CurrentBase;
             if (b == null && MetaGame.Db != null && MetaGame.Db.roster != null && MetaGame.Db.roster.bases.Length > 0) b = MetaGame.Db.roster.bases[0];
             Last = MetaGame.ApplyBattleResult(r, b);
