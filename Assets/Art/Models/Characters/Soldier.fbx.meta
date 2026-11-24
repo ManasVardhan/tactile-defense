@@ -17,6 +17,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: Helmet
+    second: {fileID: 2100000, guid: 720e4f40b7eb04c07accc9e514765f3f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: Metal
     second: {fileID: 2100000, guid: 07c1ea49ae34343648268011a12e8fbc, type: 2}
   - first:

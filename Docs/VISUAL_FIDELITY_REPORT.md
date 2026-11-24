@@ -157,7 +157,7 @@ The references include only one map screen frame set (`References/video_frames/f
 |---|---|
 | Main menu | ![ui_main_menu](Screenshots/ui_main_menu.png) |
 | Attack list | ![ui_attack](Screenshots/ui_attack.png) |
-| Research | ![ui_research](Screenshots/ui_research.png) |
+| Research | Hidden from the menu since Plan 2 Task 2c (no capture) |
 | Base editor | ![base_editor_full](Screenshots/base_editor_full.png) |
 | Defense battle | ![base_defense_battle](Screenshots/base_defense_battle.png) |
 | Defeat | ![ui_defeat](Screenshots/ui_defeat.png) |

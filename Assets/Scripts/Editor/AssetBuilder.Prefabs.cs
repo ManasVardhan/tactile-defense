@@ -127,6 +127,8 @@ namespace TactileWars.EditorTools
             tint.baseTeamColor = mats.unitSlots["TeamColor"];
             tint.baseTeamColorDark = mats.unitSlots["TeamColorDark"];
             tint.basePaint = mats.unitSlots["Paint"];
+            tint.baseAccent = mats.unitSlots["Accent"];
+            tint.baseHelmet = mats.unitSlots["Helmet"];
 
             var modelAsset = LoadModel(CharDir, modelName);
             GameObject model;
@@ -145,6 +147,7 @@ namespace TactileWars.EditorTools
                 model = StandIn(prefabName, root.transform, meshes, mats.unitSlots["TeamColor"], mats.unitSlots["Skin"], 1f, 0.6f);
                 model.name = "Model";
             }
+            scale *= Soldier.SizeScale; // every soldier model and its blob shadow
             model.transform.localScale = Vector3.one * scale;
             // Facing check: the contract says characters face +Z. Verify with the muzzle and correct if needed.
             var mz = FindDeep(model.transform, "Muzzle");
@@ -580,8 +583,14 @@ namespace TactileWars.EditorTools
 
         // ------------------------------------------------------------------ environment
 
-        static readonly string[] NoCollider = { "Bush_A", "Bush_B", "Flower_A", "Flower_B", "GrassTuft", "HexTile", "SpawnHatch" };
-        static readonly string[] SmallNoShadow = { "Flower_A", "Flower_B", "GrassTuft", "HexTile", "SpawnHatch" };
+        // Decorative props (no collider, units walk through them); everything else blocks on the Obstacle layer.
+        static readonly string[] NoCollider = { "Bush_A", "Bush_B", "Flower_A", "Flower_B", "GrassTuft", "SpawnHatch",
+            "Wildflowers", "MeadowShrub", "MeadowTuft", "Cactus_B", "DryShrub", "DryTuft", "FrostShrub", "FrostTuft",
+            "Bridge", "Ford", "Rubble", "Reeds" };
+        static readonly string[] SmallNoShadow = { "Flower_A", "Flower_B", "GrassTuft", "SpawnHatch",
+            "Wildflowers", "MeadowTuft", "DryTuft", "FrostTuft", "Pond", "FrozenPool", "Ford", "Rubble", "Reeds" };
+        /// <summary>Tall thin props get a capsule around the trunk instead of a box around the crown.</summary>
+        static bool TrunkCollider(string name) => name.StartsWith("Tree") || name.StartsWith("RoundTree") || name.StartsWith("Fir") || name == "Cactus_A";
         static readonly string[] ExtraStructureProps = { "Tent", "Sandbags", "Wall", "WallCorner", "SpawnHatch", "HQ", "TeslaAntenna" };
 
         static void BuildEnvironment(Prefabs p, Mats mats, Meshes meshes)
@@ -608,7 +617,7 @@ namespace TactileWars.EditorTools
                 if (System.Array.IndexOf(NoCollider, name) < 0)
                 {
                     root.layer = Layers.Obstacle;
-                    if (name.StartsWith("Tree"))
+                    if (TrunkCollider(name))
                     {
                         var b = RendererBounds(model);
                         var c = root.AddComponent<CapsuleCollider>();
@@ -632,6 +641,19 @@ namespace TactileWars.EditorTools
                 root.isStatic = false;
                 p.environment[name] = SavePrefabGO(root, PrefabDir + "/Environment/" + name + ".prefab");
             }
+            p.environment["Blocker"] = BuildBlocker();
+        }
+
+        /// <summary>An invisible unit cube on the Obstacle layer (base on the ground): the map builder lines water and
+        /// rock spines with it so NavGrid and the hidden grid treat them as solid. Uniform scale sets its size.</summary>
+        static GameObject BuildBlocker()
+        {
+            var root = new GameObject("Blocker");
+            root.layer = Layers.Obstacle;
+            var c = root.AddComponent<BoxCollider>();
+            c.size = Vector3.one;
+            c.center = new Vector3(0f, 0.5f, 0f);
+            return SavePrefabGO(root, PrefabDir + "/Environment/Blocker.prefab");
         }
     }
 }

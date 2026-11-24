@@ -56,12 +56,17 @@ namespace TactileWars.Combat
             lists[1].Clear();
         }
 
-        /// <summary>Nearest living target of team 'of' within range of pos (XZ distance minus target radius).</summary>
-        public static Health FindNearest(Team of, Vector3 pos, float range)
+        /// <summary>Nearest living target of team 'of' within range of pos (XZ distance minus target radius). With
+        /// preferDrawsFire, the nearest living drawsFire target in range wins over any nearer target.</summary>
+        public static Health FindNearest(Team of, Vector3 pos, float range, bool preferDrawsFire = false) =>
+            FindNearest(of, pos, range, preferDrawsFire, false);
+
+        /// <summary>As FindNearest; with preferStructures the nearest living structure in range wins over everything.</summary>
+        public static Health FindNearest(Team of, Vector3 pos, float range, bool preferDrawsFire, bool preferStructures)
         {
             var l = lists[(int)of];
-            Health best = null;
-            float bestD = float.MaxValue;
+            Health best = null, bestDraws = null, bestStructure = null;
+            float bestD = float.MaxValue, bestDrawsD = float.MaxValue, bestStructureD = float.MaxValue;
             for (int i = 0; i < l.Count; i++)
             {
                 var h = l[i];
@@ -70,11 +75,23 @@ namespace TactileWars.Combat
                 float dx = p.x - pos.x, dz = p.z - pos.z;
                 float r = range + h.targetRadius;
                 float d2 = dx * dx + dz * dz;
-                if (d2 > r * r || d2 >= bestD) continue;
+                if (d2 > r * r) continue;
+                if (preferStructures && h.kind == TargetKind.Structure && d2 < bestStructureD)
+                {
+                    bestStructureD = d2;
+                    bestStructure = h;
+                }
+                if (preferDrawsFire && h.drawsFire && d2 < bestDrawsD)
+                {
+                    bestDrawsD = d2;
+                    bestDraws = h;
+                }
+                if (d2 >= bestD) continue;
                 bestD = d2;
                 best = h;
             }
-            return best;
+            if (bestStructure != null) return bestStructure;
+            return bestDraws != null ? bestDraws : best;
         }
 
         public static int CountWithin(Team of, Vector3 pos, float radius)
@@ -93,7 +110,12 @@ namespace TactileWars.Combat
         }
 
         /// <summary>Area damage with linear falloff to 40 percent at the edge.</summary>
-        public static int DamageArea(Team victims, Vector3 center, float radius, float damage, TeamColorId by)
+        public static int DamageArea(Team victims, Vector3 center, float radius, float damage, TeamColorId by) =>
+            DamageArea(victims, center, radius, damage, by, 1f, 1f);
+
+        /// <summary>Area damage with linear falloff to 40 percent at the edge, times 'structureMult' on structures and
+        /// mines and 'soldierMult' on soldiers and flag bearers.</summary>
+        public static int DamageArea(Team victims, Vector3 center, float radius, float damage, TeamColorId by, float structureMult, float soldierMult)
         {
             var l = lists[(int)victims];
             int hits = 0;
@@ -106,6 +128,7 @@ namespace TactileWars.Combat
                 float d = Mathf.Sqrt(dx * dx + dz * dz) - h.targetRadius;
                 if (d > radius) continue;
                 float f = Mathf.Lerp(1f, 0.4f, Mathf.Clamp01(d / Mathf.Max(0.01f, radius)));
+                f *= h.kind == TargetKind.Structure || h.kind == TargetKind.Mine ? structureMult : soldierMult;
                 h.TakeDamage(damage * f, center, by);
                 hits++;
             }

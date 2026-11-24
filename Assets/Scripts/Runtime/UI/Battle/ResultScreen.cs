@@ -22,8 +22,9 @@ namespace TactileWars.UI
         TextMeshProUGUI survivorsValue, timeValue, killsValue, medalLetter, prismText;
         RectTransform[] gradeCircles = new RectTransform[2];
         TextMeshProUGUI[] gradeLetters = new TextMeshProUGUI[2];
-        RectTransform medal, levelUp, prismRoot;
-        TextMeshProUGUI levelUpText;
+        RectTransform medal, levelUp, prismRoot, unlock, unlockGlyph, victoryCard;
+        const float VictoryH = 760f, VictoryUnlockH = 840f;
+        TextMeshProUGUI levelUpText, unlockText;
 
         // Defeat widgets.
         UINumberTicker dGold, dXp;
@@ -33,17 +34,21 @@ namespace TactileWars.UI
         public bool VictoryShown => victory != null && victory.gameObject.activeSelf;
         public bool DefeatShown => defeat != null && defeat.gameObject.activeSelf;
         public bool AnimationDone { get; private set; }
+        /// <summary>True while the victory card shows the ladder unlock line (first clear of a level).</summary>
+        public bool UnlockShown => unlock != null && unlock.gameObject.activeInHierarchy;
+        public string UnlockLine => unlockText != null ? unlockText.text : "";
         public UIButton ContinueButton { get; private set; }
         public UIButton ReplayButton { get; private set; }
         public UIButton RetryButton { get; private set; }
         public UIButton HomeButton { get; private set; }
 
-        static readonly string[] Tips =
+        /// <summary>Tips shown on the defeat card (public so tests can check the wording).</summary>
+        public static readonly string[] Tips =
         {
             "Tip: shoot the flag bearer, then tap its bubble to pop the whole squad at once.",
-            "Tip: draw a line parallel to mines to slip past them.",
-            "Tip: a tight circle keeps your soldiers together under cannon fire.",
-            "Tip: tap the POW badge when it glows to call backup soldiers.",
+            "Tip: send a Tank in first; towers aim at it and spare your Attackers.",
+            "Tip: a unit standing on a capture circle captures it faster with all three soldiers alive.",
+            "Tip: click the Backup badge when it glows to bring a lost unit back.",
         };
 
         public static ResultScreen Create(BattleHUD hud, Transform parent)
@@ -64,8 +69,9 @@ namespace TactileWars.UI
             var team = UIFactory.PlayerTeam;
             victory = UIFactory.Rect(parent, "Victory").Stretch();
             UIFactory.Dim(victory, 0.55f);
-            var cardRoot = UIFactory.Rect(victory, "CardRoot").At(0.5f, 0.5f, 0f, -30f, 1240f, 760f);
-            var face = UIFactory.Card(cardRoot, "Card", 1240f, 760f);
+            var cardRoot = UIFactory.Rect(victory, "CardRoot").At(0.5f, 0.5f, 0f, -30f, 1240f, VictoryH);
+            victoryCard = cardRoot;
+            var face = UIFactory.Card(cardRoot, "Card", 1240f, VictoryH);
             ((RectTransform)face.parent).Stretch();
             var ribbon = UIFactory.Ribbon(cardRoot, "VICTORY!", UIColors.Team(team), 680f, 146f, 84f);
             ribbon.At(0.5f, 1f, 0f, 70f, 680f, 146f, 0.5f, 1f);
@@ -120,6 +126,15 @@ namespace TactileWars.UI
             levelUpText = UIFactory.Text(levelUp, "Text", "LEVEL UP!", 36f, TextStyle.Heading);
             ((RectTransform)levelUpText.transform).Stretch(80f, 0f, 24f, 3f);
             levelUpText.overflowMode = TextOverflowModes.Overflow;
+
+            // Ladder unlock line (first clear of a level): "Unlocked: Healer, +1 squad slot".
+            unlock = UIFactory.Rect(face, "Unlock").At(0.5f, 1f, -150f, -624f, 700f, 52f, 0.5f, 0.5f);
+            var ubg = UIFactory.Img(unlock, "Bg", skin.pill, UIColors.Gold, UIFactory.PillMult(52f));
+            ((RectTransform)ubg.transform).Stretch();
+            unlockGlyph = UIFactory.Rect(unlock, "Glyph").At(0f, 0.5f, -6f, 0f, 64f, 64f, 0f, 0.5f);
+            unlockText = UIFactory.Text(unlock, "Text", "", 32f, TextStyle.Heading);
+            ((RectTransform)unlockText.transform).Stretch(70f, 0f, 24f, 3f);
+            unlockText.overflowMode = TextOverflowModes.Overflow;
 
             ReplayButton = UIFactory.Button(face, "Replay", "REPLAY", ButtonColor.Slate, 340f, 108f, UIIcon.Replay, 44f);
             ((RectTransform)ReplayButton.transform).At(0.5f, 0f, -190f, 26f, 340f, 108f, 0.5f, 0f);
@@ -277,9 +292,15 @@ namespace TactileWars.UI
             gradeLetters[1].text = s.speedGrade;
             medalLetter.text = s.grade;
             vGold.SetInstant(0); vXp.SetInstant(0); vLeague.SetInstant(0);
-            prismRoot.gameObject.SetActive(s.prisms > 0);
+            // Prisms are no longer shown anywhere (nothing on the menu spends them), so the reward line skips them.
+            prismRoot.gameObject.SetActive(false);
             prismText.text = "+" + s.prisms;
             levelUp.gameObject.SetActive(false);
+            unlock.gameObject.SetActive(false);
+            bool unlocked = !string.IsNullOrEmpty(s.unlockText);
+            // With an unlock line the card grows (the buttons stay at its bottom) to fit both banners under the stats.
+            victoryCard.sizeDelta = new Vector2(victoryCard.sizeDelta.x, unlocked ? VictoryUnlockH : VictoryH);
+            levelUp.anchoredPosition = new Vector2(levelUp.anchoredPosition.x, unlocked ? -552f : -560f);
             foreach (var g in gradeCircles) if (g != null) g.localScale = Vector3.zero;
             medal.localScale = Vector3.zero;
             vAnim.Show();
@@ -308,7 +329,7 @@ namespace TactileWars.UI
             yield return Wait(0.5f);
             if (s.LeveledUp)
             {
-                string extra = (s.levelUpGold > 0 ? "  +" + s.levelUpGold + " gold" : "") + (s.levelUpPrisms > 0 ? "  +" + s.levelUpPrisms + " prisms" : "");
+                string extra = s.levelUpGold > 0 ? "  +" + s.levelUpGold + " gold" : "";
                 levelUpText.text = "LEVEL UP! LEVEL " + s.levelAfter + extra;
                 float w = levelUpText.GetPreferredValues(levelUpText.text).x + 130f;
                 levelUp.sizeDelta = new Vector2(Mathf.Max(420f, w), 66f);
@@ -316,7 +337,34 @@ namespace TactileWars.UI
                 UIAnim.Pop(levelUp, 0.3f, 0.45f);
                 AudioManager.Play(SoundId.LevelUp, Vector3.zero);
             }
+            if (unlocked)
+            {
+                yield return Wait(s.LeveledUp ? 0.35f : 0f);
+                ShowUnlock(s);
+            }
             AnimationDone = true;
+        }
+
+        void ShowUnlock(RewardSummary s)
+        {
+            unlockText.text = s.unlockText;
+            UIFactory.ClearChildren(unlockGlyph);
+            // The unit the cleared level unlocks, in its glyph disc (the same sign as the unit bar and the badges).
+            var db = MetaGame.Db;
+            var b = db != null && db.roster != null ? db.roster.Find(s.baseId) : null;
+            var cfg = b != null && db.units != null && Progression.UnlockOf(Progression.LevelOf(b, db), out var id) ? db.units.Get(id) : null;
+            bool glyph = cfg != null;
+            if (glyph) SquadBuilderPanel.GlyphDisc(unlockGlyph, "Disc", cfg, 64f).Stretch();
+            else
+            {
+                var star = UIFactory.Icon(unlockGlyph, UIIcon.Star, 64f);
+                ((RectTransform)star.transform).Stretch();
+            }
+            float w = unlockText.GetPreferredValues(unlockText.text).x + 110f;
+            unlock.sizeDelta = new Vector2(Mathf.Max(420f, w), 52f);
+            unlock.gameObject.SetActive(true);
+            UIAnim.Pop(unlock, 0.3f, 0.45f);
+            AudioManager.Play(SoundId.CaptureComplete, Vector3.zero);
         }
 
         IEnumerator DefeatSequence(RewardSummary s)

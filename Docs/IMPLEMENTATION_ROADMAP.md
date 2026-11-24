@@ -142,7 +142,7 @@ Verification: tests; screenshots compared with `f_0086.jpg`, `f_0091.jpg`, `f_00
 Goal: factions, leagues, mercenary, offline online-layer.
 
 Tasks
-- [x] Four leagues with rank points; league shown in profile. (ProgressionConfig.leagues, ui_profile.png)
+- [x] Four leagues with rank points; league shown in profile. (ProgressionConfig.leagues; the profile screen is hidden since Plan 2 Task 2c)
 - [x] `Online/*` interfaces with a local offline provider (matchmaking, leaderboard, alliance, base repository). (OnlineInterfaces.cs, LocalOfflineProvider.cs)
 - [ ] Synthetic leaderboard and alliance roster labeled offline. (leaderboard labelled offline; alliance roster exists with no UI)
 - [ ] Daily gold gift and free Prism grants per the GDD decisions. (not implemented)

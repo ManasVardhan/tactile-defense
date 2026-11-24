@@ -12,8 +12,17 @@ namespace TactileWars.Battle
         public float captureRadius = 2.9f;
         [Tooltip("Seconds to capture with the squad on the pad.")] public float captureTime = 4f;
         [Tooltip("Progress lost per second when nobody holds the pad.")] public float captureDecay = 0.08f;
-        [Tooltip("Extra speed per soldier on the pad, capped.")] public float perSoldierBonus = 0.03f;
+        [Tooltip("Legacy squad (defense battles): extra speed per soldier on the pad, capped.")] public float perSoldierBonus = 0.03f;
         public int maxSoldierBonus = 10;
+        [Tooltip("Attack battles (an army of 9): extra speed per soldier on the pad. With 1/3 a full unit of 3 captures 1.5 times as fast as one soldier, and 9 soldiers twice as fast as 3.")]
+        public float armyPerSoldierBonus = 1f / 3f;
+        [Tooltip("Attack battles: soldiers counted for the bonus, at most.")] public int armyMaxSoldierBonus = 9;
+
+        [Header("Deployment grid (hidden: the player sees round markers, never the hexes)")]
+        [Tooltip("Outer radius (center to corner) of a deployment hex in world units.")] public float hexOuterRadius = DefaultHexOuterRadius;
+        /// <summary>The one source of the deployment hex size: the field default, the asset builder and every fallback
+        /// read it.</summary>
+        public const float DefaultHexOuterRadius = 1.5f;
 
         [Header("Reinforcements (estimates)")]
         public float meterRequired = 30f;

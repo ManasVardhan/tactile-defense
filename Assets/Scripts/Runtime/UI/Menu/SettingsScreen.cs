@@ -20,8 +20,8 @@ namespace TactileWars.UI
             ((RectTransform)line.transform).At(0.5f, 1f, 0f, -350f, 900f, 4f, 0.5f, 1f);
             ResetButton = UIFactory.Button(Body, "Reset", "RESET SAVE", ButtonColor.Red, 380f, 96f, UIIcon.Replay, 34f);
             ((RectTransform)ResetButton.transform).At(0.5f, 1f, -230f, -384f, 380f, 96f, 0.5f, 1f);
-            ResetButton.onClick = () => Menu.Dialog.Show("RESET SAVE?", "This deletes your level, gold, research and mercenaries. It cannot be undone.", "RESET", ButtonColor.Red, DoReset);
-            var hint = UIFactory.Paragraph(Body, "ResetHint", "Start over from level 1 with a fresh profile.", 24f, UIColors.Muted, TextAlignmentOptions.MidlineLeft);
+            ResetButton.onClick = () => Menu.Dialog.Show("RESET SAVE?", "This deletes your cleared levels, unlocked units, gold and heroes. It cannot be undone.", "RESET", ButtonColor.Red, DoReset);
+            var hint = UIFactory.Paragraph(Body, "ResetHint", "Start over from Level 1 with a fresh profile.", 24f, UIColors.Muted, TextAlignmentOptions.MidlineLeft);
             ((RectTransform)hint.transform).At(0.5f, 1f, 210f, -384f, 420f, 96f, 0.5f, 1f);
             var credits = UIFactory.Paragraph(Body, "Credits",
                 "Fonts: Lilita One and Fredoka (SIL Open Font License 1.1). All art, audio and code are original to this recreation. " +

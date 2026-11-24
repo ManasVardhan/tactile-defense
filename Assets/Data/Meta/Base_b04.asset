@@ -13,15 +13,18 @@ MonoBehaviour:
   m_Name: Base_b04
   m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Meta.BaseDefinition
   id: b04
-  displayName: Splat Ridge
+  displayName: Twin Passes
   commanderName: Cpt. Violet
-  enemyTeam: 5
+  enemyTeam: 3
   difficulty: 4
   requiredLevel: 3
   rewardMultiplier: 1.5
   enemyHealthMult: 1.15
   enemyDamageMult: 1.02
   layout: {fileID: 11400000, guid: 86355a433c9b84234acc64be3e30aa45, type: 2}
-  map: {fileID: 11400000, guid: c4130c810929f4bd3bb3df7af67234cf, type: 2}
+  map: {fileID: 11400000, guid: 165888088c5e14372a9d288d019a421d, type: 2}
+  passiveEnemies: 0
+  counterattack: 1
   enemySquads: 6
+  averageSquadSize: 11.666667
   defenses: 11

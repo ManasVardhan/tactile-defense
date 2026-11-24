@@ -13,31 +13,6 @@ MonoBehaviour:
   m_Name: ResearchTree
   m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Meta.ResearchTree
   nodes:
-  - id: squad_size
-    displayName: Squad Size
-    description: More pigments march with you.
-    branch: 0
-    effect: 0
-    icon: Users
-    defenseId: 
-    valueFormat: +{0}
-    displayScale: 1
-    steps:
-    - requiredLevel: 1
-      goldCost: 150
-      value: 4
-    - requiredLevel: 2
-      goldCost: 320
-      value: 8
-    - requiredLevel: 4
-      goldCost: 560
-      value: 12
-    - requiredLevel: 6
-      goldCost: 900
-      value: 16
-    - requiredLevel: 9
-      goldCost: 1400
-      value: 20
   - id: soldier_health
     displayName: Thick Helmets
     description: Each soldier takes more paint before popping.
@@ -132,28 +107,6 @@ MonoBehaviour:
     - requiredLevel: 10
       goldCost: 1100
       value: 0.18
-  - id: reinforcement_size
-    displayName: Bigger Backup
-    description: More soldiers arrive per reinforcement call.
-    branch: 1
-    effect: 5
-    icon: Plus
-    defenseId: 
-    valueFormat: +{0}
-    displayScale: 1
-    steps:
-    - requiredLevel: 2
-      goldCost: 220
-      value: 3
-    - requiredLevel: 4
-      goldCost: 450
-      value: 6
-    - requiredLevel: 7
-      goldCost: 800
-      value: 9
-    - requiredLevel: 10
-      goldCost: 1250
-      value: 12
   - id: reinforcement_charge
     displayName: Quick Call
     description: The POW meter fills faster.
@@ -177,8 +130,8 @@ MonoBehaviour:
       goldCost: 1300
       value: 0.5
   - id: hero_ability
-    displayName: Leader Training
-    description: Your squad leader and mercenary get tougher and hit harder.
+    displayName: Mercenary Training
+    description: Your hired mercenary gets tougher and hits harder.
     branch: 1
     effect: 7
     icon: Mercenary

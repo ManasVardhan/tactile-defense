@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1efe2c3caf6f940f786949f574265e14, type: 3}
+  m_Name: Biome_ridge
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Battle.BiomeStyle
+  id: ridge
+  displayName: Frost Ridge
+  baseColor1: {r: 0.5568628, g: 0.60784316, b: 0.654902, a: 1}
+  baseColor2: {r: 0.5019608, g: 0.5568628, b: 0.60784316, a: 1}
+  noiseScale: 0.05
+  patchColor: {r: 0.9019608, g: 0.92941177, b: 0.9529412, a: 1}
+  patchScale: 0.11
+  patchCoverage: 0.4
+  patchSoftness: 0.09
+  crackColor: {r: 0.42352942, g: 0.47058824, b: 0.5176471, a: 1}
+  crackStrength: 0
+  crackScale: 0.9
+  speckleColor: {r: 0.37254903, g: 0.41568628, b: 0.4627451, a: 1}
+  speckleAmount: 0.04
+  speckleScale: 2.6
+  pathColor: {r: 0.47843137, g: 0.43529412, b: 0.4, a: 1}
+  pathStrength: 0.9
+  wornColor: {r: 0.6392157, g: 0.6784314, b: 0.7176471, a: 1}
+  wornStrength: 0.5
+  edgeColor: {r: 0.93333334, g: 0.9529412, b: 0.96862745, a: 1}
+  waterColor: {r: 0.7490196, g: 0.8862745, b: 0.93333334, a: 1}
+  waterDeep: {r: 0.6117647, g: 0.8117647, b: 0.8862745, a: 1}
+  bankColor: {r: 0.9098039, g: 0.9372549, b: 0.95686275, a: 1}
+  waterStrength: 1
+  shadowColor: {r: 0.49803922, g: 0.56078434, b: 0.6901961, a: 1}
+  shadowStrength: 0.8
+  sunColor: {r: 0.93333334, g: 0.95686275, b: 1, a: 1}
+  sunIntensity: 1
+  ambientSky: {r: 0.7882353, g: 0.84705883, b: 0.93333334, a: 1}
+  ambientEquator: {r: 0.6666667, g: 0.70980394, b: 0.77254903, a: 1}
+  ambientGround: {r: 0.3647059, g: 0.4, b: 0.4392157, a: 1}
+  background: {r: 0.8509804, g: 0.8862745, b: 0.91764706, a: 1}

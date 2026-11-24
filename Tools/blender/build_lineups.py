@@ -19,8 +19,7 @@ ROWS = {
                     "Mine"]],
     "Environment": [["Tree_B", "Tree_A", "Tree_C", "Bush_A", "Bush_B", "Rock_C", "Rock_B",
                      "Rock_A"],
-                    ["Fence", "Crate", "Barrel", "Log", "GrassTuft", "Flower_A", "Flower_B",
-                     "HexTile"]],
+                    ["Fence", "Crate", "Barrel", "Log", "GrassTuft", "Flower_A", "Flower_B"]],
 }
 
 

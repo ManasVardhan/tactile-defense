@@ -11,7 +11,7 @@ tiny helmeted soldiers by drawing their formation straight onto the battlefield.
 
 ![Unity](https://img.shields.io/badge/Unity-6000.3.22f1-222?logo=unity)
 ![Render pipeline](https://img.shields.io/badge/render-URP-4b8bbe)
-![Tests](https://img.shields.io/badge/tests-72%20passing-3fa34d)
+![Tests](https://img.shields.io/badge/tests-142%20passing-3fa34d)
 ![Assets](https://img.shields.io/badge/assets-100%25%20original-d9402b)
 ![Platform](https://img.shields.io/badge/runs%20in-Unity%20editor%20%7C%20Web-8a6fd1)
 
@@ -43,7 +43,7 @@ and they stream along the stroke while you are still drawing it.
 
 </td>
 <td width="50%">
-<img src="Docs/Screenshots/battle_stroke_drawing.png" alt="A dashed stroke being drawn with soldiers following">
+<img src="Docs/Screenshots/tut_2_deploy.png" alt="A unit of three soldiers deployed onto a glowing spot">
 </td>
 </tr>
 <tr>
@@ -74,14 +74,15 @@ AI attacker try to break it at up to 4x speed.
 </tr>
 <tr>
 <td width="50%">
-<img src="Docs/Screenshots/ui_research.png" alt="The research screen with upgrade cards">
+<img src="Docs/Screenshots/ui_army_new_unit.png" alt="The Army screen with the squad slots and six unit cards">
 </td>
 <td width="50%" valign="top">
 
 ### Progression that changes the fight
-Ten AI bases across three maps, a three-branch research tree, hireable mercenaries,
-levels, leagues, gold, and prisms. Upgrades feed the battle loadout directly: buy
-Squad Size and more soldiers spawn. Progress is saved to disk.
+A ladder of five levels, each on its own battlefield. Clearing one unlocks a new unit type and a squad slot. The
+Army screen shows every unit with its stats, the ones still locked and the level that
+unlocks them, and lets you choose the squad you take into battle. Hire a hero with
+gold. Progress is saved to disk.
 
 </td>
 </tr>
@@ -91,8 +92,8 @@ Squad Size and more soldiers spawn. Progress is saved to disk.
 
 | | | |
 |:-:|:-:|:-:|
-| <img src="Docs/Screenshots/battle_u_formation.png" alt="U formation"> | <img src="Docs/Screenshots/battle_formation_circle.png" alt="Circle formation"> | <img src="Docs/Screenshots/battle_capture.png" alt="Capturing a point"> |
-| U formation around the squad ring | Ring formation | Capturing a point |
+| <img src="Docs/Screenshots/tut_4_move_selected.png" alt="A selected unit"> | <img src="Docs/Screenshots/tut_7_tank.png" alt="Deploying a Tank"> | <img src="Docs/Screenshots/battle_capture.png" alt="Capturing a point"> |
+| Selecting a unit | Deploying a Tank | Capturing a point |
 | <img src="Docs/Screenshots/base_defense_battle.png" alt="Defense battle"> | <img src="Docs/Screenshots/defenses_showcase.png" alt="Defenses"> | <img src="Docs/Screenshots/map_canyon.png" alt="Canyon Pass map"> |
 | AI attackers raiding a player base | The defense roster | Canyon Pass |
 | <img src="Docs/Screenshots/ui_team_select.png" alt="Team select"> | <img src="Docs/Screenshots/ui_attack.png" alt="Attack screen"> | <img src="Docs/Screenshots/ui_victory.png" alt="Victory screen"> |
@@ -133,7 +134,7 @@ A Web build made from this project is in [`TactileWarsWeb`](TactileWarsWeb).
 
 | Area | Approach |
 |---|---|
-| Rendering | URP, a custom toon shader with outlines, a procedural hex-tile ground shader, pooled paint decals |
+| Rendering | URP, a custom toon shader with outlines, a procedural open-field ground shader with three biomes, pooled paint decals |
 | Formations | Chaikin smoothing, arc-length resampling, shape recognition, crossing-free slot assignment |
 | Movement | Per-soldier steering with separation, plus a coarse grid router so squads path through gates |
 | Architecture | Gameplay raises events and never references UI; all tunables live in ScriptableObjects |

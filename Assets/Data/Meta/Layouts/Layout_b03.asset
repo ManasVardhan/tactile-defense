@@ -14,75 +14,80 @@ MonoBehaviour:
   m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Battle.BaseLayoutData
   seed: 1074
   squads:
-  - position: {x: 2.788359, y: 0, z: 44.798187}
+  - position: {x: -9.62919, y: 0, z: 56.571583}
     advance: 0
     count: 9
     seed: 1074
-  - position: {x: -0.7558309, y: 0, z: 85.09215}
+    noFlagBearer: 0
+  - position: {x: 23.635376, y: 0, z: 79.39643}
     advance: 1
     count: 9
     seed: 1081
-  - position: {x: -1.6232811, y: 0, z: 28.136122}
-    advance: 1
+    noFlagBearer: 0
+  - position: {x: -10.081589, y: 0, z: 77.65249}
+    advance: 0
     count: 9
     seed: 1088
-  - position: {x: -3.7426546, y: 0, z: 91.47638}
+    noFlagBearer: 0
+  - position: {x: 16.826935, y: 0, z: 87.8968}
     advance: 0
     count: 9
     seed: 1095
-  - position: {x: 5.0695553, y: 0, z: 54.600807}
-    advance: 1
+    noFlagBearer: 0
+  - position: {x: 1.0246425, y: 0, z: 77.74058}
+    advance: 0
     count: 10
     seed: 1102
+    noFlagBearer: 0
   defenses:
   - defenseId: geyser
-    position: {x: 7.9639573, y: 0, z: 83.635}
+    position: {x: 12.211312, y: 0, z: 71.37228}
     yaw: 25.152754
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: -6.801601, y: 0, z: 23.671846}
+    position: {x: 3.8283362, y: 0, z: 73.21474}
     yaw: 61.638935
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: 3.3629458, y: 0, z: 99.27463}
+    position: {x: -16.86454, y: 0, z: 58.964672}
     yaw: 67.2167
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: 6.8590455, y: 0, z: 70.95878}
+    position: {x: -11.461603, y: 0, z: 70.06021}
     yaw: 277.56525
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: -1.6350408, y: 0, z: 51.510563}
+    position: {x: 7.1221533, y: 0, z: 84.3459}
     yaw: 56.66976
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: -5.4168243, y: 0, z: 19.12794}
+    position: {x: 0.55284834, y: 0, z: 72.63318}
     yaw: 104.64176
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: -3.4036384, y: 0, z: 16.162994}
+    position: {x: 12.031102, y: 0, z: 82.10618}
     yaw: 86.96575
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: cannon
-    position: {x: -1.2540555, y: 0, z: 33.918327}
-    yaw: 183.76216
+    position: {x: 27.383396, y: 0, z: 74.576355}
+    yaw: -75.96376
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: bunker
-    position: {x: -10.925855, y: 0, z: 57.351967}
-    yaw: 212.77756
+    position: {x: 22.474598, y: 0, z: 85.15095}
+    yaw: 143.97263
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: turret
-    position: {x: -12.752706, y: 0, z: 37.891777}
-    yaw: 218.25812
+    position: {x: -6.243436, y: 0, z: 82.02448}
+    yaw: -94.08562
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   counterSpawnsOverride: []

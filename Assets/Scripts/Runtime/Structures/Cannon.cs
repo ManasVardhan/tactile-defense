@@ -9,6 +9,9 @@ namespace TactileWars.Structures
         float recoil;
         Vector3 barrelBase;
 
+        /// <summary>Lobbed shells splash an area, so the cannon does not single out Tank units.</summary>
+        protected override bool PreferDrawsFire => false;
+
         protected override void Start()
         {
             base.Start();

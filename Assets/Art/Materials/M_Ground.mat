@@ -30,22 +30,41 @@ Material:
     m_Ints: []
     m_Floats:
     - _Brightness: 1
+    - _CrackScale: 0.9
+    - _CrackStrength: 0
     - _HexLineStrength: 0.62
     - _HexLineWidth: 0.028
     - _HexSize: 5.2
     - _HexTint: 0.045
-    - _NoiseScale: 0.08
+    - _NoiseScale: 0.055
     - _NoiseStrength: 0.06
-    - _PathStrength: 0.55
-    - _ShadowStrength: 0.8
+    - _PatchCoverage: 0.36
+    - _PatchScale: 0.12
+    - _PatchSoftness: 0.14
+    - _PathStrength: 0.95
+    - _ShadowStrength: 0.78
+    - _SpeckleAmount: 0.045
+    - _SpeckleScale: 2.4
+    - _WaterStrength: 1
+    - _WornStrength: 0.55
     m_Colors:
-    - _DarkColor: {r: 0.6627451, g: 0.6313726, b: 0.49803922, a: 1}
+    - _BankColor: {r: 0.4862745, g: 0.56078434, b: 0.32156864, a: 1}
+    - _BaseColor1: {r: 0.43529412, g: 0.60784316, b: 0.30980393, a: 1}
+    - _BaseColor2: {r: 0.3882353, g: 0.5568628, b: 0.2784314, a: 1}
+    - _CrackColor: {r: 0.30588236, g: 0.41568628, b: 0.20392157, a: 1}
+    - _DarkColor: {r: 0.30980393, g: 0.47843137, b: 0.22745098, a: 1}
     - _HexLineColor: {r: 0.58431375, g: 0.5254902, b: 0.4, a: 1}
+    - _HexOrigin: {r: 0, g: 0, b: 0, a: 0}
     - _MapRect: {r: -40, g: -25, b: 80, a: 160}
-    - _PathColor: {r: 0.73333335, g: 0.67058825, b: 0.5176471, a: 1}
+    - _PatchColor: {r: 0.5254902, g: 0.6745098, b: 0.3529412, a: 1}
+    - _PathColor: {r: 0.7176471, g: 0.59607846, b: 0.40784314, a: 1}
     - _SandColor: {r: 0.7647059, g: 0.7058824, b: 0.5568628, a: 1}
     - _SandColor2: {r: 0.7254902, g: 0.6745098, b: 0.53333336, a: 1}
-    - _ShadowColor: {r: 0.6117647, g: 0.6039216, b: 0.6509804, a: 1}
+    - _ShadowColor: {r: 0.49411765, g: 0.5568628, b: 0.6117647, a: 1}
+    - _SpeckleColor: {r: 0.95686275, g: 0.9137255, b: 0.6509804, a: 1}
     - _TileColor: {r: 0.84705883, g: 0.7921569, b: 0.6509804, a: 1}
+    - _WaterColor: {r: 0.37254903, g: 0.6627451, b: 0.76862746, a: 1}
+    - _WaterDeep: {r: 0.2901961, g: 0.56078434, b: 0.6901961, a: 1}
+    - _WornColor: {r: 0.5764706, g: 0.627451, b: 0.34901962, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

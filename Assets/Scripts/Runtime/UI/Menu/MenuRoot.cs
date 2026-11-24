@@ -9,8 +9,10 @@ using UnityEngine.UI;
 
 namespace TactileWars.UI
 {
-    /// <summary>Main menu / home base. Builds the whole menu UI from the skin at runtime (top bar, navigation,
-    /// Attack button, screens, first run team selection) over the live 3D backdrop.</summary>
+    /// <summary>Main menu / home base. Builds the whole menu UI from the skin at runtime (top bar, the Army and
+    /// Attack buttons, screens, first run team selection, one-time callouts) over the live 3D backdrop. The Research,
+    /// Base and Profile screens are still built (their code and tests stay alive) but nothing on the menu opens them
+    /// while MetaGame.BaseFeaturesEnabled is off.</summary>
     public class MenuRoot : MonoBehaviour
     {
         public UISkin skin;
@@ -35,7 +37,14 @@ namespace TactileWars.UI
         public Save.RaidRecord LastRaid { get; private set; }
         public MenuScreen Current { get; private set; }
         public UIButton AttackButton { get; private set; }
-        public readonly List<UIButton> NavButtons = new List<UIButton>();
+        public UIButton ArmyButton { get; private set; }
+        /// <summary>The notification dot on the Army button: lit while an unlocked unit carries the NEW tag.</summary>
+        public bool ArmyDotShown => armyDot != null && armyDot.activeSelf;
+        public RectTransform ArmyDot => armyDot != null ? (RectTransform)armyDot.transform : null;
+        public MenuGuide Guide { get; private set; }
+
+        RectTransform squadStrip;
+        GameObject armyDot;
 
         RectTransform home, screens, overlay;
         CanvasGroup homeGroup;
@@ -91,7 +100,9 @@ namespace TactileWars.UI
             Dialog = ConfirmDialog.Create(overlay);
             RaidCard = RaidReportCard.Create(this, overlay);
             Toast = UIToast.Create(overlay, 300f);
+            Guide = MenuGuide.Create(this, UIFactory.Rect(safe, "Guide").Stretch());
             Bar.Refresh(false);
+            RefreshHome();
         }
 
         T MakeScreen<T>(string name) where T : MenuScreen
@@ -115,30 +126,22 @@ namespace TactileWars.UI
             wars.At(0.5f, 1f, 0f, -78f, 250f, 70f, 0.5f, 1f);
             logo.localRotation = Quaternion.Euler(0f, 0f, 2f);
 
-            // Navigation (bottom left): round icon buttons with labels, like the reference's bottom tab icons.
-            var nav = UIFactory.Rect(rt, "Nav").At(0f, 0f, 36f, 28f, 760f, 196f, 0f, 0f);
-            var navBg = UIFactory.Img(nav, "Bg", skin.pill, UIColors.WithAlpha(UIColors.Ink, 0.55f), UIFactory.PillMult(120f));
-            ((RectTransform)navBg.transform).At(0f, 0f, 0f, 34f, 740f, 120f, 0f, 0f);
-            var items = new (string label, UIIcon icon, System.Func<MenuScreen> screen)[]
-            {
-                ("ARMY", UIIcon.Users, () => Army),
-                ("RESEARCH", UIIcon.Flask, () => Research),
-                ("BASE", UIIcon.Shield, () => BaseDefense),
-                ("PROFILE", UIIcon.Trophy, () => Profile),
-            };
-            NavButtons.Clear();
-            for (int i = 0; i < items.Length; i++)
-            {
-                var it = items[i];
-                var b = UIFactory.IconButton(nav, "Nav_" + it.label, it.icon, 136f, ButtonColor.White, 0.6f);
-                ((RectTransform)b.transform).At(0f, 0f, 30f + i * 178f, 46f, 136f, 136f, 0f, 0f);
-                var lbl = UIFactory.Text(nav, "Label_" + it.label, it.label, 30f, TextStyle.Heading);
-                ((RectTransform)lbl.transform).At(0f, 0f, 30f + i * 178f + 68f, 0f, 200f, 44f, 0.5f, 0f);
-                var screenGetter = it.screen;
-                b.sound = SoundId.UiOpen;
-                b.onClick = () => Open(screenGetter());
-                NavButtons.Add(b);
-            }
+            // Army (bottom left): the squad's glyphs above a big pill, mirroring Attack on the right. A red dot on
+            // the button while a newly unlocked unit has not been seen in Army.
+            var army = UIFactory.Rect(rt, "ArmyGroup").At(0f, 0f, 40f, 34f, 520f, 260f, 0f, 0f);
+            ArmyButton = UIFactory.Button(army, "ArmyButton", "ARMY", ButtonColor.White, 400f, 158f, UIIcon.Users, 70f);
+            ((RectTransform)ArmyButton.transform).At(0f, 0f, 0f, 0f, 400f, 158f, 0f, 0f);
+            ArmyButton.sound = SoundId.UiOpen;
+            ArmyButton.onClick = () => Open(Army);
+            var dot = UIFactory.Img(ArmyButton.transform, "Dot", skin.circle, Color.white);
+            ((RectTransform)dot.transform).At(1f, 1f, 6f, 12f, 50f, 50f, 1f, 1f);
+            var dotFill = UIFactory.Img(dot.transform, "Fill", skin.circle, UIColors.Red);
+            ((RectTransform)dotFill.transform).Stretch(6f, 6f, 6f, 6f);
+            var bang = UIFactory.Text(dot.transform, "Mark", "!", 32f, TextStyle.HeadingThin);
+            ((RectTransform)bang.transform).Stretch(0f, 0f, 0f, 3f);
+            armyDot = dot.gameObject;
+            armyDot.SetActive(false);
+            squadStrip = UIFactory.Rect(army, "Squad").At(0f, 0f, 0f, 172f, 520f, 76f, 0f, 0f);
 
             // Attack (bottom right): big team colored pill with the sword, a bust peeking over it.
             var atk = UIFactory.Rect(rt, "AttackGroup").At(1f, 0f, -40f, 34f, 520f, 230f, 1f, 0f);
@@ -161,19 +164,23 @@ namespace TactileWars.UI
         public void Open(MenuScreen s)
         {
             if (s == null) return;
-            if (Current != null && Current != s) Current.Anim.Hide();
+            if (Current != null && Current != s) { Current.Anim.Hide(); Current.OnClosed(); }
             Current = s;
             s.Anim.Show();   // activate first: TMP measures text correctly only on active objects
             s.Refresh();
             s.OnOpened();
             SetHomeVisible(false);
+            if (Guide != null) Guide.Refresh();
         }
 
         public void CloseScreen()
         {
+            var was = Current;
             if (Current != null) Current.Anim.Hide();
             Current = null;
+            if (was != null) was.OnClosed();
             SetHomeVisible(true);
+            RefreshHome();
         }
 
         void SetHomeVisible(bool on)
@@ -181,13 +188,47 @@ namespace TactileWars.UI
             homeGroup.interactable = on;
             homeGroup.blocksRaycasts = on;
             UIAnim.Fade(homeGroup, on ? 1f : 0f, 0.2f);
-            if (Bar != null && Bar.LeagueGroup != null) UIAnim.Fade(Bar.LeagueGroup, on ? 1f : 0f, 0.2f);
         }
 
         void OnChanged()
         {
             if (Bar != null) Bar.Refresh(true);
             if (Current != null) Current.Refresh();
+            RefreshHome();
+        }
+
+        /// <summary>The Army dot, the squad strip over the Army button and the callouts.</summary>
+        void RefreshHome()
+        {
+            if (armyDot != null)
+            {
+                bool on = MetaGame.HasNewUnits;
+                if (on && !armyDot.activeSelf) UIAnim.Pop((RectTransform)armyDot.transform, 0.4f, 0.3f);
+                armyDot.SetActive(on);
+            }
+            if (squadStrip != null) BuildSquadStrip();
+            if (Guide != null) Guide.Refresh();
+        }
+
+        void BuildSquadStrip()
+        {
+            UIFactory.ClearChildren(squadStrip);
+            var squad = MetaGame.Squad;
+            var units = MetaGame.Db != null ? MetaGame.Db.units : null;
+            const float d = 56f, gap = 8f, pad = 12f;
+            int n = 0;
+            foreach (var s in squad) if (s.HasValue) n++;
+            float w = pad * 2f + n * d + (n - 1) * gap;
+            var bg = UIFactory.Img(squadStrip, "Bg", UIFactory.Skin.pill, UIColors.WithAlpha(UIColors.Ink, 0.62f), UIFactory.PillMult(d + 16f));
+            ((RectTransform)bg.transform).At(0f, 0f, 0f, 0f, w, d + 16f, 0f, 0f);
+            int i = 0;
+            foreach (var s in squad)
+            {
+                if (!s.HasValue) continue;
+                var disc = SquadBuilderPanel.GlyphDisc(bg.transform, "Unit_" + i, units != null ? units.Get(s.Value) : null, d);
+                disc.At(0f, 0.5f, pad + i * (d + gap), 0f, d, d, 0f, 0.5f);
+                i++;
+            }
         }
 
         /// <summary>Team changes recolor a lot of the UI: rebuild it.</summary>
@@ -198,7 +239,10 @@ namespace TactileWars.UI
             if (Root != null) Destroy(Root.gameObject);
             Current = null;
             Build();
-            if (open == typeof(ProfileScreen)) Open(Profile);
+            // Only screens the menu can reach are reopened (never Research, Base or Profile).
+            if (open == typeof(ArmyScreen)) Open(Army);
+            else if (open == typeof(AttackScreen)) Open(Attack);
+            else if (open == typeof(SettingsScreen)) Open(Settings);
         }
 
         public void ShowToast(string text, UIIcon? icon = null, Color? color = null) { if (Toast != null) Toast.Show(text, icon, color); }

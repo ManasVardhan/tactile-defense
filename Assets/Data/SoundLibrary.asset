@@ -333,6 +333,15 @@ MonoBehaviour:
     maxVoices: 1
     minInterval: 0.1
     spatialBlend: 0
+  - id: 35
+    category: 5
+    clips:
+    - {fileID: 8300000, guid: 7d4c789fda8c84158afa45e6cbef82e4, type: 3}
+    volume: 0.45
+    pitch: {x: 0.97, y: 1.03}
+    maxVoices: 1
+    minInterval: 0.15
+    spatialBlend: 0
   - id: 27
     category: 4
     clips:

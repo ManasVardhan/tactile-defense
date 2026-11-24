@@ -12,8 +12,9 @@ namespace TactileWars.EditorTools
 {
     /// <summary>
     /// Writes the meta game data (ALL VALUES ARE ESTIMATES, see Docs/ARCHITECTURE_CONTRACT.md Deviations):
-    /// ProgressionConfig, ResearchTree, three mercenaries, the defense catalog, ten AI bases with generated
-    /// BaseLayoutData (base one keeps the handcrafted Battle.unity deployment) and Assets/Resources/MetaDatabase.
+    /// ProgressionConfig, ResearchTree, three mercenaries, the defense catalog, the five ladder levels (each on its own
+    /// MapBuilder map; Level 1 with a hand placed tutorial deployment, the others with a seeded deployment on their
+    /// map's sockets) and Assets/Resources/MetaDatabase.
     /// Existing assets are overwritten so the data always matches this builder.
     /// </summary>
     public static class ProgressionBuilder
@@ -74,6 +75,7 @@ namespace TactileWars.EditorTools
             db.research = research;
             db.mercenaries = mercs;
             db.roster = roster;
+            db.units = AssetDatabase.LoadAssetAtPath<TactileWars.Army.UnitRoster>("Assets/Data/UnitRoster.asset");
             db.defenses = catalog;
             db.game = AssetDatabase.LoadAssetAtPath<GameConfig>("Assets/Data/GameConfig.asset");
             db.squadConfig = AssetDatabase.LoadAssetAtPath<SquadConfig>("Assets/Data/SquadConfig.asset");
@@ -82,7 +84,9 @@ namespace TactileWars.EditorTools
             db.baseEditor = baseCfg;
             db.defenseBattle = AssetDatabase.LoadAssetAtPath<DefenseBattleConfig>("Assets/Data/DefenseBattleConfig.asset");
             db.homeMap = maps[0];
-            db.maps = new[] { maps[1], maps[2] };
+            var levelMaps = new List<MapLayoutData>();
+            for (int l = 1; l <= Progression.LevelCount; l++) levelMaps.Add(MapBuilder.LevelMap(maps, l));
+            db.maps = levelMaps.ToArray();
             AssetDatabase.SaveAssets();
             Debug.Log("[UIBuild] meta data: " + research.nodes.Length + " research nodes, " + mercs.Length + " mercenaries, " + roster.bases.Length + " bases");
             return db;
@@ -138,9 +142,7 @@ namespace TactileWars.EditorTools
 
         static ResearchNode[] ResearchNodes() => new[]
         {
-            // Troops
-            Node("squad_size", "Squad Size", "More pigments march with you.", ResearchBranch.Troops, ResearchEffect.SquadSize, "Users", "+{0}", 1f,
-                Steps(new[] { 1, 2, 4, 6, 9 }, new[] { 150, 320, 560, 900, 1400 }, new[] { 4f, 8f, 12f, 16f, 20f })),
+            // Troops (Squad Size is retired: cleared ladder levels give squad slots)
             Node("soldier_health", "Thick Helmets", "Each soldier takes more paint before popping.", ResearchBranch.Troops, ResearchEffect.SoldierHealth, "Heart", "+{0}%", 100f,
                 Steps(new[] { 1, 3, 5, 7, 10 }, new[] { 120, 260, 480, 800, 1250 }, new[] { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f })),
             Node("fire_rate", "Rapid Pumps", "Paint guns fire faster.", ResearchBranch.Troops, ResearchEffect.FireRate, "Lightning", "+{0}%", 100f,
@@ -149,12 +151,10 @@ namespace TactileWars.EditorTools
                 Steps(new[] { 2, 4, 6, 9, 12 }, new[] { 200, 380, 650, 1000, 1500 }, new[] { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f })),
             Node("move_speed", "Light Boots", "The squad marches and reforms faster.", ResearchBranch.Troops, ResearchEffect.MoveSpeed, "Boot", "+{0}%", 100f,
                 Steps(new[] { 3, 6, 10 }, new[] { 260, 600, 1100 }, new[] { 0.06f, 0.12f, 0.18f })),
-            // Offense
-            Node("reinforcement_size", "Bigger Backup", "More soldiers arrive per reinforcement call.", ResearchBranch.Offense, ResearchEffect.ReinforcementSize, "Plus", "+{0}", 1f,
-                Steps(new[] { 2, 4, 7, 10 }, new[] { 220, 450, 800, 1250 }, new[] { 3f, 6f, 9f, 12f })),
+            // Offense (Bigger Backup is retired: a backup call restores a lost unit)
             Node("reinforcement_charge", "Quick Call", "The POW meter fills faster.", ResearchBranch.Offense, ResearchEffect.ReinforcementCharge, "Pow", "+{0}%", 100f,
                 Steps(new[] { 3, 5, 8, 11 }, new[] { 260, 520, 880, 1300 }, new[] { 0.12f, 0.24f, 0.36f, 0.5f })),
-            Node("hero_ability", "Leader Training", "Your squad leader and mercenary get tougher and hit harder.", ResearchBranch.Offense, ResearchEffect.HeroAbility, "Mercenary", "+{0}%", 100f,
+            Node("hero_ability", "Mercenary Training", "Your hired mercenary gets tougher and hits harder.", ResearchBranch.Offense, ResearchEffect.HeroAbility, "Mercenary", "+{0}%", 100f,
                 Steps(new[] { 4, 7, 12 }, new[] { 400, 850, 1500 }, new[] { 0.2f, 0.4f, 0.6f })),
             // Defense (for the player's own base, used by the base editor)
             Node("def_mine", "Paint Mine", "Hidden trap. Pops soldiers that walk over it.", ResearchBranch.Defense, ResearchEffect.DefenseUnlock, "Skull", "Lv {0}", 1f,
@@ -180,28 +180,31 @@ namespace TactileWars.EditorTools
         struct BaseSpec
         {
             public string id, name, commander; public TeamColorId team; public int diff, level; public float reward, hp, dmg;
-            public string map; // null: handcrafted lane; "canyon" or "ridge": a MapBuilder variant
+            public bool tutorial; // passive enemies, no counterattack and the hand placed deployment (Level 1)
         }
 
-        // Phase 8 balance (ESTIMATE, tuned with the BotPlaythroughTests bot): base one is a soft training fight, the
-        // multipliers then climb faster than before because researched squads (up to +20 soldiers, +50% health,
-        // +40% fire rate, +50% damage, bigger and faster reinforcements) made the old top bases easier than base one.
+        // Phase 8 balance (ESTIMATE, tuned with the BotPlaythroughTests bot). Level N plays on MapBuilder's "levelN" map.
+        // Enemy colors are picked for contrast with the level's ground: no orange or red on the warm canyon, no green
+        // on the meadow.
         static readonly BaseSpec[] Specs =
         {
-            new BaseSpec { id = "b01", name = "Training Grounds", commander = "Sgt. Puddle", team = TeamColorId.Teal, diff = 1, level = 1, reward = 1.0f, hp = 0.75f, dmg = 0.6f },
-            new BaseSpec { id = "b02", name = "Pine Outpost", commander = "Cpl. Moss", team = TeamColorId.Green, diff = 2, level = 1, reward = 1.15f, hp = 0.95f, dmg = 0.85f },
-            new BaseSpec { id = "b03", name = "Dusty Crossing", commander = "Lt. Amber", team = TeamColorId.Orange, diff = 3, level = 2, reward = 1.3f, hp = 1.05f, dmg = 0.95f , map = "canyon" },
-            new BaseSpec { id = "b04", name = "Splat Ridge", commander = "Cpt. Violet", team = TeamColorId.Purple, diff = 4, level = 3, reward = 1.5f, hp = 1.15f, dmg = 1.02f , map = "ridge" },
-            new BaseSpec { id = "b05", name = "Magenta Bastion", commander = "Maj. Rosa", team = TeamColorId.Pink, diff = 5, level = 4, reward = 1.7f, hp = 1.3f, dmg = 1.1f },
-            new BaseSpec { id = "b06", name = "Cobalt Trench", commander = "Col. Indigo", team = TeamColorId.Blue, diff = 6, level = 5, reward = 1.95f, hp = 1.45f, dmg = 1.2f , map = "canyon" },
-            new BaseSpec { id = "b07", name = "Crimson Gate", commander = "Gen. Scarlet", team = TeamColorId.Red, diff = 7, level = 6, reward = 2.2f, hp = 1.6f, dmg = 1.32f , map = "ridge" },
-            new BaseSpec { id = "b08", name = "Jade Fortress", commander = "Gen. Celadon", team = TeamColorId.Teal, diff = 8, level = 8, reward = 2.5f, hp = 1.75f, dmg = 1.45f },
-            new BaseSpec { id = "b09", name = "Thunder Camp", commander = "Marshal Ochre", team = TeamColorId.Orange, diff = 9, level = 10, reward = 2.85f, hp = 1.95f, dmg = 1.6f , map = "canyon" },
-            new BaseSpec { id = "b10", name = "Prism Citadel", commander = "Warlord Lilac", team = TeamColorId.Purple, diff = 10, level = 12, reward = 3.3f, hp = 2.15f, dmg = 1.75f , map = "ridge" },
+            new BaseSpec { id = "b01", name = "Training Field", commander = "Sgt. Puddle", team = TeamColorId.Teal, diff = 1, level = 1, reward = 1.0f, hp = 1.0f, dmg = 0.9f, tutorial = true },
+            new BaseSpec { id = "b02", name = "Long Road", commander = "Cpl. Moss", team = TeamColorId.Orange, diff = 2, level = 1, reward = 1.15f, hp = 0.95f, dmg = 0.85f },
+            new BaseSpec { id = "b03", name = "Overlook", commander = "Lt. Amber", team = TeamColorId.Blue, diff = 3, level = 2, reward = 1.3f, hp = 1.05f, dmg = 0.95f },
+            new BaseSpec { id = "b04", name = "Twin Passes", commander = "Cpt. Violet", team = TeamColorId.Red, diff = 4, level = 3, reward = 1.5f, hp = 1.15f, dmg = 1.02f },
+            new BaseSpec { id = "b05", name = "The Fort", commander = "Maj. Rosa", team = TeamColorId.Purple, diff = 5, level = 4, reward = 1.7f, hp = 1.3f, dmg = 1.1f },
         };
+
+        /// <summary>Retired bases of the ten level ladder: their generated assets are deleted on every build.</summary>
+        static readonly string[] Retired = { "b06", "b07", "b08", "b09", "b10" };
 
         static BaseDefinition[] Bases()
         {
+            foreach (var id in Retired)
+            {
+                if (AssetDatabase.LoadAssetAtPath<BaseDefinition>(Dir + "/Base_" + id + ".asset") != null) AssetDatabase.DeleteAsset(Dir + "/Base_" + id + ".asset");
+                if (AssetDatabase.LoadAssetAtPath<BaseLayoutData>(LayoutDir + "/Layout_" + id + ".asset") != null) AssetDatabase.DeleteAsset(LayoutDir + "/Layout_" + id + ".asset");
+            }
             var list = new BaseDefinition[Specs.Length];
             for (int i = 0; i < Specs.Length; i++)
             {
@@ -210,36 +213,50 @@ namespace TactileWars.EditorTools
                 b.id = s.id; b.displayName = s.name; b.commanderName = s.commander; b.enemyTeam = s.team;
                 b.difficulty = s.diff; b.requiredLevel = s.level; b.rewardMultiplier = s.reward;
                 b.enemyHealthMult = s.hp; b.enemyDamageMult = s.dmg;
-                b.map = MapFor(s.map);
-                if (i == 0)
-                {
-                    b.layout = null; // handcrafted deployment of Battle.unity
-                    b.enemySquads = SceneBuilder.SquadSockets.Length;
-                    b.defenses = SceneBuilder.MineSockets.Length + 5;
-                }
-                else
-                {
-                    b.layout = Layout(s, 1000 + i * 37, b.map);
-                    b.enemySquads = b.layout.squads.Length;
-                    b.defenses = b.layout.defenses.Length;
-                }
+                b.map = MapBuilder.LevelMap(maps, i + 1);
+                b.passiveEnemies = s.tutorial;
+                b.counterattack = !s.tutorial;
+                b.layout = s.tutorial ? LevelOneLayout(s, b.map) : Layout(s, 1000 + i * 37, b.map);
+                b.enemySquads = b.layout.squads.Length;
+                b.averageSquadSize = AverageSquadSize(b.layout);
+                b.defenses = b.layout.defenses.Length;
                 list[i] = b;
             }
             return list;
         }
 
-        static MapLayoutData MapFor(string id)
+        /// <summary>Soldiers per squad in a layout: its grunts plus the flag bearer, when it has one.</summary>
+        static float AverageSquadSize(BaseLayoutData l)
         {
-            if (string.IsNullOrEmpty(id) || maps == null) return null;
-            foreach (var m in maps) if (m != null && m.id == id) return m;
-            return null;
+            if (l.squads == null || l.squads.Length == 0) return 0f;
+            float sum = 0f;
+            foreach (var q in l.squads) sum += q.count + (q.noFlagBearer ? 0 : 1);
+            return sum / l.squads.Length;
+        }
+
+        /// <summary>Level 1, the tutorial (design spec 6.1), hand placed on its map: 4 grunts with no flag bearer
+        /// standing on circle 1, then 5 grunts and a flag bearer by circle 2 with one turret covering it. The squads
+        /// are passive and there are no traps and no counterattack (BaseDefinition flags).</summary>
+        static BaseLayoutData LevelOneLayout(BaseSpec s, MapLayoutData map)
+        {
+            var l = Asset<BaseLayoutData>(LayoutDir + "/Layout_" + s.id + ".asset");
+            l.seed = 0;
+            MapBuilder.LevelOneDeployment(map, out Vector3 guard1, out Vector3 guard2, out Vector3 turret);
+            l.squads = new[]
+            {
+                new EnemySquadPlacement { position = guard1, advance = false, count = 4, seed = 11, noFlagBearer = true },
+                new EnemySquadPlacement { position = guard2, advance = true, count = 5, seed = 17 },
+            };
+            l.defenses = new[] { new DefensePlacementData { defenseId = "turret", position = turret, yaw = MapBuilder.FacingYaw(map, turret) } };
+            l.counterSpawnsOverride = new Vector3[0];
+            EditorUtility.SetDirty(l);
+            return l;
         }
 
         struct SquadSock { public Vector3 pos; public bool holdOnly; }
         struct HeavySock { public Vector3 pos; public float yaw; public bool allowTank; }
 
-        /// <summary>Seeded deployment on prop free sockets (the handcrafted lane's from SceneBuilder, or the map
-        /// variant's from MapBuilder), scaled by difficulty. Higher difficulties add geysers (d3+), sniper towers
+        /// <summary>Seeded deployment on the prop free sockets of the level's map (MapBuilder), scaled by difficulty. Higher difficulties add geysers (d3+), sniper towers
         /// (d4+) and tesla antennas (d5+). All counts are estimates.</summary>
         static BaseLayoutData Layout(BaseSpec s, int seed, MapLayoutData map)
         {
@@ -251,24 +268,13 @@ namespace TactileWars.EditorTools
             var squadSockets = new List<SquadSock>();
             var mines = new List<Vector3>();
             var heavy = new List<HeavySock>();
-            Vector3 cp1 = new Vector3(0, 0, 43f), cp2 = new Vector3(0, 0, 94f);
-            if (map == null)
+            Vector3 cp1 = map.capturePoints[0], cp2 = map.capturePoints[1];
+            foreach (var p in map.squadSockets) squadSockets.Add(new SquadSock { pos = p, holdOnly = rng.NextDouble() < 0.4 });
+            mines.AddRange(map.mineSockets);
+            foreach (var p in map.defenseSockets)
             {
-                foreach (var k in SceneBuilder.SquadSockets) squadSockets.Add(new SquadSock { pos = k.pos, holdOnly = k.holdOnly });
-                mines.AddRange(SceneBuilder.MineSockets);
-                foreach (var k in SceneBuilder.DefenseSockets) heavy.Add(new HeavySock { pos = k.pos, yaw = k.yaw, allowTank = k.allowTank });
-            }
-            else
-            {
-                cp1 = map.capturePoints[0]; cp2 = map.capturePoints[1];
-                foreach (var p in map.squadSockets) squadSockets.Add(new SquadSock { pos = p, holdOnly = rng.NextDouble() < 0.4 });
-                mines.AddRange(map.mineSockets);
-                foreach (var p in map.defenseSockets)
-                {
-                    // Face the incoming lane (south, toward the path).
-                    float yaw = 180f + Mathf.Clamp(-p.x * 3f, -45f, 45f);
-                    heavy.Add(new HeavySock { pos = p, yaw = yaw, allowTank = Mathf.Abs(p.x) < 8f });
-                }
+                // Face back down the map's path, toward where the player comes from.
+                heavy.Add(new HeavySock { pos = p, yaw = MapBuilder.FacingYaw(map, p), allowTank = false });
             }
             Shuffle(squadSockets, rng);
             int squadCount = Mathf.Clamp(4 + d / 2 + (d >= 8 ? 1 : 0), 4, squadSockets.Count);

@@ -16,6 +16,7 @@ namespace TactileWars.Combat
         public float targetRadius = 0.35f;
         public float aimHeight = 0.45f;
         public bool targetable = true;
+        [Tooltip("Shooters that prefer draws-fire targets pick this one over nearer targets while it is in range.")] public bool drawsFire;
 
         public float Current { get; private set; }
         public bool IsAlive { get; private set; }
@@ -62,6 +63,13 @@ namespace TactileWars.Combat
             IsAlive = false;
             UnitRegistry.Unregister(this);
             Died?.Invoke(this, by);
+        }
+
+        /// <summary>Sets the health of a living target to a fraction of its max (a revived soldier starts at half).</summary>
+        public void SetFraction(float f)
+        {
+            if (!IsAlive) return;
+            Current = Mathf.Clamp(max * f, 0.01f, max);
         }
 
         public void Heal(float amount)

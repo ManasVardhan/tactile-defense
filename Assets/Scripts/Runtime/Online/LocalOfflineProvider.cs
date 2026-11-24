@@ -72,7 +72,7 @@ namespace TactileWars.Online
 
         /// <summary>When the player returns to the menu after at least raidMinAwayMinutes, simulates one raid on the
         /// saved base (at most a few per session; an empty base is never raided). The result is applied and saved.
-        /// Always updates the "last seen" time.</summary>
+        /// Never raids while MetaGame.BaseFeaturesEnabled is off. Always updates the "last seen" time.</summary>
         public RaidRecord CheckForRaid(System.DateTime utcNow)
         {
             var p = SaveSystem.Profile;
@@ -80,7 +80,8 @@ namespace TactileWars.Online
             RaidRecord rec = null;
             long last = p.lastSeenUtcTicks;
             int maxPerSession = cfg != null ? cfg.raidMaxPerSession : 2;
-            if (last > 0 && RaidsThisSession < maxPerSession && p.BaseLayout.placements.Count > 0)
+            // Base features are off in this build: the player has no base to see or edit, so nothing raids it.
+            if (MetaGame.BaseFeaturesEnabled && last > 0 && RaidsThisSession < maxPerSession && p.BaseLayout.placements.Count > 0)
             {
                 double away = (utcNow - new System.DateTime(last, System.DateTimeKind.Utc)).TotalMinutes;
                 if (away >= (cfg != null ? cfg.raidMinAwayMinutes : 30f))

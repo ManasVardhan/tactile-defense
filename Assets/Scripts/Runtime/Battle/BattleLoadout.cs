@@ -31,7 +31,11 @@ namespace TactileWars.Battle
         public TeamColorId playerTeam = TeamColorId.Red;
         public TeamColorId enemyTeam = TeamColorId.Teal;
 
-        // Player squad (research driven).
+        /// <summary>Attack battles: the unit types the player chose, in slot order (emptied slots skipped). Null keeps
+        /// the army's default squad.</summary>
+        public List<Army.UnitTypeId> squad;
+
+        // Player squad (research driven). squadSize is the legacy squad's soldier count (defense battles).
         public int squadSize = 40;
         public float soldierHealthMult = 1f;
         public float fireRateMult = 1f;
@@ -52,6 +56,10 @@ namespace TactileWars.Battle
         public float enemyDamageMult = 1f;
         public float rewardMult = 1f;
         public int difficulty = 1;
+        /// <summary>Enemy squads wait until a player soldier is within their weapon range plus 2 (tutorial levels).</summary>
+        public bool passiveEnemies;
+        /// <summary>Off: no counterattack wave after the first capture.</summary>
+        public bool counterattack = true;
 
         // Map variant. Null keeps the handcrafted dressing of Battle.unity.
         public MapLayoutData map;
@@ -77,5 +85,8 @@ namespace TactileWars.Battle
         public float fireRateMult = 1f;
         public float scale = 1.2f;
         public float reinforcementChargeBonus;
+        /// <summary>Glyph disc color of its unit bar button and badge.</summary>
+        public Color accent = new Color(0.56f, 0.59f, 0.66f, 1f);
+        public string description = "";
     }
 }

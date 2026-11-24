@@ -14,6 +14,8 @@ namespace TactileWars.Combat
         [Tooltip("Aim error in degrees.")] public float spreadDegrees = 4f;
         [Tooltip("Extra radius around the target that still counts as a hit.")] public float hitRadius = 0.25f;
         [Tooltip("Area damage radius. 0 means single target.")] public float splashRadius = 0f;
+        [Tooltip("Area damage multiplier against structures (player Demolisher shells).")] public float structureDamageMult = 1f;
+        [Tooltip("Area damage multiplier against soldiers (player Demolisher shells).")] public float soldierDamageMult = 1f;
         [Tooltip("Visual size of the paint ball.")] public float projectileScale = 0.2f;
         [Tooltip("Arc height for lobbed shots (cannon, tank).")] public float arcHeight = 0f;
         [Tooltip("Shots per trigger pull, fired as a short dotted stream.")] public int burstCount = 1;

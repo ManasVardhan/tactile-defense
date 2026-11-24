@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TactileWars.Army;
 using TactileWars.Combat;
 using TactileWars.Core;
 using TactileWars.Squad;
@@ -10,23 +11,29 @@ namespace TactileWars.Battle
 {
     /// <summary>Applies BattleLoadout.Pending before any other battle script wakes: team colors, research driven
     /// squad and reinforcement stats, the hired mercenary, enemy difficulty and (for generated bases) the enemy
-    /// deployment from a BaseLayoutData. Without a pending loadout the scene runs exactly as authored.
+    /// deployment from a BaseLayoutData. Without a pending loadout the scene runs as authored, as an attack battle.
+    /// Picks the player's side first: attack battles use the PlayerArmy (the legacy squad and stroke input are
+    /// switched off), defense battles the legacy squad driven by the AI (the army is switched off).
     /// Configs are cloned at runtime so ScriptableObject assets are never modified.</summary>
     [DefaultExecutionOrder(-1000)]
     public class BattleSetup : MonoBehaviour
     {
         public BattleManager battleManager;
         public SquadController squad;
+        public PlayerArmy army;
         public Transform enemiesRoot;
         public Transform defensesRoot;
         public DefenseCatalog catalog;
         public EnemySquadConfig enemySquadConfig;
         [Header("Map variants and defense battles")]
-        [Tooltip("Handcrafted set dressing, replaced when the loadout carries a map variant.")] public Transform environmentRoot;
+        [Tooltip("Handcrafted set dressing, replaced when the loadout carries a map.")] public Transform environmentRoot;
         public Renderer groundRenderer;
         public CameraRig.BattleCamera cameraRig;
         [Tooltip("Drives the attacking squad in defense battles (disabled otherwise).")] public AttackerAI attackerAI;
         [Tooltip("The defender's limited paint strike in defense battles (disabled otherwise).")] public DefenderStrike strike;
+        [Header("Scene default (no loadout): the handcrafted lane with the classic tutorial deployment")]
+        [Tooltip("Data of the handcrafted lane (path, spawn, points, hatches); never applied, its props are the scene's own.")] public MapLayoutData sceneMap;
+        [Tooltip("Whether the handcrafted deployment sends a counterattack wave after the first capture.")] public bool sceneCounterattack = true;
 
         public static BattleSetup Instance { get; private set; }
         public BattleLoadout Applied { get; private set; }
@@ -42,21 +49,59 @@ namespace TactileWars.Battle
         {
             Instance = this;
             var lo = BattleLoadout.Pending;
-            if (lo == null || battleManager == null) return;
+            ApplyMode(lo != null && lo.mode == BattleMode.Defense);
+            MapPath.Set(lo != null && lo.map != null ? lo.map.path : sceneMap != null ? sceneMap.path : null);
+            if (battleManager == null) return;
+            if (lo == null)
+            {
+                Map = sceneMap;
+                // The scene as authored is Level 1: its squads carry their own passive flag; the counterattack is set here.
+                ApplyCounterattack(sceneCounterattack);
+                return;
+            }
             Applied = lo;
             ApplyTeams(lo);
             if (lo.map != null) ApplyMap(lo.map);
             ApplyPlayer(lo);
             if (lo.mode == BattleMode.Defense) ApplyDefense(lo);
-            else ApplyEnemies(lo);
+            else
+            {
+                ApplyEnemies(lo);
+                ApplyCounterattack(lo.counterattack);
+            }
+        }
+
+        /// <summary>Per-base rule (attack battles): switches the counterattack wave off on a runtime copy of the config.</summary>
+        void ApplyCounterattack(bool on)
+        {
+            var bc = battleManager.battleConfig;
+            if (bc == null || bc.counterattackEnabled == on) return;
+            bc = Clone(bc);
+            bc.counterattackEnabled = on;
+            battleManager.battleConfig = bc;
         }
 
         void OnDestroy()
         {
-            if (Instance == this) Instance = null;
+            if (Instance == this) { Instance = null; MapPath.Clear(); }
             if (groundClone != null) Destroy(groundClone);
             foreach (var kv in clones) if (kv.Value != null) Destroy(kv.Value);
             clones.Clear();
+        }
+
+        /// <summary>Switches off the side this battle does not use and points the camera at the one it does.</summary>
+        void ApplyMode(bool defense)
+        {
+            DefenseMode = defense;
+            if (defense)
+            {
+                if (army != null) army.gameObject.SetActive(false);
+                if (cameraRig != null) cameraRig.PanMode = false;
+                return;
+            }
+            if (squad != null) squad.gameObject.SetActive(false);
+            if (battleManager != null && battleManager.recorder != null) battleManager.recorder.enabled = false;
+            if (cameraRig != null) cameraRig.PanMode = army != null;
         }
 
         T Clone<T>(T src) where T : Object
@@ -113,6 +158,17 @@ namespace TactileWars.Battle
                 bc.xpVictoryBonus = Mathf.RoundToInt(bc.xpVictoryBonus * lo.rewardMult);
                 battleManager.battleConfig = bc;
             }
+            if (!DefenseMode)
+            {
+                // Attack: every unit type scales this soldier. Squad size and the leader are legacy squad stats and
+                // do not apply to the army. The chosen squad replaces the default; a hired mercenary joins after it.
+                if (army == null) return;
+                if (army.soldierConfig != null)
+                    army.soldierConfig = ScaledUnit(army.soldierConfig, lo.soldierHealthMult, lo.damageMult, lo.fireRateMult, lo.moveSpeedMult, "_Army");
+                if (lo.squad != null && lo.squad.Count > 0) army.SetSquad(lo.squad);
+                if (lo.mercenary != null) army.SetMercenary(MercenaryType(lo));
+                return;
+            }
             if (squad == null) return;
             var sc = Clone(squad.config);
             if (sc != null) { sc.soldierCount = Mathf.Clamp(lo.squadSize, 1, 120); squad.config = sc; }
@@ -130,6 +186,27 @@ namespace TactileWars.Battle
                 squad.mercenaryScale = m.scale;
                 squad.mercenaryName = m.displayName;
             }
+        }
+
+        /// <summary>The hired mercenary as a one soldier unit type: health and damage as the legacy squad's mercenary
+        /// (its multipliers times Mercenary Training), on top of the research scaled army soldier.</summary>
+        UnitTypeConfig MercenaryType(BattleLoadout lo)
+        {
+            var m = lo.mercenary;
+            var t = ScriptableObject.CreateInstance<UnitTypeConfig>();
+            t.name = "UnitType_Mercenary_" + m.id;
+            clones[t] = t;
+            t.id = PlayerArmy.MercenaryTypeId;
+            t.displayName = string.IsNullOrEmpty(m.displayName) ? "Mercenary" : m.displayName;
+            t.glyph = "M";
+            t.soldierCount = 1;
+            t.healthMult = m.healthMult * lo.leaderMult;
+            t.damageMult = m.damageMult * lo.leaderMult;
+            t.fireIntervalMult = 1f / Mathf.Max(0.1f, m.fireRateMult);
+            t.modelScale = m.scale;
+            t.accent = m.accent;
+            t.description = m.description;
+            return t;
         }
 
         /// <summary>Copy of a unit config (and its weapon) with multipliers applied. Not cached: each call is distinct.</summary>
@@ -174,6 +251,9 @@ namespace TactileWars.Battle
             {
                 foreach (var es in enemiesRoot.GetComponentsInChildren<EnemySquad>(true)) es.config = squadCfg;
             }
+            // Per-base rule: passive squads wait until approached. Applies to the scene's squads and spawned ones.
+            if (enemiesRoot != null)
+                foreach (var es in enemiesRoot.GetComponentsInChildren<EnemySquad>(true)) es.passive = lo.passiveEnemies;
 
             if (scale && defensesRoot != null)
             {
@@ -205,11 +285,15 @@ namespace TactileWars.Battle
                 MapApplier.SpawnProps(map, environmentRoot);
             }
             groundClone = MapApplier.ApplyGround(map, groundRenderer);
+            MapApplier.FitGround(map, groundRenderer);
+            if (map.biome != null)
+                map.biome.ApplyLighting(RenderSettings.sun, FindFirstObjectByType<Core.SceneLighting>(), cameraRig != null ? cameraRig.Cam : null);
             var cps = battleManager.capturePoints;
             for (int i = 0; i < cps.Length && i < map.capturePoints.Length; i++)
                 if (cps[i] != null) cps[i].transform.position = map.capturePoints[i];
             if (squad != null && squad.spawnPoint != null) squad.spawnPoint.position = map.playerSpawn;
             if (squad != null && squad.ring != null) squad.ring.transform.position = map.playerSpawn;
+            if (army != null) army.spawnPoint = map.playerSpawn;
             var gc = Clone(battleManager.gameConfig);
             gc.mapMin = map.mapMin;
             gc.mapMax = map.mapMax;
@@ -326,6 +410,7 @@ namespace TactileWars.Battle
                 es.advance = s.advance;
                 es.soldierCountOverride = s.count;
                 es.seed = s.seed;
+                es.withFlagBearer = !s.noFlagBearer;
             }
             if (catalog == null) return;
             if (layout.counterSpawnsOverride != null && layout.counterSpawnsOverride.Length > 0) battleManager.counterSpawns = layout.counterSpawnsOverride;

@@ -25,9 +25,14 @@ namespace TactileWars.Save
         public List<string> ownedMercenaries = new List<string>();
         public string hiredMercenary = "";
         public List<string> defeatedBases = new List<string>();
+        /// <summary>The squad the player takes into attack battles: one unit type id (Army.UnitTypeId as int) per slot,
+        /// -1 for a slot the player emptied. Repaired against the unlocked types and slots by Meta.Progression.</summary>
+        public List<int> squad = new List<int>();
 
         public SettingsData settings = new SettingsData();
         public TutorialFlags tutorial = new TutorialFlags();
+        /// <summary>Ids of the Level 1 tutorial steps and hints already shown (see UI.TutorialSteps). Never repeated.</summary>
+        public List<string> tutorialSeen = new List<string>();
         public PlayerStats stats = new PlayerStats();
         public BaseLayoutSave baseLayout = new BaseLayoutSave();
         /// <summary>SIMULATED offline raids on the player's base (newest first, capped). Not real players.</summary>
@@ -62,9 +67,11 @@ namespace TactileWars.Save
             research ??= new List<ResearchEntry>();
             ownedMercenaries ??= new List<string>();
             defeatedBases ??= new List<string>();
+            squad ??= new List<int>();
             hiredMercenary ??= "";
             settings ??= new SettingsData();
             tutorial ??= new TutorialFlags();
+            tutorialSeen ??= new List<string>();
             stats ??= new PlayerStats();
             baseLayout ??= new BaseLayoutSave();
             baseLayout.placements ??= new List<DefensePlacement>();
@@ -97,11 +104,11 @@ namespace TactileWars.Save
         public int quality = 1;
     }
 
+    /// <summary>One-off flags outside the Level 1 tutorial. Old saves may still carry the retired stroke coach
+    /// flags (drawStroke, tapToMove); JsonUtility skips unknown fields, so they load without error.</summary>
     [Serializable]
     public class TutorialFlags
     {
-        public bool drawStroke;
-        public bool tapToMove;
         public bool reinforcements;
     }
 

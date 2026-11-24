@@ -1,3 +1,4 @@
+using TactileWars.Army;
 using TactileWars.Audio;
 using TactileWars.Combat;
 using TactileWars.Core;
@@ -7,8 +8,9 @@ using UnityEngine;
 
 namespace TactileWars.Battle
 {
-    /// <summary>Battle flow on a linear map: capture point 1 then point 2 (win), lose when every player soldier is
-    /// dead. Tracks kills and the reinforcement meter and raises BattleEvents for the UI.</summary>
+    /// <summary>Battle flow on a linear map: capture point 1 then point 2 (win). Attack battles are lost when the
+    /// army has nothing left to fight with and no reinforcement is ready; defense battles when the AI squad is
+    /// wiped. Tracks kills and the reinforcement meter and raises BattleEvents for the UI.</summary>
     [DefaultExecutionOrder(-500)]
     public class BattleManager : MonoBehaviour
     {
@@ -19,7 +21,8 @@ namespace TactileWars.Battle
         public BattlePrefabs prefabs;
         public CombatConfig combatConfig;
         public CapturePoint[] capturePoints = new CapturePoint[0];
-        public SquadController squad;
+        [Tooltip("The AI attacker's squad in defense battles (inactive in attack battles).")] public SquadController squad;
+        [Tooltip("The player's units in attack battles (inactive in defense battles).")] public PlayerArmy army;
         public StrokeRecorder recorder;
         [Tooltip("Spawn hatches: the counterattack wave starts at the one nearest the captured point.")] public Vector3[] counterSpawns = new Vector3[0];
         public Units.EnemySquadConfig counterSquadConfig;
@@ -173,13 +176,28 @@ namespace TactileWars.Battle
             TickCounterattack(Time.deltaTime);
             if (!DefenseMode && PointerInput.ReinforceRequested) CallReinforcements();
             if (TimeLimit > 0f && Elapsed >= TimeLimit) { TimedOut = true; End(false); return; }
-            if (squad != null && squad.StartCount > 0 && squad.AliveCount == 0 && Elapsed > 0.5f) End(false);
+            if (DefenseMode)
+            {
+                if (squad != null && squad.StartCount > 0 && squad.AliveCount == 0 && Elapsed > 0.5f) End(false);
+            }
+            else if (army != null && Elapsed > 0.5f && !army.CanStillFight && !Meter.Ready) End(false);
         }
 
-        /// <summary>Spawns backup soldiers when the meter is full (keyboard R for now, UI later).</summary>
+        /// <summary>Uses a full meter. Attack battles: puts the most recently destroyed unit back in the squad list
+        /// (false, keeping the charge, when none is destroyed). Defense battles: spawns backup soldiers.</summary>
         public bool CallReinforcements()
         {
-            if (Over || squad == null || !Meter.TryConsume()) return false;
+            if (Over) return false;
+            if (!DefenseMode)
+            {
+                if (army == null || !Meter.Ready || !army.RestoreLastDestroyed()) return false;
+                Meter.TryConsume();
+                AudioManager.Play(SoundId.ReinforcementCall, army.Centroid);
+                BattleEvents.RaiseReinforced(ArmyReinforcement);
+                BattleEvents.RaiseReinforcementChanged(Meter.Fill, Meter.Ready);
+                return true;
+            }
+            if (squad == null || !Meter.TryConsume()) return false;
             int n = battleConfig != null ? battleConfig.reinforcementCount : 10;
             squad.Reinforce(n);
             reinforcementsAdded += n;
@@ -189,14 +207,28 @@ namespace TactileWars.Battle
             return true;
         }
 
+        /// <summary>Soldiers announced per attack reinforcement: one restored unit of three.</summary>
+        public const int ArmyReinforcement = 3;
+
+        /// <summary>The side that attacks: the army in attack battles, the legacy squad in defense battles.</summary>
+        public IPlayerForce Force
+        {
+            get
+            {
+                if (DefenseMode) return squad != null ? squad : null;
+                return army != null ? army : null;
+            }
+        }
+
         public CapturePoint CurrentPoint => CurrentPointIndex < capturePoints.Length ? capturePoints[CurrentPointIndex] : null;
 
         void End(bool victory)
         {
             Over = true;
             var c = battleConfig;
-            int survived = squad != null ? squad.AliveCount : 0;
-            int total = (squad != null ? squad.StartCount : 0) + reinforcementsAdded;
+            var force = Force;
+            int survived = force != null ? force.AliveCount : 0;
+            int total = (force != null ? force.StartCount : 0) + reinforcementsAdded;
             var r = new BattleResult
             {
                 victory = victory,
@@ -217,14 +249,15 @@ namespace TactileWars.Battle
             }
             Result = r;
             if (recorder != null) recorder.InputEnabled = false;
+            if (army != null) army.InputEnabled = false;
             counterTimer = -1f;
             if (victory)
             {
-                if (squad != null)
+                if (force != null)
                 {
-                    squad.SetCheer(true);
-                    if (!DefenseMode && VfxManager.Instance != null && squad.AliveCount > 0)
-                        VfxManager.Instance.Play(VfxType.Coins, squad.Centroid + Vector3.up * 0.5f, Color.white, 1f);
+                    force.SetCheer(true);
+                    if (!DefenseMode && VfxManager.Instance != null && force.AliveCount > 0)
+                        VfxManager.Instance.Play(VfxType.Coins, force.Centroid + Vector3.up * 0.5f, Color.white, 1f);
                 }
                 // In a defense battle the attackers winning is the player's loss.
                 AudioManager.Play(DefenseMode ? SoundId.Defeat : SoundId.Victory, Vector3.zero);

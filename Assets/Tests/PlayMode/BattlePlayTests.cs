@@ -1,9 +1,10 @@
 using System.Collections;
+using System.Collections.Generic;
 using NUnit.Framework;
+using TactileWars.Army;
 using TactileWars.Battle;
 using TactileWars.Combat;
 using TactileWars.Core;
-using TactileWars.Formation;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -19,68 +20,26 @@ namespace TactileWars.Tests
         }
 
         [UnityTest]
-        public IEnumerator DragStroke_SoldiersReachTheirSlots()
-        {
-            yield return BattleTestUtil.LoadBattle();
-            var squad = BattleTestUtil.Squad;
-            Assert.IsNotNull(squad, "SquadController in scene");
-            yield return BattleTestUtil.Wait(0.5f);
-            int n = squad.Soldiers.Count;
-            Assert.AreEqual(40, n, "default squad size");
-
-            Vector3 c = squad.Centroid;
-            var stroke = BattleTestUtil.LinePoints(c + new Vector3(-15f, 0, 3.5f), c + new Vector3(15f, 0, 3.5f), 40);
-            yield return BattleTestUtil.Drag(stroke, 0.8f);
-            Assert.AreEqual(ShapeType.Line, squad.LastShape, "a straight drag is recognized as a line");
-            Assert.AreEqual(n, squad.SlotCount, "one slot per soldier");
-
-            float deadline = Time.time + 6f;
-            int near = 0;
-            while (Time.time < deadline)
-            {
-                near = 0;
-                for (int i = 0; i < squad.Soldiers.Count; i++)
-                {
-                    var s = squad.Soldiers[i];
-                    Vector3 d = s.transform.position - s.Motor.Target; d.y = 0;
-                    if (d.magnitude < 0.35f) near++;
-                }
-                if (near >= n) break;
-                yield return null;
-            }
-            Debug.Log($"[Test] soldiers at slot: {near}/{n} after {6f - (deadline - Time.time):0.00}s");
-            Assert.GreaterOrEqual(near, Mathf.CeilToInt(n * 0.95f), "soldiers end up near their slots");
-
-            // Slots lie on the drawn line (z constant) and are spread along it.
-            float minX = float.MaxValue, maxX = float.MinValue;
-            foreach (var s in squad.Soldiers)
-            {
-                Assert.AreEqual(c.z + 3.5f, s.Motor.Target.z, 0.05f, "slot on the stroke");
-                minX = Mathf.Min(minX, s.Motor.Target.x); maxX = Mathf.Max(maxX, s.Motor.Target.x);
-            }
-            Assert.Greater(maxX - minX, 25f, "spread single file along the stroke");
-
-            // A short stroke cannot hold everyone single file: extra rows form behind it.
-            c = squad.Centroid;
-            yield return BattleTestUtil.Drag(BattleTestUtil.LinePoints(c + new Vector3(-4f, 0, 3f), c + new Vector3(4f, 0, 3f)), 0.5f);
-            int behind = 0;
-            foreach (var s in squad.Soldiers) if (s.Motor.Target.z < c.z + 3f - 0.3f) behind++;
-            Assert.Greater(behind, 0, "rows behind a short stroke");
-            Assert.AreEqual(n, squad.SlotCount);
-        }
-
-        [UnityTest]
         public IEnumerator AdvanceIntoEnemySquad_FiresAndDamagesEnemies()
         {
             yield return BattleTestUtil.LoadBattle();
-            var squad = BattleTestUtil.Squad;
+            // Level 1 keeps its enemies up the lane; stand a squad where base one's first squad was.
+            BattleTestUtil.SpawnEnemySquad(new Vector3(-8.5f, 0f, 21.5f), 10, true, false);
             yield return BattleTestUtil.Wait(0.3f);
+            var army = BattleTestUtil.Army;
+            var units = BattleTestUtil.DeployAll();
             int firedBefore = ProjectileManager.Instance.TotalFired;
             float enemyHpBefore = TotalEnemyHp(out int enemiesBefore);
             Assert.Greater(enemiesBefore, 0);
 
-            // Tap ahead toward the first enemy squad (left of the path near z 21).
-            yield return BattleTestUtil.Tap(new Vector3(-6.5f, 0, 14.5f));
+            // Order every unit ahead toward the first enemy squad (left of the path near z 21).
+            var taken = new List<HexCoord>();
+            foreach (var u in units)
+            {
+                var dest = BattleTestUtil.FreeHexNear(new Vector3(-6.5f, 0, 14.5f), taken.ToArray());
+                Assert.IsTrue(army.OrderMove(u, dest), "move toward the enemy accepted");
+                taken.Add(dest);
+            }
             float deadline = Time.time + 12f;
             while (Time.time < deadline)
             {
@@ -97,23 +56,29 @@ namespace TactileWars.Tests
         }
 
         [UnityTest]
-        public IEnumerator SquadOnCapturePoint_ProgressIncreases()
+        public IEnumerator UnitOnCapturePoint_ProgressIncreases()
         {
             yield return BattleTestUtil.LoadBattle();
-            var squad = BattleTestUtil.Squad;
+            BattleTestUtil.DisableEnemies();
             var bm = BattleManager.Instance;
+            var army = BattleTestUtil.Army;
             yield return BattleTestUtil.Wait(0.2f);
             var cp = bm.capturePoints[0];
             Assert.IsTrue(cp.Active, "first point active");
             Assert.IsFalse(bm.capturePoints[1].Active, "second point locked");
             Assert.AreEqual(0f, cp.Progress);
 
-            // Tight circle formation right on the pad.
-            squad.MoveFormationTo(cp.transform.position);
-            squad.TeleportToSlots();
+            // Deploy short of the pad and walk onto it.
+            var pad = BattleTestUtil.PadHex(cp);
+            var unit = army.Deploy(0, BattleTestUtil.FreeHexNear(cp.transform.position + new Vector3(0f, 0f, -9f), pad));
+            Assert.IsNotNull(unit);
+            Assert.AreEqual(0f, cp.Progress, "not on the pad yet");
+            Assert.IsTrue(army.OrderMove(unit, pad));
+            yield return BattleTestUtil.WaitArrive(unit, 10f);
+            Assert.IsFalse(unit.IsMoving, "arrived on the pad");
             float start = Time.time;
             yield return BattleTestUtil.Wait(1.5f);
-            Debug.Log($"[Test] capture progress after {Time.time - start:0.00}s: {cp.Progress:0.00} inside={cp.PlayersInside} contested={cp.Contested}");
+            Debug.Log($"[Test] capture progress after {Time.time - start:0.00}s on the pad: {cp.Progress:0.00} inside={cp.PlayersInside} contested={cp.Contested}");
             Assert.Greater(cp.PlayersInside, 0, "soldiers inside the pad");
             Assert.Greater(cp.Progress, 0.15f, "capture progress increases");
         }
@@ -122,10 +87,9 @@ namespace TactileWars.Tests
         public IEnumerator FlagBearerBubble_TapWipesSquad()
         {
             yield return BattleTestUtil.LoadBattle();
+            // Level 1's only flag bearer squad is far up the lane; bring one into view (where base one's first squad stood).
+            var sq = BattleTestUtil.SpawnEnemySquad(new Vector3(-8.5f, 0f, 21.5f), 10, true, false);
             yield return BattleTestUtil.Wait(0.3f);
-            var squads = Object.FindObjectsByType<TactileWars.Units.EnemySquad>(FindObjectsSortMode.None);
-            Assert.Greater(squads.Length, 0);
-            var sq = squads[0];
             int aliveBefore = sq.AliveCount;
             Assert.Greater(aliveBefore, 0);
             sq.Bearer.Health.Kill(TeamColorId.Red);
@@ -138,18 +102,26 @@ namespace TactileWars.Tests
         }
 
         [UnityTest]
-        public IEnumerator Reinforcements_AddSoldiersWhenMeterFull()
+        public IEnumerator Reinforcements_RestoreALostUnitWhenMeterFull()
         {
             yield return BattleTestUtil.LoadBattle();
             yield return BattleTestUtil.Wait(0.2f);
             var bm = BattleManager.Instance;
-            int before = BattleTestUtil.Squad.Soldiers.Count;
+            var army = BattleTestUtil.Army;
+            var units = BattleTestUtil.DeployAll();
+            BattleTestUtil.KillAll(units[1]);
+            yield return null;
+            Assert.AreEqual(EntryState.Destroyed, army.Squad[1].state);
+            Assert.AreEqual(0, army.ReadyCount);
             Assert.IsFalse(bm.CallReinforcements(), "meter starts empty");
             bm.Meter.Add(1000f);
             BattleTestUtil.Pointer.Reinforce = true; // keyboard R path through the pointer source
             yield return null;
             yield return null;
-            Assert.AreEqual(before + bm.battleConfig.reinforcementCount, BattleTestUtil.Squad.Soldiers.Count);
+            Assert.AreEqual(EntryState.Ready, army.Squad[1].state, "the lost unit is back in the squad list");
+            Assert.AreEqual(1, army.ReadyCount);
+            Assert.IsFalse(bm.Meter.Ready, "the charge is used");
+            Assert.IsNotNull(army.Deploy(1, BattleTestUtil.FreeHexNear(army.spawnPoint)), "and deploys again");
         }
 
         static float TotalEnemyHp(out int count)

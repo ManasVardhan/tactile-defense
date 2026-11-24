@@ -55,6 +55,7 @@ MonoBehaviour:
   targetRadius: 0.35
   aimHeight: 0.45
   targetable: 1
+  drawsFire: 0
 --- !u!114 &2945879441381299391
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -89,6 +90,8 @@ MonoBehaviour:
   baseTeamColor: {fileID: 2100000, guid: a518043cd3e754b919bcc83569b7a28a, type: 2}
   baseTeamColorDark: {fileID: 2100000, guid: 7ffc30fe4ab1d4ec68f080c9b617764e, type: 2}
   basePaint: {fileID: 2100000, guid: 61f8519f4e12d465b8706c9b8c6ff235, type: 2}
+  baseAccent: {fileID: 2100000, guid: a63829b5829d3454491ef004c995a830, type: 2}
+  baseHelmet: {fileID: 2100000, guid: 720e4f40b7eb04c07accc9e514765f3f, type: 2}
   unitVariant: 1
   renderers:
   - {fileID: 8735764756050872821}
@@ -122,7 +125,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0.015, z: 0}
-  m_LocalScale: {x: 0.94499993, y: 0.94499993, z: 1}
+  m_LocalScale: {x: 1.134, y: 1.134, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2861294428982180822}
@@ -194,15 +197,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 2fea96254d8a44b51863ca486c8e829a, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.9
+      value: 1.08
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2fea96254d8a44b51863ca486c8e829a, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.9
+      value: 1.08
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2fea96254d8a44b51863ca486c8e829a, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.9
+      value: 1.08
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2fea96254d8a44b51863ca486c8e829a, type: 3}
       propertyPath: m_LocalPosition.x

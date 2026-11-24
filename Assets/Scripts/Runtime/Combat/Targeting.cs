@@ -3,16 +3,21 @@ using UnityEngine;
 
 namespace TactileWars.Combat
 {
-    /// <summary>Auto targets the nearest enemy in range with staggered rescans (no per frame search).</summary>
+    /// <summary>Auto targets the nearest enemy in range, preferring draws-fire targets in range (unless built with
+    /// preferDrawsFire false, as lobbed area weapons are), with staggered rescans (no per frame search).</summary>
     public class Targeting
     {
         public Health Current { get; private set; }
+        /// <summary>Pick the nearest structure in range before any soldier (player Demolishers).</summary>
+        public bool PreferStructures { get; set; }
         float nextScan;
         readonly float interval;
+        readonly bool preferDrawsFire;
 
-        public Targeting(float scanInterval)
+        public Targeting(float scanInterval, bool preferDrawsFire = true)
         {
             interval = Mathf.Max(0.02f, scanInterval);
+            this.preferDrawsFire = preferDrawsFire;
             nextScan = Time.time + Random.value * interval;
         }
 
@@ -22,7 +27,7 @@ namespace TactileWars.Combat
             if (Time.time >= nextScan || Current == null && Time.time >= nextScan - interval * 0.5f)
             {
                 nextScan = Time.time + interval;
-                Current = UnitRegistry.FindNearest(UnitRegistry.Opponent(self), pos, range);
+                Current = UnitRegistry.FindNearest(UnitRegistry.Opponent(self), pos, range, preferDrawsFire, PreferStructures);
             }
             return Current;
         }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TactileWars.Army;
 using TactileWars.Audio;
 using TactileWars.Battle;
 using TactileWars.Combat;
@@ -15,7 +16,7 @@ namespace TactileWars.Squad
     /// moves the whole formation (shape preserved) so its centroid lands on the tapped point; a tap on a
     /// bubble pops it instead.
     /// </summary>
-    public class SquadController : MonoBehaviour
+    public class SquadController : MonoBehaviour, IPlayerForce
     {
         public static SquadController Instance { get; private set; }
 
@@ -69,6 +70,8 @@ namespace TactileWars.Squad
         public ShapeType LastShape { get; private set; }
         public bool IsDrawing => recorder != null && recorder.IsDrawing;
         public int StartCount => startCount;
+        /// <summary>The squad fights while anyone is alive (no reserves to deploy).</summary>
+        public bool CanStillFight => AliveCount > 0;
         public int SlotCount => slotCount;
         public FormationSlot GetSlotFor(int soldierIndex) => slots[assignment[soldierIndex]];
         /// <summary>True while the squad follows grid waypoints around an obstacle.</summary>

@@ -122,9 +122,11 @@ namespace TactileWars.EditorTools
                 p => A(W, Mathf.Lerp(0.2f, 0.85f, Mathf.InverseLerp(0.2f, 0.8f, p.y)))), Vector4.zero);
             s.ring = Shape("ring", 256, 256, c => c.Layer(p => Ring(p, Vector2.zero, 0.865f, 0.12f), W), Vector4.zero);
             s.ringThin = Shape("ring_thin", 256, 256, c => c.Layer(p => Ring(p, Vector2.zero, 0.955f, 0.033f), W), Vector4.zero);
-            var hex = RegularPoly(Vector2.zero, 0.9f, 6, 90f);
+            // The backup badge and the menu crest: an eight sided medallion (the battlefield shows no hexagons anywhere).
+            // The sprite keeps its old "hex" name so the skin's references stay.
+            var hex = RegularPoly(Vector2.zero, 0.92f, 8, 22.5f);
             s.hex = Shape("hex", 256, 256, c => c.Layer(p => RoundPoly(p, hex, 0.07f), W), Vector4.zero);
-            var hexIn = RegularPoly(Vector2.zero, 0.88f, 6, 90f);
+            var hexIn = RegularPoly(Vector2.zero, 0.9f, 8, 22.5f);
             s.hexRing = Shape("hex_ring", 256, 256, c => c.Layer(p => Mathf.Abs(RoundPoly(p, hexIn, 0.06f)) - 0.035f, W), Vector4.zero);
             s.tab = Shape("tab", 128, 128, c => c.Layer(p =>
             {

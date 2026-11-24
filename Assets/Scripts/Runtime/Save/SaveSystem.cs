@@ -13,7 +13,8 @@ namespace TactileWars.Save
     /// </summary>
     public static class SaveSystem
     {
-        public const int CurrentVersion = 2;
+        /// <summary>3: the level ladder (squad list; Squad Size and Bigger Backup research retired and refunded).</summary>
+        public const int CurrentVersion = 3;
         public const string FileName = "profile.json";
 
         static PlayerProfile profile;
@@ -28,6 +29,9 @@ namespace TactileWars.Save
         public static bool LastLoadWasNew { get; private set; }
         /// <summary>Optional hook that fills a brand new profile (starting gold etc.), installed by the meta layer.</summary>
         public static Action<PlayerProfile> NewProfileInitializer;
+        /// <summary>Optional hook run on a profile migrated from an older version, after SaveMigrations and Sanitize
+        /// (the meta layer fills what needs its database, such as the squad).</summary>
+        public static Action<PlayerProfile> MigratedProfileInitializer;
 
         /// <summary>Redirects the save folder (tests). Null restores persistentDataPath. Drops the cached profile.</summary>
         public static string DirectoryOverride
@@ -107,9 +111,11 @@ namespace TactileWars.Save
                 if (string.IsNullOrWhiteSpace(json)) return null;
                 int v = SaveMigrations.ReadVersion(json);
                 if (v < 0) return null;
-                PlayerProfile p = v < CurrentVersion ? SaveMigrations.Migrate(json, v) : JsonUtility.FromJson<PlayerProfile>(json);
+                bool migrated = v < CurrentVersion;
+                PlayerProfile p = migrated ? SaveMigrations.Migrate(json, v) : JsonUtility.FromJson<PlayerProfile>(json);
                 if (p == null) return null;
                 p.Sanitize();
+                if (migrated) MigratedProfileInitializer?.Invoke(p);
                 return p;
             }
             catch (Exception e)

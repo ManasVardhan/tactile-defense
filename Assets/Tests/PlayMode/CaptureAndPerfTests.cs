@@ -2,7 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
+using TactileWars.Army;
 using TactileWars.Battle;
+using TactileWars.CameraRig;
 using TactileWars.Combat;
 using TactileWars.Units;
 using Unity.Profiling;
@@ -22,72 +24,39 @@ namespace TactileWars.Tests
         public IEnumerator CaptureAll()
         {
             yield return BattleTestUtil.LoadBattle();
-            var squad = BattleTestUtil.Squad;
+            var army = BattleTestUtil.Army;
+            var units = BattleTestUtil.DeployAll();
             yield return BattleTestUtil.Wait(1.2f);
             BattleTestUtil.Capture("battle_start");
 
-            // Phase 8 reference match for ps_12: a U shaped single file line open toward the camera, the ring inside it,
-            // enemy squads and bubbles around the top, mid firefight.
-            yield return BattleTestUtil.Wait(2.6f);
-            var uShape = new List<Vector3>();
-            for (int i = 0; i <= 6; i++) uShape.Add(new Vector3(-7f, 0, 8.5f + i));
-            for (int i = 0; i <= 20; i++) { float a = Mathf.PI - i / 20f * Mathf.PI; uShape.Add(new Vector3(Mathf.Cos(a) * 7f, 0, 14.5f + Mathf.Sin(a) * 1.6f)); }
-            for (int i = 0; i <= 6; i++) uShape.Add(new Vector3(7f, 0, 14.5f - i));
-            yield return BattleTestUtil.Drag(uShape.ToArray(), 1.0f);
-            yield return BattleTestUtil.Wait(3.4f);
-            BattleTestUtil.Capture("battle_u_formation");
-
-            // Mid drag: a sweeping curve ahead of the squad, captured before release.
-            Vector3 c = squad.Centroid;
-            var curve = new List<Vector3>();
-            for (int i = 0; i <= 30; i++)
+            // Firefight: every unit advances on Level 1's squad guarding point 1.
+            var taken = new List<HexCoord>();
+            var fronts = new[] { new Vector3(-4f, 0, 37f), new Vector3(0f, 0, 37.5f), new Vector3(4f, 0, 37f) };
+            for (int i = 0; i < units.Count; i++)
             {
-                float u = i / 30f;
-                curve.Add(c + new Vector3(-8f + 16f * u, 0, 4.5f + Mathf.Sin(u * Mathf.PI) * 3.5f));
+                var dest = BattleTestUtil.FreeHexNear(fronts[i % fronts.Length], taken.ToArray());
+                army.OrderMove(units[i], dest);
+                taken.Add(dest);
             }
-            yield return BattleTestUtil.Drag(curve.ToArray(), 1.4f, false, 0.7f);
-            yield return null;
-            BattleTestUtil.Capture("battle_stroke_drawing");
-            yield return BattleTestUtil.Drag(curve.GetRange(20, 11).ToArray(), 0.4f, true);
-            yield return BattleTestUtil.Wait(2.2f);
-
-            // Line formation.
-            c = squad.Centroid;
-            yield return BattleTestUtil.Drag(BattleTestUtil.LinePoints(c + new Vector3(-8f, 0, 3f), c + new Vector3(8f, 0, 5f)), 0.6f);
-            yield return BattleTestUtil.Wait(1.0f);
-            yield return BattleTestUtil.Wait(1.4f);
-            BattleTestUtil.Capture("battle_formation_line");
-
-            // Circle formation.
-            c = squad.Centroid;
-            yield return BattleTestUtil.Drag(BattleTestUtil.CirclePoints(c + new Vector3(0, 0, 1f), 4.2f), 0.9f);
-            yield return BattleTestUtil.Wait(2.6f);
-            BattleTestUtil.Capture("battle_formation_circle");
-
-            // Firefight: arc toward the first two enemy squads.
-            c = squad.Centroid;
-            var arc = new List<Vector3>();
-            for (int i = 0; i <= 24; i++)
-            {
-                float a = Mathf.Lerp(160f, 20f, i / 24f) * Mathf.Deg2Rad;
-                arc.Add(new Vector3(0f, 0, 15.5f) + new Vector3(Mathf.Cos(a) * 6.5f, 0, Mathf.Sin(a) * 3.0f));
-            }
-            yield return BattleTestUtil.Drag(arc.ToArray(), 0.8f);
             float fightStart = Time.time;
-            float deadline = Time.time + 12f;
-            while (Time.time < deadline && (Time.time - fightStart < 3.5f || ProjectileManager.Instance.ActiveCount < 22 || PaintSplatManager.Instance.Count < 40)) yield return null;
+            float deadline = Time.time + 20f;
+            while (Time.time < deadline && (Time.time - fightStart < 3.5f || ProjectileManager.Instance.ActiveCount < 8 || PaintSplatManager.Instance.Count < 20)) yield return null;
+            BattleCamera.Instance.SnapTo(army.Centroid + Vector3.forward * 3f);
+            yield return null;
             BattleTestUtil.Capture("battle_combat");
-            Debug.Log($"[Capture] combat: fired {ProjectileManager.Instance.TotalFired} kills {BattleManager.Instance.Kills} splats {PaintSplatManager.Instance.Count} alive {squad.AliveCount}");
+            Debug.Log($"[Capture] combat: fired {ProjectileManager.Instance.TotalFired} kills {BattleManager.Instance.Kills} splats {PaintSplatManager.Instance.Count} alive {army.AliveCount}");
 
-            // Clear the way, then stand on the first capture point.
-            yield return BattleTestUtil.Wait(3f);
+            // Clear the way, then send a unit onto the first capture point.
+            float clearBy = Time.time + 12f;
+            while (Time.time < clearBy && TactileWars.UI.TutorialSteps.FirstPointClear(BattleManager.Instance) == false) yield return null;
             var cp = BattleManager.Instance.capturePoints[0];
-            Vector3 p = cp.transform.position;
-            yield return BattleTestUtil.Drag(BattleTestUtil.CirclePoints(p + new Vector3(0, 0, -0.5f), 2.2f, 40), 0.8f);
+            PlayerUnit runner = null;
+            foreach (var u in army.Units) { runner = u; break; }
+            if (runner != null) army.OrderMove(runner, BattleTestUtil.PadHex(cp));
             float capDeadline = Time.time + 14f;
             while (Time.time < capDeadline && cp.Progress < 0.55f) yield return null;
             BattleTestUtil.Capture("battle_capture");
-            Debug.Log($"[Capture] capture progress {cp.Progress:0.00} inside {cp.PlayersInside} alive {squad.AliveCount}");
+            Debug.Log($"[Capture] capture progress {cp.Progress:0.00} inside {cp.PlayersInside} alive {army.AliveCount}");
 
             // Extra overview frames of the later map sections (level dressing check, camera parked).
             var bc = TactileWars.CameraRig.BattleCamera.Instance;
@@ -103,27 +72,34 @@ namespace TactileWars.Tests
         }
     }
 
-    /// <summary>Editor play mode frame timing with 40 player soldiers and every enemy active.</summary>
+    /// <summary>Editor play mode frame timing with the default army deployed and every enemy active.</summary>
     [Category("Perf")]
     public class PerfCapture
     {
         [UnityTearDown]
-        public IEnumerator TearDown() { BattleTestUtil.Cleanup(); yield return null; }
+        public IEnumerator TearDown() { TactileWars.Meta.BattleLaunch.Clear(); BattleTestUtil.Cleanup(); yield return null; }
 
         [UnityTest]
         public IEnumerator FrameTime_FullBattle()
         {
             yield return BattleTestUtil.LoadBattle();
             yield return BattleTestUtil.Wait(0.5f);
-            var squad = BattleTestUtil.Squad;
+            var army = BattleTestUtil.Army;
+            var units = BattleTestUtil.DeployAll();
             var squads = Object.FindObjectsByType<EnemySquad>(FindObjectsSortMode.None);
             int enemySoldiers = 0;
             foreach (var s in squads) enemySoldiers += s.AliveCount;
-            int players = squad.AliveCount;
+            int players = army.AliveCount;
 
             // Start a firefight so targeting, projectiles, VFX and splats are all busy.
-            yield return BattleTestUtil.Tap(new Vector3(0f, 0, 17f));
-            yield return BattleTestUtil.Wait(2.5f);
+            var taken = new List<HexCoord>();
+            foreach (var u in units)
+            {
+                var dest = BattleTestUtil.FreeHexNear(new Vector3(0f, 0, 37f), taken.ToArray());
+                army.OrderMove(u, dest);
+                taken.Add(dest);
+            }
+            yield return BattleTestUtil.Wait(8f);
 
             var cam = BattleTestUtil.Cam;
             int maxProjectiles = 0;
@@ -137,6 +113,28 @@ namespace TactileWars.Tests
             Debug.Log("[Perf]\n" + report);
             string path = Path.GetFullPath(Path.Combine(Application.dataPath, "../Logs/perf_battle.txt"));
             File.WriteAllText(path, report);
+            Assert.Pass(report);
+        }
+
+        /// <summary>The largest level (Level 5, The Fort) at its start view with the squad deployed and marching:
+        /// shows the new maps do not make a battle heavier than the classic lane.</summary>
+        [UnityTest]
+        public IEnumerator FrameTime_LargestLevel()
+        {
+            yield return LevelLayoutTests.LoadLevel(TactileWars.Meta.Progression.LevelCount - 1);
+            var army = BattleTestUtil.Army;
+            var units = BattleTestUtil.DeployAll();
+            var cp = BattleManager.Instance.capturePoints[0];
+            foreach (var u in units) army.OrderMove(u, BattleTestUtil.FreeHexNear(cp.transform.position));
+            yield return BattleTestUtil.Wait(3f);
+            var cam = BattleTestUtil.Cam;
+            var sampler = new PerfSampler();
+            yield return sampler.Run(cam, 300, () => { });
+            var map = BattleSetup.Instance.Map;
+            string report = $"Editor play mode (batchmode, Apple M2), Battle.unity attack on Level 5 '{map.displayName}' ({map.props.Length} map props, " +
+                            $"{map.mapMax.x - map.mapMin.x:0} x {map.mapMax.y - map.mapMin.y:0}), 1280x720 render target\n" + sampler.Report;
+            Debug.Log("[Perf]\n" + report);
+            File.WriteAllText(Path.GetFullPath(Path.Combine(Application.dataPath, "../Logs/perf_level5.txt")), report);
             Assert.Pass(report);
         }
     }

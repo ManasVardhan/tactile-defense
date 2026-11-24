@@ -41,6 +41,13 @@ PALETTE = {
     "Glass": "#B4D8DE",
     "Canvas": "#E6DAB9",
     "Stone": "#CDBE9B",
+    # Biome props (build_biomes.py): Meadow, Red Canyon, Frost Ridge.
+    "Grass": "#4F8A3C", "GrassLight": "#79AE4F", "Hay": "#DDB95C", "HayDark": "#B08B3A",
+    "Bloom": "#EE7AA0", "BloomGold": "#F5CF45", "Water": "#5FAFC8",
+    "Clay": "#B5583A", "ClayLight": "#DA8C5C", "ClayDark": "#86402A",
+    "Cactus": "#5C8A4E", "CactusLight": "#83AE66", "DryWood": "#B09270", "Bone": "#EDE5D1",
+    "Slate": "#66737F", "SlateLight": "#93A1AD", "Snow": "#F1F5F8", "Ice": "#9FD8EC",
+    "Fir": "#2D5A50", "FirLight": "#3E7465",
 }
 GROUND = "#C2B48C"
 FIGURE_COLORS = {"FigTeam": "#D9442E", "FigFace": "#F4F0E8", "FigDark": "#2B2F3A"}

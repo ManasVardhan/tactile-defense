@@ -12,6 +12,7 @@ namespace TactileWars.Battle
     {
         public string id;
         public string displayName;
+        [Tooltip("Ground colors, light and sky tint of this map's biome (null keeps the scene's own).")] public BiomeStyle biome;
         public Vector3 playerSpawn = new Vector3(0f, 0f, 8f);
         public Vector3[] capturePoints = { new Vector3(0f, 0f, 43f), new Vector3(0f, 0f, 94f) };
         public Vector3 hq = new Vector3(0f, 0f, 105.5f);
@@ -19,7 +20,7 @@ namespace TactileWars.Battle
         public Vector2 mapMax = new Vector2(18f, 108f);
         public Vector2 focusMin = new Vector2(-1.5f, 9f);
         public Vector2 focusMax = new Vector2(1.5f, 99f);
-        [Tooltip("Ground mask (R dirt path, G paving, B dark edge) over mapRect (x, z, width, depth).")] public Texture2D groundMask;
+        [Tooltip("Ground mask (R path, G trampled ground, B edge) over mapRect (x, z, width, depth).")] public Texture2D groundMask;
         public Vector4 mapRect = new Vector4(-40f, -25f, 80f, 160f);
         [Tooltip("Main path polyline (x, z), used by the editor overlay and the AI.")] public Vector2[] path = Array.Empty<Vector2>();
         public PropPlacement[] props = Array.Empty<PropPlacement>();

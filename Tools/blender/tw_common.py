@@ -35,6 +35,7 @@ def darker(h, f):
 # Authoring colors (Unity remaps by slot name). TeamColor authored as mid blue per contract.
 MAT_COLORS = {
     "TeamColor": "#3D74D6",
+    "Helmet": "#3D74D6",
     "TeamColorDark": "#284C99",
     "Skin": "#F7F1E3",
     "Dark": "#262A3B",

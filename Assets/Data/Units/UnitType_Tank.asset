@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c74865aaf47ec409d934de598312ad98, type: 3}
+  m_Name: UnitType_Tank
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Army.UnitTypeConfig
+  id: 1
+  displayName: Tank
+  glyph: T
+  soldierCount: 3
+  healthMult: 3
+  rangeMult: 0.6
+  speedMult: 0.7
+  damageMult: 1
+  fireIntervalMult: 1
+  modelScale: 1.3
+  accent: {r: 0.49803922, g: 0.6156863, b: 0.74509805, a: 1}
+  drawsFire: 1
+  captureWeight: 1
+  hasWeapon: 1
+  healPerSecond: 0
+  reviveInterval: 0
+  lobbed: 0
+  splashRadius: 0
+  structureDamageMult: 1
+  soldierDamageMult: 1
+  prefersStructures: 0
+  description: Tough and slow. Enemy defenses shoot it first, so put it in front.

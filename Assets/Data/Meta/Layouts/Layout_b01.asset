@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e225451fbfd654c8c8d1883836e199b4, type: 3}
+  m_Name: Layout_b01
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Battle.BaseLayoutData
+  seed: 0
+  squads:
+  - position: {x: -10.152058, y: 0, z: 42.988373}
+    advance: 0
+    count: 4
+    seed: 11
+    noFlagBearer: 1
+  - position: {x: 3.4444606, y: 0, z: 90.06084}
+    advance: 1
+    count: 5
+    seed: 17
+    noFlagBearer: 0
+  defenses:
+  - defenseId: turret
+    position: {x: 12.77247, y: 0, z: 94.18252}
+    yaw: 150.94539
+    patrolA: {x: 0, y: 0, z: 0}
+    patrolB: {x: 0, y: 0, z: 0}
+  counterSpawnsOverride: []

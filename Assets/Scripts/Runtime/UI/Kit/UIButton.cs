@@ -19,6 +19,8 @@ namespace TactileWars.UI
         public bool interactable = true;
 
         public Action onClick;
+        /// <summary>Raised with true when the pointer enters the button and false when it leaves.</summary>
+        public Action<bool> onHover;
 
         Color faceColor = Color.white, lipColor = Color.grey;
         bool pressed, hover;
@@ -91,8 +93,8 @@ namespace TactileWars.UI
             ApplyColors();
         }
 
-        public void OnPointerEnter(PointerEventData e) { hover = true; ApplyColors(); }
-        public void OnPointerExit(PointerEventData e) { hover = false; ApplyColors(); }
+        public void OnPointerEnter(PointerEventData e) { hover = true; ApplyColors(); onHover?.Invoke(true); }
+        public void OnPointerExit(PointerEventData e) { hover = false; ApplyColors(); onHover?.Invoke(false); }
 
         public void OnPointerClick(PointerEventData e)
         {

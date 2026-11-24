@@ -13,15 +13,18 @@ MonoBehaviour:
   m_Name: Base_b01
   m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Meta.BaseDefinition
   id: b01
-  displayName: Training Grounds
+  displayName: Training Field
   commanderName: Sgt. Puddle
   enemyTeam: 6
   difficulty: 1
   requiredLevel: 1
   rewardMultiplier: 1
-  enemyHealthMult: 0.75
-  enemyDamageMult: 0.6
-  layout: {fileID: 0}
-  map: {fileID: 0}
-  enemySquads: 11
-  defenses: 21
+  enemyHealthMult: 1
+  enemyDamageMult: 0.9
+  layout: {fileID: 11400000, guid: 3e471b7683a2548eb965179ccf2c2d6d, type: 2}
+  map: {fileID: 11400000, guid: 9cccc579bfaf645159023709bf431908, type: 2}
+  passiveEnemies: 1
+  counterattack: 0
+  enemySquads: 2
+  averageSquadSize: 5
+  defenses: 1

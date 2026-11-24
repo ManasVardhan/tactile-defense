@@ -1,7 +1,11 @@
 using System.Collections;
+using System.Collections.Generic;
+using NUnit.Framework;
+using TactileWars.Army;
 using System.IO;
 using TactileWars.Battle;
 using TactileWars.CameraRig;
+using TactileWars.Combat;
 using TactileWars.Core;
 using TactileWars.Squad;
 using UnityEngine;
@@ -47,8 +51,15 @@ namespace TactileWars.Tests
             TactileWars.Save.SaveSystem.DirectoryOverride = testSaveDir;
             var p = TactileWars.Meta.MetaGame.Profile;
             p.teamChosen = true;
-            p.tutorial.drawStroke = true;
-            p.tutorial.tapToMove = true;
+            MarkTutorialSeen(p);
+        }
+
+        /// <summary>Marks every tutorial step and hint as seen, so battles start without the Level 1 tutorial.</summary>
+        public static void MarkTutorialSeen(TactileWars.Save.PlayerProfile p)
+        {
+            p.tutorialSeen ??= new List<string>();
+            foreach (var id in TactileWars.UI.TutorialSteps.All)
+                if (!p.tutorialSeen.Contains(id)) p.tutorialSeen.Add(id);
         }
 
         public static void Cleanup()
@@ -65,6 +76,171 @@ namespace TactileWars.Tests
 
         public static Camera Cam => BattleCamera.Instance != null ? BattleCamera.Instance.Cam : Camera.main;
         public static SquadController Squad => SquadController.Instance;
+        public static PlayerArmy Army => PlayerArmy.Instance;
+
+        /// <summary>Free hex nearest 'p' with no enemy soldier close by, at least two hexes from every hex in 'avoid'.</summary>
+        public static HexCoord FreeHexNear(Vector3 p, params HexCoord[] avoid)
+        {
+            var g = Army.Grid;
+            HexCoord best = default;
+            float bestD = float.MaxValue;
+            foreach (var c in g.Cells)
+            {
+                if (!g.IsFree(c) || UnitRegistry.CountWithin(Team.Enemy, g.Center(c), g.OuterRadius * 3f) > 0) continue;
+                bool near = false;
+                foreach (var a in avoid) if (HexGrid.Distance(a, c) < 2) { near = true; break; }
+                if (near) continue;
+                float d = (g.Center(c) - p).sqrMagnitude;
+                if (d < bestD) { bestD = d; best = c; }
+            }
+            Assert.Less(bestD, float.MaxValue, "a free hex exists");
+            return best;
+        }
+
+        /// <summary>Deploys every ready entry of the army's squad on free hexes near 'p' (default: the army's spawn).</summary>
+        public static List<PlayerUnit> DeployAll(Vector3? p = null)
+        {
+            var army = Army;
+            Vector3 at = p ?? army.spawnPoint;
+            var units = new List<PlayerUnit>();
+            var used = new List<HexCoord>();
+            for (int i = 0; i < army.Squad.Count; i++)
+            {
+                if (army.Squad[i].state != EntryState.Ready) continue;
+                var hex = FreeHexNear(at, used.ToArray());
+                var u = army.Deploy(i, hex);
+                Assert.IsNotNull(u, "deploy entry " + i);
+                used.Add(hex);
+                units.Add(u);
+            }
+            return units;
+        }
+
+        /// <summary>Living soldiers of every deployed unit.</summary>
+        public static List<TactileWars.Units.Soldier> ArmySoldiers()
+        {
+            var list = new List<TactileWars.Units.Soldier>();
+            foreach (var u in Army.Units)
+                foreach (var s in u.Soldiers) if (s != null && s.IsAlive) list.Add(s);
+            return list;
+        }
+
+        /// <summary>The free hex nearest the pad whose center lies on it (the pole blocks the hexes at the very center).</summary>
+        public static HexCoord PadHex(CapturePoint cp)
+        {
+            var g = Army.Grid;
+            float radius = BattleManager.Instance.battleConfig.captureRadius;
+            HexCoord hex = default;
+            float best = float.MaxValue;
+            foreach (var c in g.Cells)
+            {
+                if (!g.IsFree(c)) continue;
+                Vector3 d = g.Center(c) - cp.transform.position; d.y = 0f;
+                if (d.magnitude <= radius && d.magnitude < best) { best = d.magnitude; hex = c; }
+            }
+            Assert.Less(best, float.MaxValue, "a free hex on the pad");
+            return hex;
+        }
+
+        /// <summary>A hex overlapping the pad that 'unit' may stand on (free or its own), nearest the pad center,
+        /// skipping 'taken'.</summary>
+        public static HexCoord PadHexFree(CapturePoint cp, PlayerUnit unit, List<HexCoord> taken)
+        {
+            var army = Army;
+            var g = army.Grid;
+            Vector3 c0 = cp.transform.position; c0.y = 0f;
+            HexCoord hex = unit.Hex;
+            float best = float.MaxValue;
+            foreach (var c in g.Cells)
+            {
+                if (taken.Contains(c) || !army.IsPadHex(c, cp)) continue;
+                if (!g.IsFree(c) && g.OwnerOf(c) != unit.Id) continue;
+                float d = (g.Center(c) - c0).sqrMagnitude;
+                if (d < best) { best = d; hex = c; }
+            }
+            return hex;
+        }
+
+        /// <summary>Spawns an enemy squad under the battle's enemy root ('count' grunts, plus a flag bearer when asked).
+        /// Its soldiers appear on its Start, the next frame.</summary>
+        public static TactileWars.Units.EnemySquad SpawnEnemySquad(Vector3 at, int count, bool bearer, bool passive, bool advance = false)
+        {
+            var setup = BattleSetup.Instance;
+            var g = new GameObject("TestSquad");
+            g.transform.SetParent(setup.enemiesRoot, false);
+            g.transform.position = at;
+            var es = g.AddComponent<TactileWars.Units.EnemySquad>();
+            es.config = setup.enemySquadConfig;
+            es.soldierCountOverride = count;
+            es.withFlagBearer = bearer;
+            es.passive = passive;
+            es.advance = advance;
+            es.seed = 7;
+            return es;
+        }
+
+        /// <summary>Switches off every handcrafted enemy squad and defense (call before the army's grid is first used).</summary>
+        public static void DisableEnemies()
+        {
+            var setup = BattleSetup.Instance;
+            foreach (var root in new[] { setup.enemiesRoot, setup.defensesRoot })
+                for (int i = root.childCount - 1; i >= 0; i--) root.GetChild(i).gameObject.SetActive(false);
+        }
+
+        /// <summary>Captures the whole active map from straight above (north up, HUD hidden, a margin of the border
+        /// around it), then puts the battle camera and the HUD back.</summary>
+        public static IEnumerator CaptureTopDown(string name)
+        {
+            var bc = BattleCamera.Instance;
+            var gc = BattleContext.Config;
+            var canvases = Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+            bc.enabled = false;
+            var cam = bc.Cam;
+            Vector3 camPos = bc.transform.position;
+            Quaternion camRot = bc.transform.rotation;
+            float size = cam.orthographicSize;
+            float far = cam.farClipPlane;
+            Vector2 min = gc.mapMin - Vector2.one * 5f, max = gc.mapMax + Vector2.one * 5f;
+            Vector3 mid = new Vector3((min.x + max.x) * 0.5f, 120f, (min.y + max.y) * 0.5f);
+            float aspect = (float)W / H;
+            cam.orthographicSize = Mathf.Max((max.y - min.y) * 0.5f, (max.x - min.x) * 0.5f / aspect);
+            cam.farClipPlane = 260f;
+            bc.transform.SetPositionAndRotation(mid, Quaternion.Euler(90f, 0f, 0f));
+            foreach (var c in canvases) c.enabled = false;
+            yield return null;
+            Capture(name);
+            foreach (var c in canvases) c.enabled = true;
+            bc.transform.SetPositionAndRotation(camPos, camRot);
+            cam.orthographicSize = size;
+            cam.farClipPlane = far;
+            bc.enabled = true;
+            yield return null;
+        }
+
+        /// <summary>Waits until the unit has stopped and every living soldier stands within the hex.</summary>
+        public static IEnumerator WaitArrive(PlayerUnit unit, float seconds)
+        {
+            float end = Time.time + seconds;
+            while (Time.time < end && unit != null && !unit.IsDestroyed && (unit.IsMoving || !AllWithin(unit, unit.Hex))) yield return null;
+        }
+
+        public static bool AllWithin(PlayerUnit unit, HexCoord hex)
+        {
+            var g = Army.Grid;
+            Vector3 c = g.Center(hex);
+            foreach (var s in unit.Soldiers)
+            {
+                if (s == null || !s.IsAlive) continue;
+                Vector3 d = s.transform.position - c; d.y = 0f;
+                if (d.magnitude > g.OuterRadius) return false;
+            }
+            return true;
+        }
+
+        public static void KillAll(PlayerUnit unit)
+        {
+            foreach (var s in unit.Soldiers) if (s != null && s.IsAlive) s.Health.Kill(TeamColorId.Teal);
+        }
 
         public static Vector2 ToScreen(Vector3 world)
         {
@@ -103,6 +279,24 @@ namespace TactileWars.Tests
             }
         }
 
+        /// <summary>Press at a screen point, move in a straight line to another over 'frames' frames, release.
+        /// Screen space, so a panning camera does not change the pointer path.</summary>
+        public static IEnumerator DragScreen(Vector2 from, Vector2 to, int frames = 20)
+        {
+            Pointer.Down = false;
+            Pointer.Position = from;
+            yield return null;
+            Pointer.Down = true;
+            yield return null;
+            for (int i = 1; i <= frames; i++)
+            {
+                Pointer.Position = Vector2.Lerp(from, to, i / (float)frames);
+                yield return null;
+            }
+            Pointer.Down = false;
+            yield return null;
+        }
+
         public static IEnumerator Tap(Vector3 world)
         {
             Pointer.Position = ToScreen(world);
@@ -112,6 +306,18 @@ namespace TactileWars.Tests
             yield return null;
             yield return null;
             Pointer.Down = false;
+            yield return null;
+        }
+
+        /// <summary>A quick click: press and release inside a single frame (as a fast browser click or trackpad tap
+        /// arrives at a low frame rate).</summary>
+        public static IEnumerator QuickTap(Vector3 world)
+        {
+            Pointer.Down = false;
+            Pointer.Position = ToScreen(world);
+            yield return null;
+            Pointer.Click(ToScreen(world));
+            yield return null;
             yield return null;
         }
 

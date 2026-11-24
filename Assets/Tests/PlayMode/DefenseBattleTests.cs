@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TactileWars.Army;
 using NUnit.Framework;
 using TactileWars.Battle;
 using TactileWars.Combat;
@@ -18,7 +19,7 @@ using UnityEngine.TestTools;
 namespace TactileWars.Tests
 {
     /// <summary>Phase 5 in play mode: defense battles, the AI attacker, the new defenses, wall routing, the
-    /// counterattack wave, the stroke sequence regression and base editor persistence.</summary>
+    /// counterattack wave, unit routing through a wall gate and base editor persistence.</summary>
     public class DefenseBattleTests
     {
         [SetUp]
@@ -27,8 +28,7 @@ namespace TactileWars.Tests
             UITestUtil.UseTempSave();
             var p = MetaGame.Profile;
             p.teamChosen = true;
-            p.tutorial.drawStroke = true;
-            p.tutorial.tapToMove = true;
+            BattleTestUtil.MarkTutorialSeen(p);
         }
 
         [UnityTearDown]
@@ -79,6 +79,31 @@ namespace TactileWars.Tests
                 if (so.Health.Current < so.Health.max - 0.01f) damaged++;
             }
             return h;
+        }
+
+        /// <summary>Summed health of the army's living soldiers; 'damaged' counts those below full health.</summary>
+        static float ArmyHealth(out int damaged)
+        {
+            float h = 0f; damaged = 0;
+            foreach (var so in BattleTestUtil.ArmySoldiers())
+            {
+                h += so.Health.Current;
+                if (so.Health.Current < so.Health.max - 0.01f) damaged++;
+            }
+            return h;
+        }
+
+        /// <summary>Deploys entries 0 and 1 on two neighboring hexes near the army's spawn (six soldiers in a cluster).</summary>
+        static void DeployPair()
+        {
+            var army = BattleTestUtil.Army;
+            var a = BattleTestUtil.FreeHexNear(army.spawnPoint);
+            Assert.IsNotNull(army.Deploy(0, a));
+            var around = new List<HexCoord>();
+            army.Grid.Neighbors(a, around);
+            foreach (var n in around)
+                if (army.CanDeploy(1, n)) { Assert.IsNotNull(army.Deploy(1, n)); return; }
+            Assert.Fail("no free neighbor hex for the second unit");
         }
 
         // ------------------------------------------------------------ defense battles
@@ -159,15 +184,16 @@ namespace TactileWars.Tests
             yield return BattleTestUtil.LoadBattle();
             ClearHandcraftedEnemies();
             yield return BattleTestUtil.Wait(1.5f);
-            var squad = BattleTestUtil.Squad;
-            SquadHealth(squad, out int before);
-            var nearest = squad.Soldiers[0].transform.position;
+            DeployPair();
+            yield return BattleTestUtil.Wait(0.5f);
+            ArmyHealth(out int before);
+            var nearest = BattleTestUtil.ArmySoldiers()[0].transform.position;
             var tesla = Spawn<TeslaTower>("tesla", nearest + new Vector3(0f, 0f, 2.5f));
             yield return null;
             tesla.ForceCharged();
             yield return null;
             yield return null;
-            SquadHealth(squad, out int after);
+            ArmyHealth(out int after);
             Debug.Log($"[Test] tesla chain hits {tesla.LastChainHits}, damaged soldiers {before} -> {after}");
             Assert.GreaterOrEqual(tesla.LastChainHits, 3, "the arc chains through several soldiers");
             Assert.GreaterOrEqual(after - before, 3, "each chained soldier took damage");
@@ -180,19 +206,21 @@ namespace TactileWars.Tests
             yield return BattleTestUtil.LoadBattle();
             ClearHandcraftedEnemies();
             yield return BattleTestUtil.Wait(1.5f);
-            var squad = BattleTestUtil.Squad;
-            float h0 = SquadHealth(squad, out _);
-            int alive0 = squad.AliveCount;
-            var sniper = Spawn<Sniper>("sniper", squad.Centroid + new Vector3(0f, 0f, 13f));
+            var army = BattleTestUtil.Army;
+            BattleTestUtil.DeployAll();
+            yield return BattleTestUtil.Wait(0.5f);
+            float h0 = ArmyHealth(out _);
+            int alive0 = army.AliveCount;
+            var sniper = Spawn<Sniper>("sniper", army.Centroid + new Vector3(0f, 0f, 13f));
             bool sawAim = false;
             float end = Time.time + 8f;
             while (Time.time < end && sniper.ShotsFired == 0) { if (sniper.Aiming && sniper.aimLine.enabled) sawAim = true; yield return null; }
             yield return BattleTestUtil.Wait(1f);
-            float h1 = SquadHealth(squad, out _);
-            Debug.Log($"[Test] sniper shots {sniper.ShotsFired}, saw aim line {sawAim}, alive {alive0} -> {squad.AliveCount}, health {h0:0} -> {h1:0}");
+            float h1 = ArmyHealth(out _);
+            Debug.Log($"[Test] sniper shots {sniper.ShotsFired}, saw aim line {sawAim}, alive {alive0} -> {army.AliveCount}, health {h0:0} -> {h1:0}");
             Assert.GreaterOrEqual(sniper.ShotsFired, 1);
             Assert.IsTrue(sawAim, "a visible aiming line before the shot");
-            Assert.IsTrue(squad.AliveCount < alive0 || h1 < h0 - 1f, "the shot hurt the squad");
+            Assert.IsTrue(army.AliveCount < alive0 || h1 < h0 - 1f, "the shot hurt the army");
         }
 
         [UnityTest]
@@ -201,100 +229,80 @@ namespace TactileWars.Tests
             yield return BattleTestUtil.LoadBattle();
             ClearHandcraftedEnemies();
             yield return BattleTestUtil.Wait(1.5f);
-            var squad = BattleTestUtil.Squad;
-            SquadHealth(squad, out int before);
-            var geyser = Spawn<Geyser>("geyser", squad.Soldiers[3].transform.position);
+            var units = BattleTestUtil.DeployAll();
+            yield return BattleTestUtil.Wait(0.5f);
+            ArmyHealth(out int before);
+            int startSoldiers = BattleTestUtil.ArmySoldiers().Count;
+            var geyser = Spawn<Geyser>("geyser", units[1].Soldiers[0].transform.position);
             float end = Time.time + 4f;
             bool warned = false;
             while (Time.time < end && geyser.Eruptions == 0) { warned |= geyser.Warning; yield return null; }
             yield return null;
-            SquadHealth(squad, out int after);
-            int dead = 0;
-            foreach (var so in squad.Soldiers) if (so != null && !so.IsAlive) dead++;
+            ArmyHealth(out int after);
+            int dead = startSoldiers - BattleTestUtil.ArmySoldiers().Count;
             Debug.Log($"[Test] geyser eruptions {geyser.Eruptions}, warned {warned}, damaged {before} -> {after}, dead {dead}");
             Assert.GreaterOrEqual(geyser.Eruptions, 1);
             Assert.IsTrue(warned, "a rumble warning precedes the eruption");
             Assert.GreaterOrEqual(after - before + dead, 2, "the eruption hit several soldiers");
         }
 
-        // ------------------------------------------------------------ squad movement
+        // ------------------------------------------------------------ unit movement
 
         [UnityTest]
-        public IEnumerator WallRouting_TapBehindWall_SquadPassesThroughGate()
+        public IEnumerator WallRouting_OrderBehindWall_UnitPassesThroughGate()
         {
             yield return BattleTestUtil.LoadBattle();
             ClearHandcraftedEnemies();
             yield return BattleTestUtil.Wait(0.5f);
-            var squad = BattleTestUtil.Squad;
-            // Stand south of the crenellated wall at z = 77 (gate between x = -4 and 4), well left of the gate.
-            squad.MoveFormationTo(new Vector3(-10f, 0f, 71f));
-            squad.TeleportToSlots();
-            yield return BattleTestUtil.Wait(0.6f);
-            Vector3 goal = new Vector3(-10f, 0f, 84f);
-            Assert.IsFalse(squad.Nav.LineClear(squad.Centroid, goal), "the wall blocks the straight way");
-            yield return BattleTestUtil.Tap(goal);
-            Assert.IsTrue(squad.IsRouting, "the tap starts a route through the gate");
-            Debug.Log("[Test] route: " + string.Join(" ", RoutePoints(squad)));
+            var army = BattleTestUtil.Army;
+            // Start south of the crenellated wall at z = 77 (gate between x = -4 and 4), well left of the gate.
+            var unit = army.Deploy(0, BattleTestUtil.FreeHexNear(new Vector3(-10f, 0f, 71f)));
+            Assert.IsNotNull(unit);
+            var goal = BattleTestUtil.FreeHexNear(new Vector3(-10f, 0f, 84f));
+            Vector3 from = army.Grid.Center(unit.Hex), to = army.Grid.Center(goal);
+            Assert.Less(from.z, 76f); Assert.Greater(to.z, 78.5f);
+            Assert.Less(Mathf.Max(from.x, to.x), -5f, "start and goal are both left of the gate");
+            Assert.IsFalse(army.Nav.LineClear(from, to), "the wall blocks the straight way");
+            yield return BattleTestUtil.Wait(0.3f);
+            Assert.IsTrue(army.OrderMove(unit, goal), "a route through the gate exists");
+
+            // Track where each soldier crosses the wall line.
+            var lastZ = new Dictionary<Soldier, float>();
+            int crossings = 0, outsideGate = 0;
             float end = Time.time + 25f;
-            float frac = 0f;
-            while (Time.time < end)
+            while (Time.time < end && (unit.IsMoving || !BattleTestUtil.AllWithin(unit, goal)))
             {
-                int n = 0, past = 0;
-                foreach (var so in squad.Soldiers) if (so != null && so.IsAlive) { n++; if (so.transform.position.z > 78.5f) past++; }
-                frac = n > 0 ? past / (float)n : 0f;
-                if (frac > 0.9f && !squad.IsRouting) break;
+                foreach (var so in unit.Soldiers)
+                {
+                    if (so == null || !so.IsAlive) continue;
+                    Vector3 p = so.transform.position;
+                    if (lastZ.TryGetValue(so, out float z0) && z0 < 77f && p.z >= 77f)
+                    {
+                        crossings++;
+                        if (Mathf.Abs(p.x) > 4f) outsideGate++;
+                    }
+                    lastZ[so] = p.z;
+                }
                 yield return null;
             }
-            Debug.Log($"[Test] wall routing: {frac:P0} of the squad north of the wall, centroid {squad.Centroid}");
-            Assert.Greater(frac, 0.8f, "the squad went through the gate instead of stalling on the wall");
-        }
-
-        static IEnumerable<string> RoutePoints(SquadController s)
-        {
-            foreach (var p in s.Route) yield return $"({p.x:0.0},{p.z:0.0})";
-        }
-
-        [UnityTest]
-        public IEnumerator StrokeSequence_LineThenArcThenCircle_AreRecognizedEachTime()
-        {
-            yield return BattleTestUtil.LoadBattle();
-            ClearHandcraftedEnemies();
-            yield return BattleTestUtil.Wait(1.2f);
-            var squad = BattleTestUtil.Squad;
-            Vector3 c = squad.Centroid;
-            yield return BattleTestUtil.Drag(BattleTestUtil.LinePoints(c + new Vector3(-8f, 0, 3f), c + new Vector3(8f, 0, 5f)), 0.6f);
-            yield return BattleTestUtil.Wait(0.4f);
-            Assert.AreEqual(ShapeType.Line, squad.LastShape, "line");
-
-            // The crescent from the UI capture script, drawn relative to the squad so it starts on open ground.
-            c = squad.Centroid;
-            var arc = new List<Vector3>();
-            for (int i = 0; i <= 24; i++)
-            {
-                float a = Mathf.Lerp(160f, 20f, i / 24f) * Mathf.Deg2Rad;
-                arc.Add(c + new Vector3(0f, 0, 6f) + new Vector3(Mathf.Cos(a) * 6.5f, 0, Mathf.Sin(a) * 3.0f));
-            }
-            Assert.IsFalse(PointerInput.IsOverUI(BattleTestUtil.ToScreen(arc[0])), "arc starts on the ground");
-            yield return BattleTestUtil.Drag(arc.ToArray(), 0.8f);
-            yield return BattleTestUtil.Wait(0.4f);
-            Assert.AreEqual(ShapeType.Free, squad.LastShape, "the arc right after a line is a free shape, not a line");
-
-            c = squad.Centroid;
-            yield return BattleTestUtil.Drag(BattleTestUtil.CirclePoints(c + new Vector3(0, 0, 1f), 4.2f), 0.9f);
-            yield return BattleTestUtil.Wait(0.4f);
-            Assert.AreEqual(ShapeType.Circle, squad.LastShape, "circle");
-
-            // Second line after the circle: recorder state is clean between strokes.
-            c = squad.Centroid;
-            yield return BattleTestUtil.Drag(BattleTestUtil.LinePoints(c + new Vector3(-7f, 0, 4f), c + new Vector3(7f, 0, 4f)), 0.5f);
-            yield return BattleTestUtil.Wait(0.3f);
-            Assert.AreEqual(ShapeType.Line, squad.LastShape, "line again");
+            Debug.Log($"[Test] wall routing: arrived {!unit.IsMoving}, crossings {crossings}, outside the gate {outsideGate}, centroid {unit.Centroid}");
+            Assert.IsFalse(unit.IsMoving, "the unit arrived instead of stalling on the wall");
+            Assert.IsTrue(BattleTestUtil.AllWithin(unit, goal), "every soldier stands on the goal hex");
+            Assert.GreaterOrEqual(crossings, unit.AliveCount, "every soldier crossed the wall line");
+            Assert.AreEqual(0, outsideGate, "nobody crossed the wall outside the gate");
         }
 
         [UnityTest]
         public IEnumerator Counterattack_AfterFirstCapture_MarchesOnThePoint()
         {
+            // Level 1 (the scene default) has no counterattack; base two on the same lane does.
+            BattleTestUtil.UseTestSave();
+            MetaGame.Db = MetaDatabase.Load();
+            var b = MetaGame.Db.roster.bases[1];
+            Assert.IsTrue(b.counterattack, "base two sends a counterattack");
+            BattleLaunch.Prepare(b);
             yield return BattleTestUtil.LoadBattle();
+            BattleLaunch.Clear();
             ClearHandcraftedEnemies();
             yield return BattleTestUtil.Wait(0.5f);
             var bm = BattleManager.Instance;

@@ -28,7 +28,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0.015, z: 0}
-  m_LocalScale: {x: 0.8925, y: 0.8925, z: 1}
+  m_LocalScale: {x: 1.0710001, y: 1.0710001, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7929415969753805627}
@@ -145,6 +145,7 @@ MonoBehaviour:
   targetRadius: 0.35
   aimHeight: 0.45
   targetable: 1
+  drawsFire: 0
 --- !u!114 &8060381778270042542
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -179,6 +180,8 @@ MonoBehaviour:
   baseTeamColor: {fileID: 2100000, guid: a518043cd3e754b919bcc83569b7a28a, type: 2}
   baseTeamColorDark: {fileID: 2100000, guid: 7ffc30fe4ab1d4ec68f080c9b617764e, type: 2}
   basePaint: {fileID: 2100000, guid: 61f8519f4e12d465b8706c9b8c6ff235, type: 2}
+  baseAccent: {fileID: 2100000, guid: a63829b5829d3454491ef004c995a830, type: 2}
+  baseHelmet: {fileID: 2100000, guid: 720e4f40b7eb04c07accc9e514765f3f, type: 2}
   unitVariant: 1
   renderers:
   - {fileID: 3590584852884485116}
@@ -194,15 +197,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 2d76527d9b0e348268b1373f5799a89a, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.85
+      value: 1.0200001
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2d76527d9b0e348268b1373f5799a89a, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.85
+      value: 1.0200001
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2d76527d9b0e348268b1373f5799a89a, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.85
+      value: 1.0200001
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2d76527d9b0e348268b1373f5799a89a, type: 3}
       propertyPath: m_LocalPosition.x

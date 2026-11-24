@@ -1,8 +1,8 @@
 using System.Collections.Generic;
+using TactileWars.Army;
 using TactileWars.Battle;
 using TactileWars.CameraRig;
 using TactileWars.Core;
-using TactileWars.Formation;
 using TactileWars.Meta;
 using TactileWars.Units;
 using TMPro;
@@ -16,7 +16,8 @@ namespace TactileWars.UI
     /// (white ring, three soldier busts, team colored arc = soldiers alive / starting count, with the number);
     /// hexagonal POW badge beside it that fills with the reinforcement meter and calls backup when tapped.
     /// Plus capture point pips, edge arrows to the objective, edge helmets for off screen enemy squads, shape
-    /// hints, the first battle tutorial, pause and result screens. Listens to BattleEvents only (gameplay never
+    /// hints, pause and result screens. Attack battles add the unit bar, unit badges, the backup prompt and the
+    /// Level 1 tutorial (each in its own file; this class only wires them). Listens to BattleEvents only (gameplay never
     /// references UI). Updates are event driven; the per frame edge indicators do not allocate.
     /// </summary>
     public partial class BattleHUD : MonoBehaviour
@@ -31,6 +32,11 @@ namespace TactileWars.UI
         public UIButton PauseButton { get; private set; }
         public UIButton PowButton { get; private set; }
         public TutorialOverlay Tutorial { get; private set; }
+        /// <summary>Attack battles only (null in defense).</summary>
+        public UnitBar UnitBar { get; private set; }
+        public UnitBadgeLayer Badges { get; private set; }
+        public BackupPrompt Backup { get; private set; }
+        public RectTransform ObjectivesRect { get; private set; }
         public int ShownSoldiers { get; private set; }
         public float ShownMeter { get; private set; }
 
@@ -50,6 +56,8 @@ namespace TactileWars.UI
         RectTransform pow;
         Image powFill, powGlow, powHex;
         TextMeshProUGUI powLabel, powTap;
+        /// <summary>The backup badge's idle label ("BACKUP").</summary>
+        public TextMeshProUGUI BackupLabel => powLabel;
         bool powReady;
 
         // Objectives.
@@ -67,9 +75,6 @@ namespace TactileWars.UI
         readonly RectTransform[] enemyMarkers = new RectTransform[MaxEnemyMarkers];
         readonly List<EnemySquad> squads = new List<EnemySquad>(16);
 
-        // Shape hint.
-        TextMeshProUGUI shapeHint;
-        float shapeHintTimer;
 
         void Awake() { Instance = this; }
 
@@ -89,17 +94,20 @@ namespace TactileWars.UI
             Root = UIRoot.Create("HUDCanvas", cam, skin, 10);
             hud = UIFactory.Rect(Root.Safe, "HUD").Stretch();
             hudGroup = hud.gameObject.AddComponent<CanvasGroup>();
+            var army = defense ? null : PlayerArmy.Instance;
+            if (army != null) Badges = UnitBadgeLayer.Create(hud, army, cam, Root.Camera);
             BuildPauseTab();
             BuildSquadBadge();
             if (defense) BuildDefenseControls(); else BuildPow();
             BuildObjectives();
             BuildIndicators();
-            shapeHint = UIFactory.Text(hud, "ShapeHint", "", 76f, TextStyle.Heading);
-            ((RectTransform)shapeHint.transform).At(0.5f, 1f, 0f, -200f, 800f, 100f, 0.5f, 1f);
-            shapeHint.gameObject.SetActive(false);
+            if (army != null)
+            {
+                UnitBar = UnitBar.Create(hud, army, ArmyInput.Instance);
+                Backup = BackupPrompt.Create(hud, pow, army, bm);
+            }
             toast = UIToast.Create(Root.Safe, -250f);
-            Tutorial = TutorialOverlay.Create(Root.Safe, cam);
-            if (!profile.tutorial.drawStroke && !defense) Tutorial.Begin();
+            Tutorial = TutorialOverlay.Create(Root.Safe, this, cam);
             Pause = PauseMenu.Create(this, Root.Safe);
             Results = ResultScreen.Create(this, Root.Safe);
             if (defense) DefenseResults = DefenseResultCard.Create(this, Root.Safe);
@@ -112,7 +120,6 @@ namespace TactileWars.UI
             BattleEvents.Reinforced += OnReinforced;
             BattleEvents.CaptureProgress += OnCapture;
             BattleEvents.PointCaptured += OnPointCaptured;
-            BattleEvents.ShapeRecognized += OnShape;
             BattleEvents.Victory += OnBattleOver;
             BattleEvents.Defeat += OnBattleOver;
             BattleEvents.SquadWiped += OnSquadWiped;
@@ -123,6 +130,9 @@ namespace TactileWars.UI
 
             OnMeter(bm != null ? bm.Meter.Fill : 0f, bm != null && bm.Meter.Ready);
             ShowStartBanner();
+            // Level 1 is the tutorial (attack only; defense battles never show it).
+            var applied = BattleSetup.Instance != null ? BattleSetup.Instance.Applied : null;
+            if (army != null && applied != null && TutorialOverlay.ShouldRun(applied.baseId, profile)) Tutorial.Begin();
         }
 
         void OnDestroy()
@@ -133,7 +143,6 @@ namespace TactileWars.UI
             BattleEvents.Reinforced -= OnReinforced;
             BattleEvents.CaptureProgress -= OnCapture;
             BattleEvents.PointCaptured -= OnPointCaptured;
-            BattleEvents.ShapeRecognized -= OnShape;
             BattleEvents.Victory -= OnBattleOver;
             BattleEvents.Defeat -= OnBattleOver;
             BattleEvents.SquadWiped -= OnSquadWiped;
@@ -215,10 +224,14 @@ namespace TactileWars.UI
             powFill.fillAmount = 0f;
             var hexRing = UIFactory.Img(pow, "HexRing", skin.hexRing, UIColors.WithAlpha(Color.white, 0.9f));
             ((RectTransform)hexRing.transform).Stretch(22f, 20f, 22f, 24f);
-            powLabel = UIFactory.Text(pow, "Label", "POW", 34f, TextStyle.HeadingThin);
-            ((RectTransform)powLabel.transform).Stretch(0f, 0f, 0f, 4f);
-            powTap = UIFactory.Text(pow, "Tap", "TAP!", 30f, TextStyle.Heading);
-            ((RectTransform)powTap.transform).At(0.5f, 0f, 0f, -30f, 160f, 40f, 0.5f, 0.5f);
+            // "BACKUP": the word the tutorial and the backup prompt use. Sized to sit inside the hex at 1280x720.
+            powLabel = UIFactory.Text(pow, "Label", "BACKUP", 25f, TextStyle.HeadingThin);
+            powLabel.enableAutoSizing = true;
+            powLabel.fontSizeMin = 16f;
+            powLabel.fontSizeMax = 25f;
+            ((RectTransform)powLabel.transform).Stretch(22f, 0f, 22f, 4f);
+            powTap = UIFactory.Text(pow, "Tap", "BACKUP!", 30f, TextStyle.Heading);
+            ((RectTransform)powTap.transform).At(0.5f, 0f, 0f, -30f, 200f, 40f, 0.5f, 0.5f);
             powTap.gameObject.SetActive(false);
             PowButton = pow.gameObject.AddComponent<UIButton>();
             PowButton.sound = Audio.SoundId.UiClick;
@@ -228,6 +241,7 @@ namespace TactileWars.UI
         void BuildObjectives()
         {
             var root = UIFactory.Rect(hud, "Objectives").At(0.5f, 1f, 0f, -16f, 300f, 84f, 0.5f, 1f);
+            ObjectivesRect = root;
             var bg = UIFactory.Img(root, "Bg", skin.pill, UIColors.WithAlpha(UIColors.SlateDark, 0.72f), UIFactory.PillMult(84f));
             ((RectTransform)bg.transform).Stretch();
             var dash = UIFactory.Img(root, "Link", skin.dash, UIColors.WithAlpha(Color.white, 0.6f));
@@ -372,27 +386,6 @@ namespace TactileWars.UI
             }
         }
 
-        void OnShape(ShapeType s)
-        {
-            if (defense) return; // the AI's formations are not the player's strokes
-            string t = s switch
-            {
-                ShapeType.Line => "LINE!",
-                ShapeType.Circle => "CIRCLE!",
-                ShapeType.Square => "SQUARE!",
-                ShapeType.Free => "FREE FORM!",
-                _ => null,
-            };
-            if (t != null)
-            {
-                shapeHint.text = t;
-                shapeHint.gameObject.SetActive(true);
-                shapeHintTimer = 1.1f;
-                UIAnim.Pop(shapeHint.transform, 1.6f, 0.3f);
-            }
-            if (Tutorial != null && Tutorial.Active) Tutorial.OnStroke();
-        }
-
         void OnSquadWiped(EnemySquad s)
         {
             if (s != null && s.Bubble != null) toast.Show("SQUAD POPPED!", UIIcon.Skull, UIColors.WithAlpha(UIColors.Ink, 0.9f), 1f);
@@ -415,20 +408,15 @@ namespace TactileWars.UI
         void Update()
         {
             float dt = Time.unscaledDeltaTime;
-            if (shapeHintTimer > 0f)
-            {
-                shapeHintTimer -= dt;
-                if (shapeHintTimer <= 0f) shapeHint.gameObject.SetActive(false);
-                else if (shapeHintTimer < 0.3f) shapeHint.alpha = shapeHintTimer / 0.3f;
-                else shapeHint.alpha = 1f;
-            }
             if (objectiveTextGroup != null && objectiveTextGroup.alpha > 0f && Time.timeSinceLevelLoad > 4f)
                 objectiveTextGroup.alpha = Mathf.MoveTowards(objectiveTextGroup.alpha, 0f, dt * 1.5f);
             if (powReady)
             {
-                float k = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 6f);
-                pow.localScale = Vector3.one * (1f + 0.07f * k);
-                powGlow.color = UIColors.WithAlpha(UIColors.Team(team), 0.35f + 0.4f * k);
+                // Harder pulse while the battle waits for backup (every unit lost).
+                bool urge = Backup != null && Backup.Visible;
+                float k = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * (urge ? 9f : 6f));
+                pow.localScale = Vector3.one * (1f + (urge ? 0.16f : 0.07f) * k);
+                powGlow.color = UIColors.WithAlpha(UIColors.Team(team), (urge ? 0.55f : 0.35f) + 0.4f * k);
             }
             if (defense) UpdateDefense();
             for (int i = 0; i < 2; i++)
@@ -490,7 +478,7 @@ namespace TactileWars.UI
             if (d.sqrMagnitude < 1f) return false;
             float hx = size.x * 0.5f - 64f;
             float hyTop = size.y * 0.5f - 215f;   // stay below the top HUD row
-            float hyBottom = size.y * 0.5f - 64f;
+            float hyBottom = size.y * 0.5f - (UnitBar != null ? 200f : 64f); // stay above the unit bar
             float hy = d.y > 0f ? hyTop : hyBottom;
             float t = Mathf.Min(hx / Mathf.Max(1e-3f, Mathf.Abs(d.x)), hy / Mathf.Max(1e-3f, Mathf.Abs(d.y)));
             pos = d * t;

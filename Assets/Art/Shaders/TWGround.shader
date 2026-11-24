@@ -1,22 +1,34 @@
+// Open battlefield ground: gentle large-scale color variation, soft tonal patches (optionally cracked), fine
+// speckles, a worn path from the map mask, trampled areas and darker edges. No tiling pattern and no grid: the
+// deployment grid is invisible. Each biome (BiomeStyle) sets the colors and amounts.
 Shader "TW/Ground"
 {
     Properties
     {
-        _SandColor ("Sand", Color) = (0.76, 0.71, 0.56, 1)
-        _SandColor2 ("Sand Variation", Color) = (0.72, 0.68, 0.53, 1)
-        _HexLineColor ("Hex Line", Color) = (0.62, 0.57, 0.44, 1)
-        _HexSize ("Hex Size", Float) = 5.2
-        _HexLineWidth ("Hex Line Width", Range(0.001, 0.2)) = 0.035
-        _HexLineStrength ("Hex Line Strength", Range(0, 1)) = 0.45
-        _HexTint ("Per Hex Variation", Range(0, 0.2)) = 0.035
-        _PathColor ("Dirt Path", Color) = (0.62, 0.55, 0.42, 1)
-        _PathStrength ("Dirt Path Strength", Range(0, 1)) = 1
-        _TileColor ("Paved Tile", Color) = (0.84, 0.77, 0.62, 1)
-        _DarkColor ("Dark Patch", Color) = (0.6, 0.6, 0.47, 1)
-        _MaskTex ("Mask (R path, G tiles, B dark)", 2D) = "black" {}
+        _BaseColor1 ("Base", Color) = (0.55, 0.68, 0.36, 1)
+        _BaseColor2 ("Base Variation", Color) = (0.5, 0.63, 0.33, 1)
+        _NoiseScale ("Variation Scale", Float) = 0.06
+        _PatchColor ("Patch", Color) = (0.62, 0.72, 0.4, 1)
+        _PatchScale ("Patch Scale", Float) = 0.16
+        _PatchCoverage ("Patch Coverage", Range(0, 1)) = 0.35
+        _PatchSoftness ("Patch Edge Softness", Range(0.01, 0.5)) = 0.12
+        _CrackColor ("Crack", Color) = (0.4, 0.25, 0.18, 1)
+        _CrackStrength ("Crack Strength (inside patches)", Range(0, 1)) = 0
+        _CrackScale ("Crack Scale", Float) = 0.9
+        _SpeckleColor ("Speckle", Color) = (0.95, 0.92, 0.7, 1)
+        _SpeckleAmount ("Speckle Amount", Range(0, 0.3)) = 0.04
+        _SpeckleScale ("Speckle Scale", Float) = 2.2
+        _PathColor ("Path", Color) = (0.66, 0.56, 0.4, 1)
+        _PathStrength ("Path Strength", Range(0, 1)) = 0.9
+        _WornColor ("Trampled (mask G)", Color) = (0.6, 0.6, 0.42, 1)
+        _WornStrength ("Trampled Strength", Range(0, 1)) = 0.6
+        _DarkColor ("Edge (mask B)", Color) = (0.38, 0.5, 0.3, 1)
+        _WaterColor ("Water (mask A below 1)", Color) = (0.36, 0.62, 0.74, 1)
+        _WaterDeep ("Water Middle", Color) = (0.27, 0.5, 0.64, 1)
+        _BankColor ("Water Bank", Color) = (0.5, 0.55, 0.4, 1)
+        _WaterStrength ("Water Strength", Range(0, 1)) = 0
+        _MaskTex ("Mask (R path, G trampled, B edge, A 1 - water)", 2D) = "black" {}
         _MapRect ("Map Rect (x0, z0, width, depth)", Vector) = (-30, -20, 60, 150)
-        _NoiseScale ("Noise Scale", Float) = 0.09
-        _NoiseStrength ("Noise Strength", Range(0, 0.3)) = 0.06
         _ShadowColor ("Shadow Tint", Color) = (0.62, 0.6, 0.66, 1)
         _ShadowStrength ("Shadow Strength", Range(0, 1)) = 0.75
         _Brightness ("Brightness", Range(0.5, 1.5)) = 1
@@ -30,11 +42,14 @@ Shader "TW/Ground"
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
         CBUFFER_START(UnityPerMaterial)
-            half4 _SandColor, _SandColor2, _HexLineColor, _PathColor, _TileColor, _DarkColor, _ShadowColor;
-            float _HexSize, _HexLineWidth, _HexLineStrength, _HexTint;
+            half4 _BaseColor1, _BaseColor2, _PatchColor, _CrackColor, _SpeckleColor, _PathColor, _WornColor, _DarkColor, _ShadowColor;
+            half4 _WaterColor, _WaterDeep, _BankColor;
+            float _WaterStrength;
+            float _NoiseScale, _PatchScale, _PatchCoverage, _PatchSoftness, _CrackStrength, _CrackScale;
+            float _SpeckleAmount, _SpeckleScale, _PathStrength, _WornStrength;
             float4 _MaskTex_ST;
             float4 _MapRect;
-            float _NoiseScale, _NoiseStrength, _ShadowStrength, _Brightness, _PathStrength;
+            float _ShadowStrength, _Brightness;
         CBUFFER_END
         TEXTURE2D(_MaskTex); SAMPLER(sampler_MaskTex);
 
@@ -46,6 +61,12 @@ Shader "TW/Ground"
             p = frac(p * float2(123.34, 456.21));
             p += dot(p, p + 45.32);
             return frac(p.x * p.y);
+        }
+
+        float2 Hash22(float2 p)
+        {
+            float n = Hash21(p);
+            return float2(n, Hash21(p + n + 17.3));
         }
 
         float ValueNoise(float2 p)
@@ -61,21 +82,20 @@ Shader "TW/Ground"
             return ValueNoise(p) * 0.6 + ValueNoise(p * 2.13 + 7.1) * 0.3 + ValueNoise(p * 4.7 + 3.3) * 0.1;
         }
 
-        // Hex tiling: returns local coords inside the cell and the cell id.
-        float2 Hex(float2 p, out float2 id)
+        // Distance to the nearest cell border of a jittered cellular pattern (thin irregular crack lines).
+        float CrackDist(float2 p)
         {
-            const float2 s = float2(1, 1.7320508);
-            float4 hc = floor(float4(p, p - float2(0.5, 1)) / s.xyxy) + 0.5;
-            float4 h = float4(p - hc.xy * s, p - (hc.zw + 0.5) * s);
-            float4 r = dot(h.xy, h.xy) < dot(h.zw, h.zw) ? float4(h.xy, hc.xy) : float4(h.zw, hc.zw + 0.5);
-            id = r.zw;
-            return r.xy;
-        }
-
-        float HexEdge(float2 local)
-        {
-            local = abs(local);
-            return 0.5 - max(dot(local, normalize(float2(1, 1.7320508))), local.x);
+            float2 i = floor(p), f = frac(p);
+            float d1 = 8, d2 = 8;
+            for (int y = -1; y <= 1; y++)
+                for (int x = -1; x <= 1; x++)
+                {
+                    float2 o = float2(x, y);
+                    float2 r = o + Hash22(i + o) * 0.85 + 0.075 - f;
+                    float d = dot(r, r);
+                    if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d;
+                }
+            return sqrt(d2) - sqrt(d1);
         }
 
         Varyings GroundVert(Attributes i)
@@ -95,41 +115,54 @@ Shader "TW/Ground"
 
             // Large soft variation.
             float n = Fbm(w * _NoiseScale);
-            half3 col = lerp(_SandColor.rgb, _SandColor2.rgb, saturate(n * 1.3 - 0.15));
+            half3 col = lerp(_BaseColor1.rgb, _BaseColor2.rgb, saturate(n * 1.4 - 0.2));
 
-            // Big hex cells with a subtle per cell tint and thin worn seams.
-            float2 id;
-            float2 local = Hex(w / _HexSize, id);
-            float edge = HexEdge(local);
-            float cellTint = (Hash21(id) - 0.5) * 2.0 * _HexTint;
-            col *= 1.0 + cellTint;
-            float aa = fwidth(edge) * 1.2;
-            float seam = 1.0 - smoothstep(_HexLineWidth - aa, _HexLineWidth + aa, edge);
-            float wear = smoothstep(0.25, 0.75, ValueNoise(w * 0.7 + id * 3.1));
-            col = lerp(col, _HexLineColor.rgb, seam * _HexLineStrength * (0.55 + 0.45 * wear));
+            // Soft tonal patches with a ragged edge.
+            float pn = Fbm(w * _PatchScale + 11.7) + (ValueNoise(w * 1.1) - 0.5) * 0.08;
+            float patch = smoothstep(1.0 - _PatchCoverage - _PatchSoftness, 1.0 - _PatchCoverage + _PatchSoftness, pn);
+            col = lerp(col, _PatchColor.rgb * (0.96 + 0.08 * ValueNoise(w * 0.9)), patch);
 
-            // Dark olive patches.
-            col = lerp(col, _DarkColor.rgb, saturate(mask.b) * 0.7);
+            // Cracks inside the patches (dry clay); off where _CrackStrength is 0.
+            float cd = CrackDist(w * _CrackScale);
+            float aa = fwidth(cd) * 1.5 + 1e-4;
+            // Broken up by a slow noise so the lines read as scattered cracks, never as a tiling of cells.
+            float broken = smoothstep(0.42, 0.62, ValueNoise(w * 0.45 + 5.3));
+            float crack = (1.0 - smoothstep(0.028 - aa, 0.028 + aa, cd)) * patch * broken * _CrackStrength;
+            col = lerp(col, _CrackColor.rgb, crack);
 
-            // Dirt paths with a ragged noisy edge.
+            // Fine speckles (flowers, pebbles, glints), sparse and scattered.
+            float2 sc = w * _SpeckleScale;
+            float2 sid = floor(sc);
+            float2 sp = frac(sc) - (Hash22(sid) * 0.6 + 0.2);
+            float sOn = step(1.0 - _SpeckleAmount, Hash21(sid + 3.7));
+            float dot1 = 1.0 - smoothstep(0.07, 0.12, length(sp));
+            col = lerp(col, _SpeckleColor.rgb, dot1 * sOn * 0.85);
+
+            // Darker or lighter edges (mask B) and trampled ground (mask G: under pads, the keep and camps).
+            col = lerp(col, _DarkColor.rgb, saturate(mask.b) * 0.75);
+            float worn = smoothstep(0.2, 0.8, mask.g + (ValueNoise(w * 0.8) - 0.5) * 0.4) * _WornStrength;
+            col = lerp(col, _WornColor.rgb * (0.95 + 0.1 * ValueNoise(w * 2.3)), worn);
+
+            // The path, with a ragged noisy edge.
             float pathN = mask.r + (ValueNoise(w * 1.3) - 0.5) * 0.35;
             float path = smoothstep(0.3, 0.7, pathN) * _PathStrength;
-            half3 pathCol = _PathColor.rgb * (0.94 + 0.12 * ValueNoise(w * 2.7));
+            half3 pathCol = _PathColor.rgb * (0.93 + 0.14 * ValueNoise(w * 2.7));
             col = lerp(col, pathCol, path);
 
-            // Paved hex tile accents (small hexes, lighter, with dark grout).
-            float2 tid;
-            float2 tl = Hex(w / 1.55, tid);
-            float te = HexEdge(tl);
-            float tileOn = step(0.5, mask.g + (Hash21(tid) - 0.5) * 0.5);
-            float grout = 1.0 - smoothstep(0.04, 0.07, te);
-            half3 tileCol = _TileColor.rgb * (0.95 + 0.1 * Hash21(tid + 3.0));
-            tileCol = lerp(tileCol, _HexLineColor.rgb * 0.95, grout * 0.85);
-            col = lerp(col, tileCol, tileOn * saturate(mask.g * 4.0));
+            // Water, a dry riverbed or ice (mask A below 1, per biome): a soft bank, then the surface with gentle
+            // streaks along the flow and a deeper middle.
+            float wet = 1.0 - mask.a;
+            float wn = wet + (ValueNoise(w * 0.9 + 2.1) - 0.5) * 0.22;
+            float bank = smoothstep(0.04, 0.3, wn) * _WaterStrength;
+            float surface = smoothstep(0.38, 0.58, wn) * _WaterStrength;
+            col = lerp(col, _BankColor.rgb * (0.95 + 0.1 * ValueNoise(w * 2.1)), bank * (1.0 - surface));
+            half3 wc = lerp(_WaterColor.rgb, _WaterDeep.rgb, smoothstep(0.62, 0.95, wet));
+            wc *= 0.94 + 0.12 * ValueNoise(w * float2(0.35, 1.7) + 9.0);
+            col = lerp(col, wc, surface);
 
             // Shadows from props, tinted rather than black.
-            float4 sc = TransformWorldToShadowCoord(i.positionWS);
-            Light light = GetMainLight(sc);
+            float4 shc = TransformWorldToShadowCoord(i.positionWS);
+            Light light = GetMainLight(shc);
             half sh = lerp(1.0h, light.shadowAttenuation, _ShadowStrength);
             col *= lerp(_ShadowColor.rgb, half3(1, 1, 1), sh);
             col *= _Brightness;

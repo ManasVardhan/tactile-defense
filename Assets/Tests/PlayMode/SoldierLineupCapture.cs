@@ -20,9 +20,11 @@ namespace TactileWars.Tests
         {
             yield return BattleTestUtil.LoadBattle();
             yield return BattleTestUtil.Wait(0.5f);
-            var squad = BattleTestUtil.Squad;
-            var list = squad.Soldiers;
-            Vector3 c = squad.Centroid + new Vector3(0f, 0f, -3f);
+            var army = BattleTestUtil.Army;
+            BattleTestUtil.DeployAll();
+            yield return null;
+            var list = BattleTestUtil.ArmySoldiers();
+            Vector3 c = army.Centroid + new Vector3(0f, 0f, -3f);
             int shown = 0;
             for (int i = 0; i < list.Count; i++)
             {

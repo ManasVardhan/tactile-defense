@@ -13,15 +13,18 @@ MonoBehaviour:
   m_Name: Base_b02
   m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Meta.BaseDefinition
   id: b02
-  displayName: Pine Outpost
+  displayName: Long Road
   commanderName: Cpl. Moss
-  enemyTeam: 1
+  enemyTeam: 2
   difficulty: 2
   requiredLevel: 1
   rewardMultiplier: 1.15
   enemyHealthMult: 0.95
   enemyDamageMult: 0.85
   layout: {fileID: 11400000, guid: 89ed26371d805432ba7003e4b1e48ee6, type: 2}
-  map: {fileID: 0}
+  map: {fileID: 11400000, guid: 818aa7dc211834e3881c7f5b36476b40, type: 2}
+  passiveEnemies: 0
+  counterattack: 1
   enemySquads: 5
+  averageSquadSize: 9.4
   defenses: 7

@@ -39,8 +39,7 @@ namespace TactileWars.Tests
             p.level = 9;
             p.xp = 3700;
             p.gold = 2600;
-            p.tutorial.drawStroke = true;
-            p.tutorial.tapToMove = true;
+            BattleTestUtil.MarkTutorialSeen(p);
             foreach (var id in new[] { "def_mine", "def_turret", "def_bunker", "def_tank", "def_cannon", "def_tesla", "def_sniper", "def_geyser" }) p.SetResearch(id, 1);
             p.SetResearch("def_mine", 2);
             p.SetResearch("def_turret", 2);
@@ -132,10 +131,11 @@ namespace TactileWars.Tests
             yield return UITestUtil.WaitReal(0.8f);
             UITestUtil.Capture("base_defense_result");
 
-            // ---- simulated raid report on return to the menu
+            // ---- simulated raid report on return to the menu (base features are off in the game; on for this capture)
             p = MetaGame.Profile;
             p.lastSeenUtcTicks = System.DateTime.UtcNow.AddHours(-3).Ticks;
             SaveSystem.Save();
+            MetaGame.BaseFeaturesEnabled = true;
             SceneManager.LoadScene("MainMenu");
             yield return UITestUtil.WaitForScene("MainMenu");
             yield return UITestUtil.WaitUntil(() => MenuRoot.Instance != null && MenuRoot.Instance.RaidCard != null, 5f);

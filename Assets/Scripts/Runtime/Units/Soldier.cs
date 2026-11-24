@@ -12,6 +12,11 @@ namespace TactileWars.Units
     [RequireComponent(typeof(Health))]
     public class Soldier : MonoBehaviour
     {
+        /// <summary>Size of every soldier model (player and enemy, all unit types, flag bearers, the mercenary) over
+        /// its first-pass size. Applied once to the soldier prefabs' model scale by the AssetBuilder; unit type
+        /// scales multiply on top, so the differences between types stay.</summary>
+        public const float SizeScale = 1.2f;
+
         public Transform modelRoot;
         public Animator animator;
         public Transform muzzle;
@@ -63,6 +68,15 @@ namespace TactileWars.Units
             var fb = feedback;
             View.Squash = a => fb.Squash(a);
             View.ApplyModel(0f);
+        }
+
+        /// <summary>Puts a shared material in the model's Accent slot (unit type colors) and keeps the hit flash in
+        /// step with it.</summary>
+        public void SetAccent(Material m)
+        {
+            if (tint == null) return;
+            tint.SetAccent(m);
+            feedback?.RefreshNormal();
         }
 
         bool movedSinceRest;

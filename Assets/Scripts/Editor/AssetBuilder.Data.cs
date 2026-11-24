@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using TactileWars.Army;
 using TactileWars.Audio;
 using TactileWars.Battle;
 using TactileWars.CameraRig;
@@ -34,6 +35,8 @@ namespace TactileWars.EditorTools
             public CameraConfig camera;
             public BattlePrefabs prefabs;
             public SoundLibrary sounds;
+            public UnitTypeConfig typeAttacker, typeTank, typeHealer, typeSniper, typeVanguard, typeDemolisher;
+            public UnitRoster roster;
         }
 
         /// <summary>Loads an asset or creates it with builder defaults. With reset, values are rewritten.</summary>
@@ -132,6 +135,10 @@ namespace TactileWars.EditorTools
             d.enemySquad.soldier = d.enemySoldier;
             d.enemySquad.flagBearer = d.flagBearer;
             d.battle = Asset<BattleConfig>("BattleConfig", reset, null);
+            // The hidden deployment grid: 1.5 (was 1.4) so three soldiers 20 percent bigger stand apart in a unit and
+            // neighboring units do not touch. Written on every build.
+            d.battle.hexOuterRadius = BattleConfig.DefaultHexOuterRadius;
+            EditorUtility.SetDirty(d.battle);
             d.combat = Asset<CombatConfig>("CombatConfig", reset, null);
             d.camera = Asset<CameraConfig>("CameraConfig", reset, null);
             d.prefabs = Asset<BattlePrefabs>("BattlePrefabs", true, null);
@@ -139,7 +146,84 @@ namespace TactileWars.EditorTools
             d.game = Asset<GameConfig>("GameConfig", reset, g => { g.playerTeam = TeamColorId.Red; g.enemyTeam = TeamColorId.Teal; });
             d.game.palette = d.palette;
             d.game.visuals = d.visuals;
+
+            // Player unit types (first pass estimates): multipliers on Unit_PlayerSoldier.
+            if (!AssetDatabase.IsValidFolder(DataDir + "/Units")) AssetDatabase.CreateFolder(DataDir, "Units");
+            d.typeAttacker = Asset<UnitTypeConfig>("Units/UnitType_Attacker", reset, t =>
+            {
+                t.id = UnitTypeId.Attacker; t.displayName = "Attacker"; t.glyph = "A"; t.soldierCount = 3;
+                t.accent = Hex("#F2B33D");
+            });
+            d.typeTank = Asset<UnitTypeConfig>("Units/UnitType_Tank", reset, t =>
+            {
+                t.id = UnitTypeId.Tank; t.displayName = "Tank"; t.glyph = "T"; t.soldierCount = 3;
+                t.healthMult = 3f; t.rangeMult = 0.6f; t.speedMult = 0.7f; t.modelScale = 1.2f; t.drawsFire = true;
+                t.accent = Hex("#5B8FE0");
+            });
+            // Army balance for an army of 9 (tuned with BotPlaythroughTests on Level 1). Written on every build, so these
+            // lines are the source of truth. They scale the shared player soldier for attack battles only; the legacy
+            // squad in defense battles keeps Unit_PlayerSoldier as it is.
+            d.typeAttacker.healthMult = 1f; d.typeAttacker.damageMult = 1f;
+            d.typeTank.healthMult = 3f; d.typeTank.damageMult = 1f;
+            // Type accents (badge, unit bar disc, soldiers' helmet rims): kept apart from every team color and from
+            // each other. Attacker warm orange, Tank steel blue (desaturated, unlike the Blue team). The Tank is also
+            // drawn bigger so it reads as a Tank at a glance.
+            d.typeAttacker.accent = Hex("#FF7A1A");
+            d.typeTank.accent = Hex("#7F9DBE");
+            d.typeTank.modelScale = 1.3f;
+            d.typeAttacker.description = "Steady all-round soldiers with good range and damage.";
+            d.typeTank.description = "Tough and slow. Enemy defenses shoot it first, so put it in front.";
+
+            // Plan 2 types (starting values relative to the Attacker; written on every build like the lines above).
+            // Each is mechanically distinct: Healer supports without shooting, Sniper outranges with heavy slow shots
+            // but is fragile, Vanguard flanks fast and captures twice as fast, Demolisher lobs shells that wreck
+            // defenses and do little to soldiers. Accents stay apart from each other, from Attacker and Tank, and
+            // from the team colors; scale helps them read at a glance.
+            d.typeHealer = TypeAsset("Healer", UnitTypeId.Healer, "H", reset);
+            Set(d.typeHealer, health: 0.8f, range: 1f, speed: 1f, damage: 1f, interval: 1f, scale: 1f, accent: "#3DDC5A");
+            d.typeHealer.hasWeapon = false;
+            d.typeHealer.healPerSecond = d.playerSoldier.maxHealth * 0.12f;
+            d.typeHealer.reviveInterval = 8f;
+            d.typeHealer.description = "Does not shoot. Heals units next to it and brings their fallen soldiers back.";
+
+            d.typeSniper = TypeAsset("Sniper", UnitTypeId.Sniper, "S", reset);
+            Set(d.typeSniper, health: 0.6f, range: 2f, speed: 1f, damage: 3f, interval: 3f, scale: 0.9f, accent: "#9254F2");
+            d.typeSniper.description = "Twice the range and heavy, slow shots, but fragile. Keep it behind the line.";
+
+            d.typeVanguard = TypeAsset("Vanguard", UnitTypeId.Vanguard, "V", reset);
+            Set(d.typeVanguard, health: 1f, range: 1f, speed: 2f, damage: 0.6f, interval: 1f, scale: 1f, accent: "#FFE01F");
+            d.typeVanguard.captureWeight = 2;
+            d.typeVanguard.description = "Fast flanker with light guns. Captures points twice as fast.";
+
+            d.typeDemolisher = TypeAsset("Demolisher", UnitTypeId.Demolisher, "D", reset);
+            // Tuned against UnitAbilityTests: one unit wrecks a turret in about a third of an Attacker unit's time and needs
+            // well over 1.5 times its time against a squad of soldiers (shells are slow and do little to soldiers).
+            Set(d.typeDemolisher, health: 1f, range: 1.3f, speed: 0.8f, damage: 1f, interval: 2.5f, scale: 1.15f, accent: "#7A0E1C");
+            d.typeDemolisher.lobbed = true;
+            d.typeDemolisher.splashRadius = 1.8f;
+            d.typeDemolisher.structureDamageMult = 8f;
+            d.typeDemolisher.soldierDamageMult = 0.4f;
+            d.typeDemolisher.prefersStructures = true;
+            d.typeDemolisher.description = "Lobs heavy shells that wreck turrets and bunkers fast. Weak against soldiers.";
+
+            foreach (var t in new[] { d.typeAttacker, d.typeTank, d.typeHealer, d.typeSniper, d.typeVanguard, d.typeDemolisher })
+                EditorUtility.SetDirty(t);
+            d.roster = Asset<UnitRoster>("UnitRoster", reset, null);
+            d.roster.types = new[] { d.typeAttacker, d.typeTank, d.typeHealer, d.typeSniper, d.typeVanguard, d.typeDemolisher };
+            EditorUtility.SetDirty(d.roster);
             return d;
+        }
+
+        static UnitTypeConfig TypeAsset(string name, UnitTypeId id, string glyph, bool reset) =>
+            Asset<UnitTypeConfig>("Units/UnitType_" + name, reset, t => { t.id = id; t.displayName = name; t.glyph = glyph; t.soldierCount = 3; });
+
+        /// <summary>Writes a unit type's multipliers, scale and accent (every build: these lines are the source of truth).</summary>
+        static void Set(UnitTypeConfig t, float health, float range, float speed, float damage, float interval, float scale, string accent)
+        {
+            t.soldierCount = 3;
+            t.healthMult = health; t.rangeMult = range; t.speedMult = speed; t.damageMult = damage; t.fireIntervalMult = interval;
+            t.modelScale = scale;
+            t.accent = Hex(accent);
         }
 
         static void WireData(Data d, Prefabs p, Mats mats, Meshes meshes)
@@ -227,6 +311,7 @@ namespace TactileWars.EditorTools
             Add(SoundId.UiOpen, "ui_open", Ui, 0.5f, 2, 0.05f, 1f, 1f);
             Add(SoundId.UiPurchase, "ui_purchase", Ui, 0.65f, 2, 0.05f, 1f, 1f);
             Add(SoundId.UiError, "ui_error", Ui, 0.55f, 1, 0.1f, 1f, 1f);
+            Add(SoundId.Reject, "ui_error", Fb, 0.45f, 1, 0.15f, 0.97f, 1.03f); // reuses the short error blip
             Add(SoundId.CoinPickup, "coin_pickup", Ui, 0.6f, 3, 0.05f, 0.95f, 1.1f);
             lib.entries = entries.ToArray();
             lib.menuMusic = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/menu_theme.ogg");

@@ -17,6 +17,9 @@ MonoBehaviour:
   captureDecay: 0.08
   perSoldierBonus: 0.03
   maxSoldierBonus: 10
+  armyPerSoldierBonus: 0.33333334
+  armyMaxSoldierBonus: 9
+  hexOuterRadius: 1.5
   meterRequired: 30
   meterGrowthPerCall: 0.3
   perSoldierKill: 1

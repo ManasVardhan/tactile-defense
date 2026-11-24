@@ -11,7 +11,9 @@ namespace TactileWars.Audio
         // Appended for the UI phase (keep order: values are serialized as ints).
         UiBack, UiOpen, UiPurchase, UiError, CoinPickup, LevelUp,
         // Appended for phase 5 defenses.
-        TeslaCharge, TeslaZap, SniperAim, SniperShot, GeyserRumble, GeyserErupt
+        TeslaCharge, TeslaZap, SniperAim, SniperShot, GeyserRumble, GeyserErupt,
+        // Appended for unit controls: a refused deploy or move order.
+        Reject
     }
 
     /// <summary>Mix groups. Every SFX file is normalized to the same peak, so loudness is set here (phase 8).</summary>

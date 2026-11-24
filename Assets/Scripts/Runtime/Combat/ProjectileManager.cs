@@ -100,7 +100,7 @@ namespace TactileWars.Combat
 
             if (w.splashRadius > 0f)
             {
-                int hits = UnitRegistry.DamageArea(UnitRegistry.Opponent(p.team), ground, w.splashRadius, p.damage, p.color);
+                int hits = UnitRegistry.DamageArea(UnitRegistry.Opponent(p.team), ground, w.splashRadius, p.damage, p.color, w.structureDamageMult, w.soldierDamageMult);
                 if (hits > 0) TotalHits += hits;
                 if (splats != null) splats.Spawn(ground, p.color, w.splashRadius * 1.1f * w.splatSize, true);
                 if (vfx != null) vfx.Play(VfxType.Explosion, ground, col, Mathf.Max(0.6f, w.splashRadius * 0.6f));

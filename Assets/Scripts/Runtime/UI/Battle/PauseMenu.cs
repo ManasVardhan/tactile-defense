@@ -75,6 +75,7 @@ namespace TactileWars.UI
             Time.timeScale = 0f;
             AudioListener.pause = true;
             if (bm != null && bm.recorder != null) bm.recorder.InputEnabled = false;
+            if (bm != null && bm.army != null) bm.army.InputEnabled = false;
             ShowButtons();
             transform.SetAsLastSibling();
             anim.Show();
@@ -88,6 +89,7 @@ namespace TactileWars.UI
             AudioListener.pause = false;
             var bm = BattleManager.Instance;
             if (bm != null && bm.recorder != null && !bm.Over) bm.recorder.InputEnabled = true;
+            if (bm != null && bm.army != null && !bm.Over) bm.army.InputEnabled = true;
             anim.Hide();
         }
 

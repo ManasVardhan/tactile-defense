@@ -6,7 +6,8 @@ namespace TactileWars.Structures
 {
     /// <summary>Sniper tower (name verified, behaviour an ESTIMATE): long range single shots. The Head yaws toward
     /// the target and a thin aiming line in the team color grows for 'sniperAimTime' seconds, then one fast heavy
-    /// paint shot fires (pooled through ProjectileManager). Prefers flag bearers when one is in range.</summary>
+    /// paint shot fires (pooled through ProjectileManager). Prefers draws-fire targets (Tank units) in range, then flag
+    /// bearers.</summary>
     public class Sniper : StructureBase
     {
         public Transform head;
@@ -21,6 +22,8 @@ namespace TactileWars.Structures
 
         public int ShotsFired { get; private set; }
         public Health Target => target;
+        /// <summary>The last target picked (kept after the shot, unlike Target).</summary>
+        public Health LastTarget { get; private set; }
         public bool Aiming => target != null && aim > 0f;
 
         protected override void Start()
@@ -67,6 +70,7 @@ namespace TactileWars.Structures
             {
                 rescan = 0.25f;
                 target = PickTarget();
+                if (target != null) LastTarget = target;
                 aim = 0f;
                 aimSound = false;
             }
@@ -95,10 +99,11 @@ namespace TactileWars.Structures
 
         Health PickTarget()
         {
-            // Flag bearers first (a sniper picks off leaders), otherwise the nearest unit in range.
+            // Draws-fire targets (Tank units) first, then flag bearers (a sniper picks off leaders), otherwise the
+            // nearest unit in range.
             var foes = UnitRegistry.Of(Foe);
-            Health best = null;
-            float bestD = float.MaxValue;
+            Health best = null, bestDraws = null;
+            float bestD = float.MaxValue, bestDrawsD = float.MaxValue;
             float r = Range;
             Vector3 pos = transform.position;
             for (int i = 0; i < foes.Count; i++)
@@ -110,10 +115,11 @@ namespace TactileWars.Structures
                 float d2 = dx * dx + dz * dz;
                 float rr = r + h.targetRadius;
                 if (d2 > rr * rr) continue;
+                if (h.drawsFire && d2 < bestDrawsD) { bestDrawsD = d2; bestDraws = h; }
                 if (h.kind == TargetKind.FlagBearer) d2 *= 0.25f;
                 if (d2 < bestD) { bestD = d2; best = h; }
             }
-            return best;
+            return bestDraws != null ? bestDraws : best;
         }
 
         bool InRange(Health h)

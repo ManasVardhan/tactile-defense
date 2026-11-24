@@ -423,30 +423,59 @@ def flag_cloth(w=1.15, h=0.78, nx=7, nz=4, amp=0.07, name="Flag"):
     return [cloth] + stars
 
 
+def banner_cloth(w=0.86, h=1.25, nx=4, nz=6, amp=0.05, name="Flag"):
+    """Vertical banner hanging from a crossbar along +X, top edge at local z=0, a diamond emblem on both faces."""
+    def wave(x, z):
+        return amp * math.sin(-z / h * math.pi * 1.3) * (0.4 + x / w)
+
+    verts, faces = [], []
+    for j in range(nz + 1):
+        for i in range(nx + 1):
+            x = 0.1 + w * i / nx
+            z = -h * j / nz
+            if j == nz:  # swallowtail: the bottom edge is notched in the middle
+                z += 0.22 * (1.0 - abs(i / nx - 0.5) * 2.0)
+            verts.append((x, wave(x, z), z))
+    for j in range(nz):
+        for i in range(nx):
+            a = j * (nx + 1) + i
+            faces.append((a, a + 1, a + nx + 2, a + nx + 1))
+    cloth = poly(verts, faces, "TeamColor", solidify=0.035, name=name)
+    cx, cz = 0.1 + w * 0.5, -h * 0.42
+    marks = []
+    for side in (-1, 1):
+        d = [(cx, cz + 0.24), (cx + 0.19, cz), (cx, cz - 0.24), (cx - 0.19, cz)]
+        vv = [(x, wave(x, z) + side * 0.024, z) for (x, z) in d]
+        marks.append(poly(vv, [(0, 1, 2, 3)], "Accent", solidify=0.006, name="mark"))
+    return [cloth] + marks
+
+
 def capture_point():
+    """Round stone dais in two steps with a team colored inlay ring, a center plinth and a banner pole."""
     pad_parts = [
-        cyl(2.0, 0.1, "Stone", (0, 0, 0), seg=32, bevel=0.035, bseg=2),
-        torus(1.94, 0.1, "Rock", (0, 0, 0.11), seg=32, mseg=6),
-        cyl(1.55, 0.02, "TeamColor", (0, 0, 0.1), seg=32, bevel=0),
-        cyl(1.35, 0.025, "Stone", (0, 0, 0.1), seg=32, bevel=0),
-        cyl(0.42, 0.14, "Rock", (0, 0, 0.1), seg=12, bevel=0.04),
-        cyl(0.3, 0.08, "Metal", (0, 0, 0.22), seg=12, bevel=0.02),
+        cyl(2.15, 0.12, "Rock", (0, 0, 0), seg=24, bevel=0.035, bseg=1),
+        cyl(1.78, 0.12, "Stone", (0, 0, 0.12), seg=24, bevel=0.035, bseg=1),
+        cyl(1.52, 0.015, "TeamColor", (0, 0, 0.24), seg=24, bevel=0),
+        cyl(1.32, 0.02, "Stone", (0, 0, 0.24), seg=24, bevel=0),
+        cyl(0.45, 0.16, "Rock", (0, 0, 0.24), seg=10, bevel=0.04),
+        cyl(0.28, 0.06, "Metal", (0, 0, 0.4), seg=10, bevel=0.02),
     ]
-    for i in range(8):
-        a = math.radians(i * 45 + 22.5)
-        pad_parts.append(box(0.22, 0.1, 0.04, "Accent", (1.75 * math.cos(a), 1.75 * math.sin(a),
-                                                         0.115), rot=(0, 0, i * 45 + 112.5),
-                             bevel=0.01))
+    for i in range(6):
+        a = math.radians(i * 60 + 30)
+        pad_parts.append(box(0.3, 0.3, 0.1, "Stone", (1.97 * math.cos(a), 1.97 * math.sin(a), 0.12),
+                             rot=(0, 0, i * 60 + 30), bevel=0.03, bseg=1))
     pad = join(pad_parts, "Pad")
-    pz = 0.28
-    pole = join([cyl(0.065, 3.1, "Metal", (0, 0, pz), seg=8, bevel=0.0),
-                 cyl(0.1, 0.12, "Dark", (0, 0, pz), seg=8, bevel=0.02),
-                 sphere(0.12, "Accent", (0, 0, pz + 3.15), seg=10, rings=6)],
+    pz = 0.44
+    top = pz + 3.0
+    pole = join([cyl(0.07, 3.1, "Trunk", (0, 0, pz), seg=8, bevel=0.0),
+                 cyl(0.11, 0.14, "Dark", (0, 0, pz), seg=8, bevel=0.02),
+                 rod((0, 0, top - 0.05), (1.05, 0, top - 0.05), 0.045, "Trunk", seg=6),
+                 sphere(0.1, "Accent", (0, 0, pz + 3.15), seg=10, rings=6),
+                 sphere(0.06, "Accent", (1.07, 0, top - 0.05), seg=8, rings=5)],
                 "Pole", origin=(0, 0, pz))
     parent_keep(pole, pad)
-    fz = pz + 3.0
-    flag = join(flag_cloth(), "Flag", smooth_angle=60)
-    flag.location = (0, 0, fz)
+    flag = join(banner_cloth(), "Flag", smooth_angle=60)
+    flag.location = (0, 0, top - 0.1)
     parent_keep(flag, pole)
     return [pad, pole, flag]
 

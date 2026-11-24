@@ -394,6 +394,39 @@ namespace TactileWars.UI
             return sr;
         }
 
+        /// <summary>Vertical scroll list with a masked viewport; children of 'content' are laid out top to bottom at
+        /// the content's full width (each child sets its own height).</summary>
+        public static ScrollRect VScroll(Transform parent, string name, float spacing, float padding, out RectTransform content)
+        {
+            var root = Rect(parent, name);
+            var sr = root.gameObject.AddComponent<ScrollRect>();
+            var hit = root.gameObject.AddComponent<Image>();
+            hit.color = new Color(1, 1, 1, 0f);
+            hit.raycastTarget = true;
+            var viewport = Rect(root, "Viewport").Stretch();
+            viewport.gameObject.AddComponent<RectMask2D>().softness = new Vector2Int(0, 24);
+            content = Rect(viewport, "Content");
+            content.anchorMin = new Vector2(0f, 1f); content.anchorMax = new Vector2(1f, 1f);
+            content.pivot = new Vector2(0.5f, 1f);
+            content.offsetMin = Vector2.zero; content.offsetMax = Vector2.zero;
+            var vl = content.gameObject.AddComponent<VerticalLayoutGroup>();
+            vl.spacing = spacing;
+            vl.padding = new RectOffset(0, 0, (int)padding, (int)padding);
+            vl.childAlignment = TextAnchor.UpperCenter;
+            vl.childControlWidth = true; vl.childControlHeight = false;
+            vl.childForceExpandWidth = true; vl.childForceExpandHeight = false;
+            var fit = content.gameObject.AddComponent<ContentSizeFitter>();
+            fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            sr.viewport = viewport;
+            sr.content = content;
+            sr.horizontal = false;
+            sr.vertical = true;
+            sr.movementType = ScrollRect.MovementType.Elastic;
+            sr.scrollSensitivity = 30f;
+            sr.inertia = true;
+            return sr;
+        }
+
         /// <summary>Text input on a white rounded field with a pencil icon.</summary>
         public static TMP_InputField Input(Transform parent, string name, float w, float h, string value, int maxChars = 16)
         {

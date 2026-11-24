@@ -25,13 +25,34 @@ namespace TactileWars.Battle
             return n;
         }
 
-        /// <summary>Puts the map's mask on a runtime copy of the ground material. Returns the copy (caller owns it).</summary>
+        /// <summary>The scene's ground plane is built over this rectangle (x, z, width, depth); FitGround stretches it to
+        /// a map's own rectangle.</summary>
+        public static readonly Vector4 SceneGroundRect = new Vector4(-40f, -25f, 80f, 160f);
+
+        /// <summary>Stretches the ground plane (built over SceneGroundRect) so it covers the map's rectangle.</summary>
+        public static void FitGround(MapLayoutData map, Renderer ground)
+        {
+            if (map == null || ground == null) return;
+            Vector4 a = SceneGroundRect, b = map.mapRect;
+            if (b.z <= 0f || b.w <= 0f || a == b) return;
+            float sx = b.z / a.z, sz = b.w / a.w;
+            var t = ground.transform;
+            t.localScale = new Vector3(sx, 1f, sz);
+            t.position = new Vector3(b.x - a.x * sx, t.position.y, b.y - a.y * sz);
+        }
+
+        /// <summary>Puts the map's mask and its biome's ground colors on a runtime copy of the ground material.
+        /// Returns the copy (caller owns it), null when the map changes nothing.</summary>
         public static Material ApplyGround(MapLayoutData map, Renderer ground)
         {
-            if (map == null || ground == null || map.groundMask == null) return null;
+            if (map == null || ground == null || (map.groundMask == null && map.biome == null)) return null;
             var m = new Material(ground.sharedMaterial) { name = ground.sharedMaterial.name + "_" + map.id };
-            m.SetTexture(MaskId, map.groundMask);
-            m.SetVector(RectId, map.mapRect);
+            if (map.groundMask != null)
+            {
+                m.SetTexture(MaskId, map.groundMask);
+                m.SetVector(RectId, map.mapRect);
+            }
+            if (map.biome != null) map.biome.ApplyGround(m);
             ground.sharedMaterial = m;
             return m;
         }

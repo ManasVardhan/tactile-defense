@@ -13,15 +13,18 @@ MonoBehaviour:
   m_Name: Base_b03
   m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Meta.BaseDefinition
   id: b03
-  displayName: Dusty Crossing
+  displayName: Overlook
   commanderName: Lt. Amber
-  enemyTeam: 2
+  enemyTeam: 0
   difficulty: 3
   requiredLevel: 2
   rewardMultiplier: 1.3
   enemyHealthMult: 1.05
   enemyDamageMult: 0.95
   layout: {fileID: 11400000, guid: 2cd4632447153464fae662f4be34eaef, type: 2}
-  map: {fileID: 11400000, guid: 34eab83668f3647808993a774755e220, type: 2}
+  map: {fileID: 11400000, guid: 3682ee2aa08594232b088895019e1ccd, type: 2}
+  passiveEnemies: 0
+  counterattack: 1
   enemySquads: 5
+  averageSquadSize: 10.2
   defenses: 10

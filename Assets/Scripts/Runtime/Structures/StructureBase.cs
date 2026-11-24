@@ -28,10 +28,15 @@ namespace TactileWars.Structures
         protected bool destroyed;
         public bool Destroyed => destroyed;
         public Health Health => health;
+        /// <summary>What the direct-fire targeting is aimed at now (null when idle or for defenses that do not use it).</summary>
+        public Health CurrentTarget => targeting != null ? targeting.Current : null;
 
         protected virtual bool Targetable => true;
         /// <summary>Hidden traps report Mine so capture counts and targeting skip them.</summary>
         protected virtual TargetKind Kind => TargetKind.Structure;
+        /// <summary>Direct-fire defenses shoot draws-fire targets (Tank units) first while one is in range. Lobbed area
+        /// weapons (the cannon) keep picking the nearest target.</summary>
+        protected virtual bool PreferDrawsFire => true;
         /// <summary>Damage multiplier from the owner's research level (player base defenses), set before Start.</summary>
         public float levelMultiplier = 1f;
         /// <summary>Team whose units this defense attacks.</summary>
@@ -56,7 +61,7 @@ namespace TactileWars.Structures
             health.Init(team, color, (config != null ? config.maxHealth : 100f) * levelMultiplier);
             health.Damaged += OnDamaged;
             health.Died += OnDied;
-            targeting = new Targeting(0.2f);
+            targeting = new Targeting(0.2f, PreferDrawsFire);
             weapon = new Weapon(config != null ? config.weapon : null) { damageMultiplier = levelMultiplier };
             var vis = BattleContext.Visuals;
             if (tint != null && vis != null) tint.Apply(vis.Get(color));

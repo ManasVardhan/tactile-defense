@@ -1,16 +1,21 @@
+using TactileWars.Army;
 using TactileWars.Squad;
 using UnityEngine;
 
 namespace TactileWars.CameraRig
 {
-    /// <summary>Orthographic follow camera: tracks the squad centroid with look ahead, clamps to map bounds,
-    /// pauses while a stroke is drawn (so the stroke does not slide under the finger), supports shake.</summary>
+    /// <summary>Orthographic battle camera, clamped to map bounds, with shake. Attack battles (PanMode): starts on
+    /// the army's spawn and moves only when panned. Defense battles: follows the squad centroid with look ahead and
+    /// pauses while a stroke is drawn (so the stroke does not slide under the finger).</summary>
     public class BattleCamera : MonoBehaviour
     {
         public static BattleCamera Instance { get; private set; }
         public CameraConfig config;
         public Camera cam;
-        public SquadController squad;
+        [Tooltip("Followed in defense battles.")] public SquadController squad;
+        [Tooltip("Attack battles: where the camera starts.")] public PlayerArmy army;
+        /// <summary>True in attack battles: no following, the view moves only through Pan.</summary>
+        public bool PanMode { get; set; }
 
         Vector3 focus;
         Vector3 vel;
@@ -44,6 +49,23 @@ namespace TactileWars.CameraRig
             Apply(0f);
         }
 
+        /// <summary>Moves the focus so the ground point under the pointer stays under it after the pointer moved by
+        /// 'screenDelta' pixels (orthographic view of a flat ground), clamped to the focus bounds.</summary>
+        public void Pan(Vector2 screenDelta)
+        {
+            if (config == null || cam == null) return;
+            if (!initialized) SnapTo(DesiredFocus());
+            float unitsPerPixel = 2f * config.OrthoSize / Mathf.Max(1, cam.pixelHeight);
+            float sinElev = Mathf.Max(0.05f, Mathf.Sin(config.elevation * Mathf.Deg2Rad));
+            Quaternion yaw = Quaternion.Euler(0f, config.yaw, 0f);
+            Vector3 right = yaw * Vector3.right;
+            Vector3 ahead = yaw * Vector3.forward;
+            Vector3 move = right * (screenDelta.x * unitsPerPixel) + ahead * (screenDelta.y * unitsPerPixel / sinElev);
+            focus = Clamp(focus - move);
+            vel = Vector3.zero;
+            Apply(0f);
+        }
+
         Vector3 Clamp(Vector3 f)
         {
             if (config == null) return f;
@@ -55,6 +77,12 @@ namespace TactileWars.CameraRig
 
         Vector3 DesiredFocus()
         {
+            if (PanMode)
+            {
+                // Lean along the map's path from the spawn, so a side or corner start shows the way ahead.
+                Vector3 start = army != null ? army.spawnPoint : transform.position;
+                return start + Battle.MapPath.Forward(start) * config.forwardBias;
+            }
             if (squad == null || squad.AliveCount == 0) return focus;
             Vector3 c = squad.Centroid;
             Vector3 ahead = Vector3.ClampMagnitude((squad.Anchor - c) * config.lookAhead, config.maxLookAhead);
@@ -65,7 +93,7 @@ namespace TactileWars.CameraRig
         {
             if (config == null || cam == null) return;
             if (!initialized) { SnapTo(DesiredFocus()); }
-            if (squad == null || !squad.IsDrawing)
+            if (!PanMode && (squad == null || !squad.IsDrawing))
                 focus = Vector3.SmoothDamp(focus, Clamp(DesiredFocus()), ref vel, config.followSmoothTime, Mathf.Infinity, Time.deltaTime);
             Apply(Time.deltaTime);
         }

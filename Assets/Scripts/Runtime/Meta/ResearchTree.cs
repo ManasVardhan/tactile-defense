@@ -5,6 +5,9 @@ namespace TactileWars.Meta
 {
     public enum ResearchBranch { Troops = 0, Offense = 1, Defense = 2 }
 
+    /// <summary>Stored as ints in the research assets: never reorder. SquadSize and ReinforcementSize are retired
+    /// (the level ladder gives squad slots, backup restores a unit); no node uses them and old saves are refunded.
+    /// HeroAbility strengthens the hired mercenary.</summary>
     public enum ResearchEffect
     {
         SquadSize, SoldierHealth, FireRate, PaintDamage, MoveSpeed,

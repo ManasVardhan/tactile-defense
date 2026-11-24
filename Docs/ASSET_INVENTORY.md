@@ -22,19 +22,23 @@ All 35 FBX files below exist (4 in Characters, 15 in Structures, 16 in Environme
 | Cannon | Assets/Art/Models/Structures/Cannon.fbx | build_structures.py | present |
 | Tesla antenna | Assets/Art/Models/Structures/TeslaAntenna.fbx | build_structures.py | present |
 | HQ | Assets/Art/Models/Structures/HQ.fbx | build_structures.py | present |
-| Capture point (Pad, Pole, Flag) | Assets/Art/Models/Structures/CapturePoint.fbx | build_structures.py | present |
+| Capture point (Pad, Pole, Flag): round two-step stone dais, banner pole and swallowtail banner | Assets/Art/Models/Structures/CapturePoint.fbx | build_structures.py | present (restyled in task 2b) |
 | Sandbags | Assets/Art/Models/Structures/Sandbags.fbx | build_structures.py | present |
 | Spawn hatch | Assets/Art/Models/Structures/SpawnHatch.fbx | build_structures.py | present (added later) |
 | Tent | Assets/Art/Models/Structures/Tent.fbx | build_structures.py | present (moved to Structures) |
 | Wall, WallCorner | Assets/Art/Models/Structures/Wall.fbx, WallCorner.fbx | build_structures.py | present (moved to Structures) |
 | Sniper tower | Assets/Art/Models/Structures/Sniper.fbx | build_defenses_p5.py | present (added later) |
 | Geyser | Assets/Art/Models/Structures/Geyser.fbx | build_defenses_p5.py | present (added later) |
-| Tree A, B, C | Assets/Art/Models/Environment/Tree_A.fbx, Tree_B.fbx, Tree_C.fbx | build_environment.py | present |
+| Tree A, B, C | Assets/Art/Models/Environment/Tree_A.fbx, Tree_B.fbx, Tree_C.fbx | build_environment.py | present (no longer placed by the map builders since the biomes) |
 | Bush A, B | Assets/Art/Models/Environment/Bush_A.fbx, Bush_B.fbx | build_environment.py | present |
 | Rock A, B, C | Assets/Art/Models/Environment/Rock_A.fbx, Rock_B.fbx, Rock_C.fbx | build_environment.py | present |
 | Grass tuft, Flower A, Flower B | Assets/Art/Models/Environment/GrassTuft.fbx, Flower_A.fbx, Flower_B.fbx | build_environment.py | present |
 | Fence, Crate, Barrel, Log | Assets/Art/Models/Environment/Fence.fbx, Crate.fbx, Barrel.fbx, Log.fbx | build_environment.py | present |
-| Hex tile | Assets/Art/Models/Environment/HexTile.fbx | build_environment.py | present (added later) |
+| Hex tile | removed in task 2b (no hex shapes on the battlefield) | n/a | removed |
+| Meadow props: RoundTree_A, RoundTree_B, Hedge, StoneFence, RailFence, HayBale, Wildflowers, Pond, MeadowShrub, MeadowTuft | Assets/Art/Models/Environment/*.fbx | build_biomes.py | present (task 2b) |
+| Red Canyon props: Mesa_A, Mesa_B, Boulder_A, Boulder_B, Boulder_C, Cactus_A, Cactus_B, DryShrub, DryTuft, RopeFence, Bones, WagonWheel | Assets/Art/Models/Environment/*.fbx | build_biomes.py | present (task 2b) |
+| Frost Ridge props: Fir_A, Fir_B, Slate_A, Slate_B, Slate_C, IceShard, Cairn, FrozenPool, FrostShrub, FrostTuft | Assets/Art/Models/Environment/*.fbx | build_biomes.py | present (task 2b) |
+| Biome styles (ground palette, light and sky per biome) | Assets/Data/Biomes/Biome_meadow, _canyon, _ridge | BiomeBuilder.cs | present (task 2b) |
 | Heli-tower, tracker, vannon, robotank, trapped slab | n/a | n/a | not implemented (named in sources, no model, no code) |
 | Preview renders | Docs/Previews/*.png (49 files) | Blender scripts | present |
 
@@ -97,7 +101,7 @@ All 35 FBX files below exist (4 in Characters, 15 in Structures, 16 in Environme
 |---|---|---|
 | Units: Soldier, Hero, FlagBearer, FlagBubble | Assets/Prefabs/Units | present |
 | Structures: Turret, Tank, Mine, Bunker, Cannon, CapturePoint, Sniper, Geyser, Tesla | Assets/Prefabs/Structures | present (Sniper, Geyser, Tesla added later) |
-| Environment (23 prefabs: trees, bushes, rocks, flowers, grass, fence, crate, barrel, log, tent, walls, sandbags, HQ, HexTile, SpawnHatch, decorative TeslaAntenna) | Assets/Prefabs/Environment | present |
+| Environment (54 prefabs: the first-pass trees, bushes, rocks, flowers, grass, fence, crate, barrel, log, tent, walls, sandbags, HQ, SpawnHatch, decorative TeslaAntenna, plus the 32 biome props of task 2b) | Assets/Prefabs/Environment | present |
 | UI prefabs | n/a | not implemented as prefabs: UI is built by code at scene load (`UI/Kit/UIFactory`) |
 
 ## 7. ScriptableObjects and data
@@ -107,8 +111,9 @@ All 35 FBX files below exist (4 in Characters, 15 in Structures, 16 in Environme
 | GameConfig, CameraConfig, FormationConfig, SquadConfig, BattleConfig, CombatConfig, EnemySquadConfig, DefenseBattleConfig, BattlePrefabs, TeamPalette, TeamVisuals, SoundLibrary, UISkin | Assets/Data/*.asset | present |
 | Unit and weapon configs (PlayerSoldier, EnemySoldier, FlagBearer; Weapons for PlayerSoldier, EnemySoldier, Turret, Tank, Cannon, Bunker, Sniper) | Assets/Data/Unit_*.asset, Weapon_*.asset | present |
 | Structure configs: Bunker, Cannon, Geyser, Mine, Sniper, Tank, Tesla, Turret | Assets/Data/Structure_*.asset | present (flat in Data, not in a Structures folder) |
-| Meta: ProgressionConfig, ResearchTree, DefenseCatalog, BaseRoster, BaseEditorConfig, three MercenaryDefs, ten Base_b01..b10 | Assets/Data/Meta | present |
-| Ten generated layouts | Assets/Data/Meta/Layouts (9 files, b02 to b10; b01 is the handcrafted map) | present |
+| Meta: ProgressionConfig, ResearchTree, DefenseCatalog, BaseRoster, BaseEditorConfig, three MercenaryDefs, five Base_b01..b05 | Assets/Data/Meta | present |
+| Five level deployments | Assets/Data/Meta/Layouts (Layout_b01 hand placed tutorial, b02 to b05 seeded on their map's sockets) | present |
+| Level maps | Assets/Data/Maps (Map_level1..5, Map_home, Map_lane) | present |
 | Maps: home, canyon, ridge | Assets/Data/Maps/Map_*.asset | present |
 | MetaDatabase index | Assets/Resources/MetaDatabase.asset | present (in Resources, not Data) |
 | EconomyConfig, separate TeamPalettes per faction | n/a | not implemented as such (economy values live in ProgressionConfig and BattleConfig; one TeamPalette covers all colours) |

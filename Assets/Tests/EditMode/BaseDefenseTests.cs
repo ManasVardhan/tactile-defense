@@ -263,6 +263,39 @@ namespace TactileWars.Tests
             Assert.Greater(strongHolds, weakHolds + 40);
         }
 
+        [Test]
+        public void RaidsAreOffWhenBaseFeaturesDisabled()
+        {
+            UseTempSave();
+            var p = MetaGame.Profile;
+            p.gold = 1000;
+            p.level = 5;
+            for (int i = 0; i < 6; i++) p.BaseLayout.placements.Add(new DefensePlacement { defenseId = i % 2 == 0 ? "mine" : "turret", x = -10f + i * 3f, z = 30f });
+            var now = System.DateTime.UtcNow;
+            bool was = MetaGame.BaseFeaturesEnabled;
+            try
+            {
+                MetaGame.BaseFeaturesEnabled = false;
+                p.lastSeenUtcTicks = now.AddHours(-5).Ticks;
+                var off = new TactileWars.Online.LocalOfflineProvider();
+                Assert.IsNull(off.CheckForRaid(now), "no raid while base features are off");
+                Assert.AreEqual(0, off.RaidsThisSession);
+                Assert.AreEqual(1000, p.gold, "no gold lost to raids");
+                Assert.AreEqual(0, p.raidLog.Count, "nothing logged");
+                Assert.AreEqual(6, p.BaseLayout.placements.Count, "no defense consumed");
+                Assert.AreEqual(now.Ticks, p.lastSeenUtcTicks, "last seen still updates");
+
+                // The same profile, away as long, with the switch on: the simulator still runs (the code stays alive).
+                MetaGame.BaseFeaturesEnabled = true;
+                p.lastSeenUtcTicks = now.AddHours(-5).Ticks;
+                var on = new TactileWars.Online.LocalOfflineProvider();
+                Assert.IsNotNull(on.CheckForRaid(now), "with the switch on a raid is generated");
+                Assert.AreEqual(1, p.raidLog.Count);
+            }
+            finally { MetaGame.BaseFeaturesEnabled = was; }
+            Assert.IsFalse(MetaGame.BaseFeaturesEnabled, "the build ships with base features off");
+        }
+
         // ------------------------------------------------------------ routing grid
 
         [Test]

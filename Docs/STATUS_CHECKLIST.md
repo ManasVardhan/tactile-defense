@@ -1,14 +1,29 @@
 # Status checklist against the owner's brief
 
-Date: 2026-11-17. Every status below is backed by a file on disk, a test name, a screenshot or a log named in the Evidence column. The brief itself was not available as a file in the project, so requirement lines are reconstructed from `GAME_DESIGN_DOCUMENT.md`, `IMPLEMENTATION_ROADMAP.md` and `ARCHITECTURE_CONTRACT.md`, which mirror it closely; section numbers and titles follow the brief (there is no section 17). Statuses: **Done** (exists and evidenced), **Partial** (exists with a stated gap), **Not done**. Test counts refer to the final run in `TESTING.md`.
+Date: 2026-11-17, updated 2026-11-24 for checkpoint 1 of the unit squads plan (see the section below). Every status below is backed by a file on disk, a test name, a screenshot or a log named in the Evidence column. The brief itself was not available as a file in the project, so requirement lines are reconstructed from `GAME_DESIGN_DOCUMENT.md`, `IMPLEMENTATION_ROADMAP.md` and `ARCHITECTURE_CONTRACT.md`, which mirror it closely; section numbers and titles follow the brief (there is no section 17). Statuses: **Done** (exists and evidenced), **Partial** (exists with a stated gap), **Not done**. Test counts refer to the latest run in `TESTING.md`.
+
+## Unit squads plan 1 (controls): checkpoint 1, 2026-11-24
+
+Branch `feature/unit-squads`, not merged to `main`; the owner plays the web build first.
+
+| Item | State | Evidence |
+|---|---|---|
+| Attack battles use units of 3 soldiers on a hex grid (click a unit button, click a glowing hex) | Done | PlayMode ArmyTests, ArmyInputTests; Screenshots/hud_unit_armed.png, tut_2_deploy.png |
+| Click a unit to select it, click a hex to move it, drag to pan | Done | ArmyInputTests.TapUnitSelectsTapHexMovesTapAgainDeselects, DragPansAndDoesNotCommand; Screenshots/hud_unit_selected.png |
+| Unit bar, unit badges with pips, backup prompt | Done | ArmyHudTests; Screenshots/hud_unit_bar.png, hud_backup_prompt.png |
+| Level 1 is a guided tutorial | Done | ArmyHudTests.TutorialWalksThroughGuidedSteps, LevelOneTests; Screenshots/tut_*.png |
+| Level 1 is winnable by a simple policy | Done | BotPlaythroughTests.BotWinsLevelOne (3 of 3 victories, 22 to 23 s game time) |
+| Player stroke input removed from attack battles | Done | ArmyBattleTests.AttackBattleUsesArmyNotSquad; stroke code (StrokeRecorder, StrokeRenderer, ShapeRecognizer, FormationSolver) stays for the defense battle AI attacker |
+| Full regression | Done | EditMode 56 of 56, PlayMode 72 of 72, validator Issues: 0 (TESTING.md, 2026-11-24) |
+| WebGL build and a played browser check | Done | TactileWarsWeb/; Screenshots/look_browser_*.png (the hex-era checkpoint 1 browser captures were removed with the hidden grid); findings in the task reports |
 
 ## Summary
 
 | Status | Count |
 |---|---|
-| Done | 109 |
+| Done | 107 |
 | Partial | 26 |
-| Not done | 28 |
+| Not done | 30 |
 | Total lines | 163 |
 
 | Section | Done | Partial | Not done |
@@ -16,7 +31,7 @@ Date: 2026-11-17. Every status below is backed by a file on disk, a test name, a
 | 1 Primary reference research | 4 | 1 | 0 |
 | 2 Visual quality | 6 | 3 | 2 |
 | 3 Asset production pipeline | 11 | 1 | 1 |
-| 4 Formation drawing | 5 | 1 | 2 |
+| 4 Formation drawing | 3 | 1 | 4 |
 | 5 Squad movement | 7 | 0 | 0 |
 | 6 Combat system | 9 | 1 | 1 |
 | 7 Base attacks and defense | 9 | 2 | 2 |
@@ -39,6 +54,8 @@ Date: 2026-11-17. Every status below is backed by a file on disk, a test name, a
 | 2 | Match the original's grey lava biome | Not done | Only the sand biome and three sand map layouts exist; no lava ground or crack glow |
 | 2 | Rain or weather VFX | Not done | No rain prefab or code (ps_06 shows rain) |
 | 3 | Defense models for every type named in the sources (heli-tower, tracker, vannon, robotank, trapped slab) | Not done | No model or code for these five |
+| 4 | Drag to draw a stroke and soldiers reform along it (player) | Not done | Replaced by unit squads in attack battles (unit squads plan 1); only the defense AI attacker still forms shapes |
+| 4 | Live single-file chain while drawing (player) | Not done | Replaced by unit squads; the code path (SquadController.ExtendLiveTail) stays but no player input reaches it |
 | 4 | Special arrow formation behaviour | Not done | Treated as a free shape (REFERENCE_COMPARISON section 3) |
 | 4 | Manual aiming by finger | Not done | Design decision D1: auto-fire only; whether the original had manual aim is unverified |
 | 6 | Star coin pickups with x1 and x2 combo numbers | Not done | No in-battle pickups or combo counter; only a coin burst VFX on victory (VFX_Coins) |
@@ -105,13 +122,13 @@ Date: 2026-11-17. Every status below is backed by a file on disk, a test name, a
 
 | Requirement | Status | Evidence |
 |---|---|---|
-| 3D models under an orthographic camera that reproduces the 2D read | Done | CameraConfig (orthographic, 31 degrees); Screenshots/battle_u_formation.png |
+| 3D models under an orthographic camera that reproduces the 2D read | Done | CameraConfig (orthographic, 31 degrees); Screenshots/level1_start.png |
 | Chibi helmet-dominant soldiers readable at about 3.5 percent of screen height | Partial | 22 to 28 px tall at 720p (contract); eyes rarely resolve and white outline is heavy (Comparisons/NOTES.md 03) |
-| Team colours are the only strongly saturated colours on low-saturation ground | Done | Screenshots/battle_u_formation.png, base_defense_battle.png |
+| Team colours are the only strongly saturated colours on low-saturation ground | Done | Screenshots/battle_combat.png, base_defense_battle.png |
 | Hex-tiled ground | Done | Assets/Art/Shaders/TWGround.shader, M_Ground.mat |
-| Props set: pines, tents, barricades, crates, walls, rocks, flowers | Done | 35 FBX; Assets/Prefabs/Environment (23 prefabs); Screenshots/battle_u_formation.png |
+| Props set: pines, tents, barricades, crates, walls, rocks, flowers | Done | 35 FBX; Assets/Prefabs/Environment (23 prefabs); Screenshots/level1_topdown.png |
 | Soft blob shadows, no health bars or damage numbers | Done | Blob shadow built by code and prefabs; no health bar code in battle HUD; screenshots |
-| Paint vocabulary: ring with spiral blot, dotted projectiles, persistent splats, death ghost and puff | Done | Screenshots/battle_formation_circle.png (ring, blot, splats, dots); VFX_Ghost.prefab, VFX_Puff.prefab (ghost not individually checked visually) |
+| Paint vocabulary: ring with spiral blot, dotted projectiles, persistent splats, death ghost and puff | Done | Screenshots/base_defense_battle.png (ring, blot), battle_combat.png (splats, dots); VFX_Ghost.prefab, VFX_Puff.prefab (ghost not individually checked visually) |
 | Match the original's grey lava biome | Not done | Only the sand biome and three sand map layouts exist; no lava ground or crack glow |
 | Rain or weather VFX | Not done | No rain prefab or code (ps_06 shows rain) |
 | Gentle lighting and post-processing | Partial | TW_BattleVolume.asset present; the stack also tints the HUD (Comparisons/NOTES.md 05a/05b) |
@@ -139,12 +156,12 @@ Date: 2026-11-17. Every status below is backed by a file on disk, a test name, a
 
 | Requirement | Status | Evidence |
 |---|---|---|
-| Drag to draw a stroke and soldiers reform along it | Done | PlayMode BattlePlayTests.DragStroke_SoldiersReachTheirSlots |
-| Recognise line, circle, square and free shapes | Done | EditMode ShapeRecognizerTests; PlayMode DefenseBattleTests.StrokeSequence_LineThenArcThenCircle_AreRecognizedEachTime |
+| Drag to draw a stroke and soldiers reform along it | Not done | Replaced by unit squads in attack battles (2026-11-24); the defense AI attacker still uses SquadController.SetFormation (DefenseBattleTests.AttackerAI_FormsLinesRingsClusters_AndAdvances) |
+| Recognise line, circle, square and free shapes | Done | EditMode ShapeRecognizerTests; EditMode BaseDefenseTests.Recognizer_LineThenShallowArcThenCircle |
 | Spacing along the stroke about 1.0 to 1.3 soldier widths | Partial | Solver min spacing 0.7 (deviation, helmets overlap otherwise), max cap tested (FormationSolverTests.LongLine_SpacingCappedAtMax); original spacing is an estimate |
 | Closed shapes and filled shapes | Done | FormationSolverTests.CircleStroke_ClosedRingWithMinSpacing, SmallCircle_FillsInnerRings |
-| Stroke feedback: solid inner line plus dashed outer line | Done | StrokeRenderer; Screenshots/battle_stroke_drawing.png (glow ribbon is an extra not in the reference) |
-| Live single-file chain while drawing | Done | SquadController.ExtendLiveTail (contract Phase 4 note); Screenshots/battle_stroke_drawing.png; no dedicated test |
+| Stroke feedback: solid inner line plus dashed outer line | Done | StrokeRenderer, now shown only for the defense AI attacker's formations; Screenshots/base_defense_battle.png (glow ribbon is an extra not in the reference) |
+| Live single-file chain while drawing | Not done | Replaced by unit squads; SquadController.ExtendLiveTail stays but no player input reaches it |
 | Special arrow formation behaviour | Not done | Treated as a free shape (REFERENCE_COMPARISON section 3) |
 | Manual aiming by finger | Not done | Design decision D1: auto-fire only; whether the original had manual aim is unverified |
 
@@ -201,7 +218,7 @@ Date: 2026-11-17. Every status below is backed by a file on disk, a test name, a
 | Orthographic oblique camera that follows the squad | Done | BattleCamera, CameraConfig (elevation 31, follow smooth 0.45 s) |
 | Constant zoom | Done | No zoom code in battle; CameraConfig.screenSoldierHeights 33 |
 | Bounds clamp and shake | Done | BattleCamera.Shake used by DefenderStrike; GameConfig bounds (shake feel not reviewed) |
-| Off-screen enemy and objective markers clamped to the screen edge | Done | BattleHUD enemy markers (6); Screenshots/battle_u_formation.png shows helmet and flag markers |
+| Off-screen enemy and objective markers clamped to the screen edge | Done | BattleHUD enemy markers (6); Screenshots/battle_hud.png |
 | Pinch zoom or free camera | Not done | Not implemented (base editor has mouse wheel and overview button only) |
 | Camera framing matches the reference | Partial | Elevation 31 and 33 soldier-heights are tuned, but the forest border frames differently (VISUAL_FIDELITY_REPORT section 1) |
 
@@ -209,15 +226,15 @@ Date: 2026-11-17. Every status below is backed by a file on disk, a test name, a
 
 | Requirement | Status | Evidence |
 |---|---|---|
-| Battle HUD: pause tab, squad badge, POW badge | Done | Screenshots/battle_u_formation.png; UI/Battle/BattleHUD.cs |
+| Battle HUD: pause tab, squad badge, POW badge | Done | Screenshots/battle_hud.png, hud_unit_bar.png; UI/Battle/BattleHUD.cs |
 | HUD limited to what the original shows | Partial | Extras: capture pill, objective marker, soldier count, POW always visible |
 | Pause menu | Done | UI/Battle/PauseMenu.cs: resume, restart, settings, quit to base; Screenshots/ui_pause.png |
 | Main menu with Army, Research, Base, Profile and Attack | Done | Screenshots/ui_main_menu.png |
 | Opponent list with rewards | Done | Screenshots/ui_attack.png |
 | Victory and defeat result cards | Done | Screenshots/ui_victory.png, ui_defeat.png (victory layout differs from f_0086) |
-| Research screen | Done | Screenshots/ui_research.png, ui_research_defense.png |
-| Army, profile, settings, team select | Done | Screenshots/ui_army.png, ui_profile.png, ui_settings.png, ui_team_select.png |
-| Tutorial and shape hints | Done | Screenshots/ui_tutorial.png, ui_shape_hint.png |
+| Research screen | Hidden (Plan 2 Task 2c: no menu entry) | code kept, no capture |
+| Army, settings, team select (profile hidden) | Done | Screenshots/ui_army.png, ui_army_new_unit.png, ui_settings.png, ui_team_select.png |
+| Tutorial | Done | Level 1 guided steps and one-off hints: Screenshots/tut_1_pick.png to tut_8_capture.png, tut_hint_*.png (the stroke-era shape hints were removed with player strokes) |
 | Pre-battle VS splash with tip | Not done | No VS card; the attack list goes straight into battle |
 | World or Colors War map screen | Not done | A list of AI base cards replaces the map |
 | Alliance screen | Not done | Only the IAllianceService stub exists, no screen |
@@ -261,7 +278,7 @@ Date: 2026-11-17. Every status below is backed by a file on disk, a test name, a
 | Tunables in ScriptableObjects | Done | Assets/Data (about 40 assets); a grep for stray magic numbers was not performed |
 | Object pooling and event decoupling | Done | Core/Pool.cs, ProjectileManager, BattleEvents; no gameplay folder references UI or Meta namespaces (grep) |
 | Scenes Boot, MainMenu, Battle, BaseEditor | Done | Assets/Scenes; build settings order checked in contract |
-| Compiles with zero errors | Done | 0 occurrences of 'error CS' in Logs/final_editmode.log, final_playmode.log, final_validate.log (2026-11-17) |
+| Compiles with zero errors | Done | 0 occurrences of 'error CS' in Logs/editmode.log, playmode.log, validate.log (2026-11-24) |
 | Project validator passes | Done | Logs/validation.txt: 4 scenes, 48 prefabs, 2554 objects, 156 materials, Issues: 0 |
 | Android and iOS player builds | Not done | Build support modules are not installed; no device build made or tested |
 | Player settings: bundle id, icon, signing | Not done | Not configured; no app icon asset |
@@ -336,8 +353,8 @@ Date: 2026-11-17. Every status below is backed by a file on disk, a test name, a
 | Requirement | Status | Evidence |
 |---|---|---|
 | Full loop playable: menu, battle, result, base editor, defense | Done | PlayMode MetaFlowTests.FullFlow_BootMenuBattleVictoryRewardsReturn, DefenseBattleTests |
-| All automated tests pass | Done | EditMode 42 of 42 and PlayMode 30 of 30 passed (Logs/final_editmode.xml, Logs/final_playmode.xml, 2026-11-17) |
-| Zero compile errors | Done | 0 occurrences of 'error CS' in Logs/final_editmode.log, final_playmode.log, final_validate.log (2026-11-17) |
+| All automated tests pass | Done | EditMode 56 of 56 and PlayMode 72 of 72 passed (Logs/editmode.xml, Logs/playmode.xml, 2026-11-24) |
+| Zero compile errors | Done | 0 occurrences of 'error CS' in Logs/editmode.log, playmode.log, validate.log (2026-11-24) |
 | Visual result closely matches the reference | Partial | VISUAL_FIDELITY_REPORT.md; known differences listed |
 | Every feature in the brief implemented | Partial | See the Not done or partial list above |
 | Runs on a mobile device | Not done | No device build exists |

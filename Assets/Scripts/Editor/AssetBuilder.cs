@@ -39,11 +39,18 @@ namespace TactileWars.EditorTools
 
         static readonly Dictionary<string, string> SlotHex = new Dictionary<string, string>
         {
-            { "TeamColor", "#3B7FD8" }, { "TeamColorDark", "#2556A0" }, { "Paint", "#3F8EF2" },
+            { "TeamColor", "#3B7FD8" }, { "Helmet", "#3B7FD8" }, { "TeamColorDark", "#2556A0" }, { "Paint", "#3F8EF2" },
             { "Skin", "#F7F2EA" }, { "Dark", "#2C2F3C" }, { "Metal", "#A9AEB6" }, { "Accent", "#F4EFE2" },
             { "Wood", "#A3743F" }, { "Leaf", "#1E5249" }, { "LeafLight", "#2F6E60" }, { "Trunk", "#6E4C33" },
             { "Rock", "#B2A386" }, { "Sand", "#AE9A6C" }, { "Glass", "#9FE3F5" }, { "Canvas", "#E8DDBD" },
             { "Stone", "#CFC09C" },
+            // Biome props (Tools/blender/build_biomes.py): Meadow, Red Canyon, Frost Ridge.
+            { "Grass", "#4F8A3C" }, { "GrassLight", "#79AE4F" }, { "Hay", "#DDB95C" }, { "HayDark", "#B08B3A" },
+            { "Bloom", "#EE7AA0" }, { "BloomGold", "#F5CF45" }, { "Water", "#5FAFC8" },
+            { "Clay", "#B5583A" }, { "ClayLight", "#DA8C5C" }, { "ClayDark", "#86402A" },
+            { "Cactus", "#5C8A4E" }, { "CactusLight", "#83AE66" }, { "DryWood", "#B09270" }, { "Bone", "#EDE5D1" },
+            { "Slate", "#66737F" }, { "SlateLight", "#93A1AD" }, { "Snow", "#F1F5F8" }, { "Ice", "#9FD8EC" },
+            { "Fir", "#2D5A50" }, { "FirLight", "#3E7465" },
         };
 
         [MenuItem("TactileWars/Build Assets")]
@@ -194,9 +201,9 @@ namespace TactileWars.EditorTools
             foreach (var kv in SlotHex)
             {
                 var c = Hex(kv.Value);
-                float em = kv.Key == "Glass" ? 0.35f : kv.Key == "Paint" ? 0.25f : 0f;
+                float em = kv.Key == "Glass" ? 0.35f : kv.Key == "Paint" ? 0.25f : kv.Key == "Ice" || kv.Key == "Water" ? 0.12f : kv.Key == "Snow" ? 0.05f : 0f;
                 mats.slots[kv.Key] = Mat("M_" + kv.Key, toon, m => ToonSetup(m, c, false, em, kv.Key == "Leaf" || kv.Key == "LeafLight" ? 0.12f : 0.18f));
-                bool darkEdge = kv.Key != "TeamColor" && kv.Key != "TeamColorDark" && kv.Key != "Accent";
+                bool darkEdge = kv.Key != "TeamColor" && kv.Key != "Helmet" && kv.Key != "TeamColorDark" && kv.Key != "Accent";
                 mats.unitSlots[kv.Key] = Mat("M_U_" + kv.Key, toonO, m => ToonSetup(m, c, true, em, 0.28f, darkEdge));
             }
 
@@ -242,23 +249,9 @@ namespace TactileWars.EditorTools
                 m.SetColor("_BackColor", new Color(0.93f, 0.93f, 0.9f, 0.62f));
                 m.SetColor("_BackEdgeColor", new Color(0.66f, 0.66f, 0.64f, 0.85f));
             });
-            mats.ground = Mat("M_Ground", Find("TW/Ground"), m =>
-            {
-                m.SetColor("_SandColor", Hex("#C3B48E"));
-                m.SetColor("_SandColor2", Hex("#B9AC88"));
-                m.SetColor("_HexLineColor", Hex("#958666"));
-                m.SetColor("_PathColor", Hex("#BBAB84"));
-                m.SetColor("_TileColor", Hex("#D8CAA6"));
-                m.SetColor("_DarkColor", Hex("#A9A17F"));
-                m.SetColor("_ShadowColor", Hex("#9C9AA6"));
-                m.SetFloat("_HexSize", 5.2f);
-                m.SetFloat("_HexLineWidth", 0.028f);
-                m.SetFloat("_HexLineStrength", 0.62f);
-                m.SetFloat("_HexTint", 0.045f);
-                m.SetFloat("_PathStrength", 0.55f);
-                m.SetFloat("_NoiseScale", 0.08f);
-                m.SetFloat("_ShadowStrength", 0.8f);
-            });
+            // The open battlefield ground (no grid drawn): the Meadow biome by default; map variants put their own
+            // biome on a runtime copy (MapApplier).
+            mats.ground = Mat("M_Ground", Find("TW/Ground"), m => BiomeBuilder.Meadow().ApplyGround(m));
             mats.pDot = Mat("M_P_Droplet", particle, m => { m.SetTexture("_MainTex", t.dot); m.SetFloat("_Emission", 0.15f); m.renderQueue = 3010; });
             mats.pPuff = Mat("M_P_Puff", particle, m => { m.SetTexture("_MainTex", t.puff); m.renderQueue = 3011; });
             mats.pGhost = Mat("M_P_Ghost", particle, m => { m.SetTexture("_MainTex", t.ghost); m.renderQueue = 3012; });

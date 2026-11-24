@@ -15,9 +15,9 @@ namespace TactileWars.CameraRig
         [Tooltip("Follow smoothing time (seconds).")] public float followSmoothTime = 0.45f;
         [Tooltip("How much the camera leans toward the squad's destination.")] public float lookAhead = 0.35f;
         public float maxLookAhead = 5f;
-        [Tooltip("Shift of the focus so the squad sits a little below centre and more of the map ahead is visible.")] public float forwardBias = 2.5f;
-        public Vector2 focusMin = new Vector2(-3f, 6f);
-        public Vector2 focusMax = new Vector2(3f, 100f);
+        [Tooltip("Shift of the focus so the squad (or, in attack battles, the army's spawn at the start) sits a little below centre and more of the map ahead is visible.")] public float forwardBias = 2.5f;
+        [Tooltip("Focus bounds (x, z) for following and for panning.")] public Vector2 focusMin = new Vector2(-3f, 6f);
+        [Tooltip("Focus bounds (x, z) for following and for panning.")] public Vector2 focusMax = new Vector2(3f, 100f);
         public float shakeDecay = 2.8f;
         public float shakeFrequency = 22f;
         public float maxShake = 0.6f;

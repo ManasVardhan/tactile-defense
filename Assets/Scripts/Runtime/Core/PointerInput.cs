@@ -10,6 +10,10 @@ namespace TactileWars.Core
     {
         public bool isDown;
         public Vector2 position;
+        /// <summary>The button or touch went down during this frame (even if it also came up again).</summary>
+        public bool pressed;
+        /// <summary>The button or touch came up during this frame (even if it only went down this frame).</summary>
+        public bool released;
     }
 
     /// <summary>Source of raw pointer state. Swap for a simulated source in tests.</summary>
@@ -19,7 +23,9 @@ namespace TactileWars.Core
         bool ReinforcePressed();
     }
 
-    /// <summary>Mouse and touch through the Input System package (first touch wins).</summary>
+    /// <summary>Mouse and touch through the Input System package (first touch wins). Besides the held state it
+    /// reports the Input System's own press and release edges, so a quick click whose press and release land in the
+    /// same frame (common at low WebGL frame rates and with trackpad taps) is still seen.</summary>
     public class DevicePointerSource : IPointerSource
     {
         public PointerSample Read()
@@ -27,16 +33,24 @@ namespace TactileWars.Core
             var s = new PointerSample();
 #if ENABLE_INPUT_SYSTEM
             var ts = Touchscreen.current;
-            if (ts != null && ts.primaryTouch.press.isPressed)
+            if (ts != null)
             {
-                s.isDown = true;
-                s.position = ts.primaryTouch.position.ReadValue();
-                return s;
+                var press = ts.primaryTouch.press;
+                if (press.isPressed || press.wasPressedThisFrame || press.wasReleasedThisFrame)
+                {
+                    s.isDown = press.isPressed;
+                    s.pressed = press.wasPressedThisFrame;
+                    s.released = press.wasReleasedThisFrame;
+                    s.position = ts.primaryTouch.position.ReadValue();
+                    return s;
+                }
             }
             var m = Mouse.current;
             if (m != null)
             {
                 s.isDown = m.leftButton.isPressed;
+                s.pressed = m.leftButton.wasPressedThisFrame;
+                s.released = m.leftButton.wasReleasedThisFrame;
                 s.position = m.position.ReadValue();
             }
 #endif
@@ -60,8 +74,26 @@ namespace TactileWars.Core
         public bool Down;
         public Vector2 Position;
         public bool Reinforce;
+        bool click;
 
-        public PointerSample Read() => new PointerSample { isDown = Down, position = Position };
+        /// <summary>Press and release at 'at' within the next frame read (a quick click). Leaves Down false.</summary>
+        public void Click(Vector2 at)
+        {
+            Position = at;
+            Down = false;
+            click = true;
+        }
+
+        public PointerSample Read()
+        {
+            var s = new PointerSample { isDown = Down, position = Position };
+            if (click)
+            {
+                click = false;
+                s.pressed = s.released = true;
+            }
+            return s;
+        }
 
         public bool ReinforcePressed()
         {
@@ -71,7 +103,9 @@ namespace TactileWars.Core
         }
     }
 
-    /// <summary>Unified pointer state (mouse and touch share one path). Edge flags are computed once per frame.</summary>
+    /// <summary>Unified pointer state (mouse and touch share one path). Edge flags are computed once per frame: an edge
+    /// is seen when the held state changed since the last frame or when the source reports one, so a press and release
+    /// inside a single frame gives PressedThisFrame and ReleasedThisFrame together, with IsDown false.</summary>
     public static class PointerInput
     {
         static IPointerSource source;
@@ -95,8 +129,8 @@ namespace TactileWars.Core
         }
 
         public static bool IsDown { get { Refresh(); return current.isDown; } }
-        public static bool PressedThisFrame { get { Refresh(); return current.isDown && !previous.isDown; } }
-        public static bool ReleasedThisFrame { get { Refresh(); return !current.isDown && previous.isDown; } }
+        public static bool PressedThisFrame { get { Refresh(); return current.pressed || (current.isDown && !previous.isDown); } }
+        public static bool ReleasedThisFrame { get { Refresh(); return current.released || (!current.isDown && previous.isDown); } }
         public static Vector2 Position { get { Refresh(); return current.isDown || !previous.isDown ? current.position : previous.position; } }
         public static bool ReinforceRequested { get { Refresh(); return reinforce; } }
 

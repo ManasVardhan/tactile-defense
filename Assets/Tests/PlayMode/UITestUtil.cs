@@ -29,6 +29,7 @@ namespace TactileWars.Tests
             AudioListener.pause = false;
             SaveSystem.DirectoryOverride = null;
             BattleLaunch.Clear();
+            MetaGame.BaseFeaturesEnabled = false; // a capture may switch the base features on
             if (SaveDir != null && Directory.Exists(SaveDir)) Directory.Delete(SaveDir, true);
             SaveDir = null;
             if (Camera.main != null) Camera.main.targetTexture = null;

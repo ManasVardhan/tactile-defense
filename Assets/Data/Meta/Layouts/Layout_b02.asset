@@ -14,60 +14,65 @@ MonoBehaviour:
   m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Battle.BaseLayoutData
   seed: 1037
   squads:
-  - position: {x: -1, y: 0, z: 52}
+  - position: {x: -2.6174326, y: 0, z: 47.644382}
     advance: 0
     count: 8
     seed: 1037
-  - position: {x: 6.5, y: 0, z: 99}
+    noFlagBearer: 0
+  - position: {x: 12.68169, y: 0, z: 133.5501}
     advance: 0
     count: 9
     seed: 1044
-  - position: {x: 5.5, y: 0, z: 57}
+    noFlagBearer: 0
+  - position: {x: -20.395248, y: 0, z: 117.23919}
     advance: 0
-    count: 10
+    count: 8
     seed: 1051
-  - position: {x: 8.5, y: 0, z: 28}
-    advance: 0
-    count: 10
+    noFlagBearer: 0
+  - position: {x: 5.4844007, y: 0, z: 99.492035}
+    advance: 1
+    count: 8
     seed: 1058
-  - position: {x: 0, y: 0, z: 73}
-    advance: 0
-    count: 10
+    noFlagBearer: 0
+  - position: {x: -0.68531084, y: 0, z: 103.69978}
+    advance: 1
+    count: 9
     seed: 1065
+    noFlagBearer: 0
   defenses:
   - defenseId: mine
-    position: {x: 2.5, y: 0, z: 90}
-    yaw: 253.61526
+    position: {x: 11.3308525, y: 0, z: 85.14201}
+    yaw: 163.87254
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: 5, y: 0, z: 34}
-    yaw: 10.304924
+    position: {x: -11.819043, y: 0, z: 104.71101}
+    yaw: 101.142914
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: 0.5, y: 0, z: 21}
-    yaw: 34.300343
+    position: {x: -11.000244, y: 0, z: 116.17727}
+    yaw: 319.70752
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: -1.5, y: 0, z: 64.5}
-    yaw: 335.29373
+    position: {x: -5.935271, y: 0, z: 125.17663}
+    yaw: 34.235207
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: mine
-    position: {x: 1.5, y: 0, z: 48}
-    yaw: 276.92917
+    position: {x: -2.8165913, y: 0, z: 26.628202}
+    yaw: 96.25948
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: turret
-    position: {x: 11, y: 0, z: 67}
-    yaw: 210
+    position: {x: -11.183836, y: 0, z: 98.42935}
+    yaw: 135
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   - defenseId: bunker
-    position: {x: 8.5, y: 0, z: 46.5}
-    yaw: 200
+    position: {x: -5.3560596, y: 0, z: 106.86297}
+    yaw: 135
     patrolA: {x: 0, y: 0, z: 0}
     patrolB: {x: 0, y: 0, z: 0}
   counterSpawnsOverride: []

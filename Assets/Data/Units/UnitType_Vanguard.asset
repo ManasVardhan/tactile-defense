@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c74865aaf47ec409d934de598312ad98, type: 3}
+  m_Name: UnitType_Vanguard
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Army.UnitTypeConfig
+  id: 4
+  displayName: Vanguard
+  glyph: V
+  soldierCount: 3
+  healthMult: 1
+  rangeMult: 1
+  speedMult: 2
+  damageMult: 0.6
+  fireIntervalMult: 1
+  modelScale: 1
+  accent: {r: 1, g: 0.8784314, b: 0.12156863, a: 1}
+  drawsFire: 0
+  captureWeight: 2
+  hasWeapon: 1
+  healPerSecond: 0
+  reviveInterval: 0
+  lobbed: 0
+  splashRadius: 0
+  structureDamageMult: 1
+  soldierDamageMult: 1
+  prefersStructures: 0
+  description: Fast flanker with light guns. Captures points twice as fast.

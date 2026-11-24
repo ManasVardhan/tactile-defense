@@ -47,6 +47,8 @@ namespace TactileWars.UI
         protected abstract void Build();
         public virtual void Refresh() { }
         public virtual void OnOpened() { }
+        /// <summary>Called when the screen is closed or another screen replaces it.</summary>
+        public virtual void OnClosed() { }
 
         /// <summary>Re-tints the ribbon after a team change.</summary>
         public void RetintRibbon()

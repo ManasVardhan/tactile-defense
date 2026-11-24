@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c74865aaf47ec409d934de598312ad98, type: 3}
+  m_Name: UnitType_Demolisher
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Army.UnitTypeConfig
+  id: 5
+  displayName: Demolisher
+  glyph: D
+  soldierCount: 3
+  healthMult: 1
+  rangeMult: 1.3
+  speedMult: 0.8
+  damageMult: 1
+  fireIntervalMult: 2.5
+  modelScale: 1.15
+  accent: {r: 0.47843137, g: 0.05490196, b: 0.10980392, a: 1}
+  drawsFire: 0
+  captureWeight: 1
+  hasWeapon: 1
+  healPerSecond: 0
+  reviveInterval: 0
+  lobbed: 1
+  splashRadius: 1.8
+  structureDamageMult: 8
+  soldierDamageMult: 0.4
+  prefersStructures: 1
+  description: Lobs heavy shells that wreck turrets and bunkers fast. Weak against
+    soldiers.

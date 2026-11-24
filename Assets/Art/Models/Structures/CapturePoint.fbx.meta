@@ -34,6 +34,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: TeamColor
     second: {fileID: 2100000, guid: d06e0539a76364f5aa5896f140aba25b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Trunk
+    second: {fileID: 2100000, guid: b36b4b77dc32c465c915c45b6463abc6, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

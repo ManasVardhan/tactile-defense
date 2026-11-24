@@ -6,7 +6,9 @@ ScriptableObject naming used below: `CameraConfig`, `FormationConfig`, `SquadCon
 
 Nothing in the references gives stats. Most numbers are ESTIMATE and chosen to reproduce the observed read; tune against `ps_12.png` and `f_0056.jpg`.
 
-## 1. Input
+## 1. Input (legacy: used only by the AI attacker in defense battles)
+
+> Legacy. Attack battles no longer use strokes: the player deploys and moves units on a hex grid (section 16). Sections 1 to 3 describe the stroke-driven squad, which the AI attacker still drives in defense battles.
 
 Input is wrapped in `Core/PointerInput.cs` so mouse and touch share one path.
 
@@ -25,7 +27,7 @@ Behavior notes:
 - A stroke in progress is rendered by `StrokeRenderer` as an inner solid line plus a dashed outer line in team color (VERIFIED look, VA section 3: ps_08; the video shows a thin dashed line from drag start, f_0056).
 - Interpretation of the line mapping: VA f_0056 shows soldiers marching onto the drawn line as a single-file column, and levelwinner says "draw a straight line parallel to the mine" (RM section 2). Exact line-to-slot mapping is UNVERIFIED; the algorithm in section 2 is our design.
 
-## 2. From stroke to soldier slots
+## 2. From stroke to soldier slots (legacy: AI attacker only)
 
 Pipeline in `Formation/`: `StrokeRecorder` then `PathResampler` then `ShapeRecognizer` then `FormationSolver`.
 
@@ -76,7 +78,7 @@ Assign soldiers to slots by minimal total travel. For S up to 60, a greedy neare
 ### 2.8 Facing
 Squad facing equals the formation direction: for a line, the perpendicular pointing toward the nearest enemy side (or +Z if none); for a ring or free shape, outward from the centroid toward the nearest enemy. This is decision D1 (auto-fire facing).
 
-## 3. Squad anchor and the ground ring
+## 3. Squad anchor and the ground ring (legacy: AI attacker only)
 
 | Rule | Value | Status | SO field |
 |---|---|---|---|
@@ -329,3 +331,89 @@ P(hold) = strength / (strength + attack). Traps fire (consumed) with 0.55 probab
 After the first capture, 6 soldiers leave the spawn hatch nearest the captured point after 3 s and march on it
 (`BattleConfig.counterattack*`). Taps whose straight path is blocked by walls route the squad through gates on a 1 unit
 obstacle grid (`SquadConfig.useRouting`, `navCell`, `navClearance`, `routeBlobSpacing`, `routeAdvanceDistance`).
+
+## 16. Unit squads on a hex grid (attack battles)
+
+Attack battles field a squad of units instead of one stroke-driven squad. Defense battles keep the legacy squad (sections 1 to 3), driven by the AI attacker.
+
+### 16.1 Controls
+
+| Action | Rule |
+|---|---|
+| Deploy | Click a unit button in the bar at the bottom, then a free hexagon. A hexagon is free when nothing blocks it, no unit holds it, and no enemy soldier stands within 0.9 of its outer radius. Escape or clicking the button again disarms. |
+| Select and move | Click a unit, then a hexagon. The unit walks there by the grid route; the destination is reserved at once. Refused orders flash the hexagon red and play a sound. |
+| Pan | Drag the ground. A drag that starts on the HUD does nothing. |
+| Backup | When the meter is full and a unit was lost, click the Backup badge (or press R): the lost unit is back in the bar, ready to deploy. |
+
+### 16.2 Units
+
+| Rule | Value | Status | Field |
+|---|---|---|---|
+| Hex size (outer radius) | 1.4 | ESTIMATE | `BattleConfig.hexOuterRadius` |
+| Default squad | Attacker, Attacker, Tank (9 soldiers) | ESTIMATE | `PlayerArmy.DefaultSquad` |
+| Soldiers per unit | 3 | ESTIMATE | `UnitTypeConfig.soldierCount` |
+| Attacker | the base soldier (`Unit_PlayerSoldier`: 45 health, range 6.5, 3 x 3 damage every 1.15 s) | ESTIMATE | `Assets/Data/Units/UnitType_Attacker.asset` |
+| Tank | health x3, range x0.6, speed x0.7, draws fire | ESTIMATE | `Assets/Data/Units/UnitType_Tank.asset` |
+| Draws fire | enemy soldiers and direct-fire defenses (turret, bunker, tank, sniper tower) shoot a Tank soldier in range before a nearer one; the cannon's lobbed shells, tesla, mines and geysers do not choose | ESTIMATE | `UnitTypeConfig.drawsFire`, `StructureBase.PreferDrawsFire` |
+
+### 16.3 Capture with units
+
+| Rule | Value | Status | Field |
+|---|---|---|---|
+| Base capture time | 4 s | ESTIMATE | `BattleConfig.captureTime` |
+| Speed bonus per soldier on the pad | +1/3, counted up to 9 soldiers: 3 soldiers capture 1.5 times as fast as 1, 9 twice as fast as 3 | ESTIMATE | `BattleConfig.armyPerSoldierBonus`, `armyMaxSoldierBonus` |
+| Who counts | soldiers inside the pad radius, plus every living soldier of a resting unit whose hexagon overlaps the pad | ESTIMATE | `PlayerArmy.PadExtraCount` |
+
+Defense battles keep the legacy bonus (+3 percent per soldier, up to 10).
+
+### 16.4 Defeat and backup
+
+The battle is lost when no soldier is alive, no unit is ready to deploy and the backup meter is not full. A full meter postpones defeat until the player calls backup.
+
+### 16.5 Level 1 (tutorial level, base `b01`)
+
+The handcrafted deployment of `Battle.unity`, also used when no loadout is pending. The straight lane with no traps: a squad of 4 grunts without a flag bearer stands on point 1, one turret and a squad of 6 (5 grunts and a flag bearer) hold point 2. No mines, geysers, cannons, tesla antennas or bunkers. Enemy multipliers: health x1.0, damage x1.2.
+
+| Per-base rule | Level 1 | Field |
+|---|---|---|
+| Passive enemies: squads wake only when a player soldier is within their weapon range plus 2 of a member | on | `BaseDefinition.passiveEnemies`, `BattleLoadout.passiveEnemies`, `EnemySquad.passive` |
+| Counterattack after the first capture | off | `BaseDefinition.counterattack`, `BattleLoadout.counterattack`, `BattleSetup.sceneCounterattack` (no loadout) |
+
+The guided tutorial (spec 6.2) runs on Level 1 only. The squad on point 1 makes its "Tanks" step come before its "capture" step.
+
+
+### 16.6 Level ladder, unlocks and the squad
+
+Rules live in `Assets/Scripts/Runtime/Meta/Progression.cs` (pure, tested by `ProgressionTests`).
+
+| Rule | Value | Status | Field |
+|---|---|---|---|
+| Levels | the five roster bases in order: Level N is `MetaDatabase.roster.bases[N - 1]` (b01 to b05), each on its own map (`Map_levelN`) | ESTIMATE | `Progression.LevelCount` |
+| Cleared | consecutive levels from Level 1 whose base id is in `PlayerProfile.defeatedBases` | | `Progression.LevelsCleared` |
+| Open | Level N is open when N is at most cleared + 1 (cleared levels stay open for replay); the player XP level no longer gates bases | | `Progression.IsLevelOpen`, `MetaGame.IsBaseUnlocked` |
+| Squad slots | 3, plus 1 per level cleared up to 8 (at Level 5) | ESTIMATE | `Progression.SquadSlots` |
+| Unit unlocks | Attacker and Tank from the start; Healer at Level 1, Sniper at 2, Vanguard at 3, Demolisher at 4 | ESTIMATE | `Progression.UnlockLevel` |
+| Squad | one unit type per slot, chosen on the Army screen; emptied slots are skipped, at least one unit stays; a new slot arrives filled with an Attacker | | `PlayerProfile.squad`, `MetaGame.Squad`, `BattleLoadout.squad` |
+| Mercenary | a hired mercenary joins as one extra one soldier unit after the squad (health and damage from its multipliers times Mercenary Training); it can be healed, is never revived and backup never restores it | ESTIMATE | `PlayerArmy.SetMercenary`, `BattleSetup.MercenaryType` |
+| Retired research | Squad Size and Bigger Backup were removed; save version 3 refunds the gold paid for them | | `SaveMigrations.RetiredResearchRefund` |
+
+| Demolisher | Value | Status | Field |
+|---|---|---|---|
+| Fire interval | x2.5 the base soldier's, one lobbed shell per volley (3 x 3 damage) | ESTIMATE | `UnitType_Demolisher.fireIntervalMult` |
+| Damage to structures / soldiers | x8 / x0.4, splash 1.8 | ESTIMATE | `structureDamageMult`, `soldierDamageMult` |
+| Measured | one unit destroys a turret in 1.97 s (an Attacker unit 10.04 s); four soldiers in 35.8 s (an Attacker unit 12.9 s) | | `UnitAbilityTests` |
+
+### 16.7 Main menu and the Army screen
+
+The menu has two buttons: ARMY (bottom left, with the squad's glyphs above it) and ATTACK! (the level ladder), plus settings in the top bar, which shows the player plate and gold only. Research, Base and Profile have no menu entry; their screens and code are kept for tests.
+
+| Rule | Value | Field |
+|---|---|---|
+| Base features | off: no simulated raids are generated (no gold lost, no raid report), no Research, Base or Profile entry; existing research multipliers stay in effect, none can be bought | `MetaGame.BaseFeaturesEnabled` |
+| Units | unlocked by clearing levels only (16.6); no gold is spent on units | `Progression.IsUnlocked` |
+| Unit cards | six, in unlock order: glyph on the accent color, name, description, four bars; ADD puts the unit in the first empty slot; a locked card reads "Clear Level N to unlock" | `UnitCard`, `SquadBuilderPanel` |
+| Stat bars | ratio to the Attacker: Health `healthMult`, Damage `damageMult x soldierDamageMult / fireIntervalMult` (0 and "Heals" without a weapon), Range `rangeMult`, Speed `speedMult`; fill = ratio / (1 + ratio), so the Attacker sits at half (the tick on each track) | `UnitStatBars` |
+| Full squad | ADD with no empty slot shows "Squad is full. Click a slot to remove a unit first." | `SquadBuilderPanel.FullMessage` |
+| NEW tag and Army dot | a type unlocked by a clear is NEW until the Army screen has been opened once; the Army button shows a red dot while any type is NEW | `Progression.NewUnits`, seen-list ids `army_seen_<type>` |
+| One-time callouts | home: "You unlocked a new unit. Open Army." (`menu_army`); inside Army: "Add the Healer to your squad." (`menu_add_unit`); both in the tutorial seen-list | `MenuGuide`, `MetaGame.ShowArmyGuide`, `ShowAddUnitGuide` |
+| Heroes | the mercenary roster on the Army screen's second tab (unlock and hire with gold) | `ArmyScreen` |

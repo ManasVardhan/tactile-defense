@@ -25,7 +25,7 @@ TAKES = ["Idle", "Run", "Shoot", "Hit", "Die", "Cheer"]
 
 # ============================================================== shared head pieces
 def helmet_parts(center, radii, cut_pt, cut_n, lip_out, lip_down, seg_=24, rings=14,
-                 rim_mat="Accent", bone="Head"):
+                 rim_mat="Accent", bone="Head", base_mat="TeamColor"):
     """Bowl helmet: ellipsoid cut by a tilted plane, with a rolled lip on the opening."""
     bm = ellipsoid(center, radii, seg_, rings)
     geom = list(bm.verts) + list(bm.edges) + list(bm.faces)
@@ -67,7 +67,7 @@ def helmet_parts(center, radii, cut_pt, cut_n, lip_out, lip_down, seg_=24, rings
         f.material_index = 1
     for f in cap:
         f.material_index = 2
-    p = Part(bm, "TeamColor", bone)
+    p = Part(bm, base_mat, bone)
     p.extra_mats = [rim_mat, "Dark"]
     return p
 
@@ -94,10 +94,11 @@ def soldier_geo():
     FC, FR = (0, -0.08, 0.50), (0.205, 0.175, 0.175)
     P.append(Part(ellipsoid(FC, FR, 18, 9), "Skin", "Head"))
     P += eye_parts(FC, FR, (-0.074, 0.074), 0.495, (0.042, 0.02, 0.066))
-    # helmet: bell shaped bowl, opening tilted so it wraps the cheeks and the back
+    # helmet: bell shaped bowl, opening tilted so it wraps the cheeks and the back. Its own "Helmet" slot: team
+    # colored by default, the unit type's accent on player units so types read apart at a glance.
     P.append(helmet_parts(center=(0, 0.035, 0.60), radii=(0.31, 0.31, 0.30),
                           cut_pt=(0, -0.30, 0.648), cut_n=(0, 0.42, 1),
-                          lip_out=0.02, lip_down=0.034, seg_=28, rings=12))
+                          lip_out=0.02, lip_down=0.034, seg_=28, rings=12, base_mat="Helmet"))
     # body
     P.append(Part(ellipsoid((0, 0.005, 0.265), (0.13, 0.115, 0.14), 14, 8), "TeamColor",
                   blend_weights("Hips", "Spine", 0.22, 0.32)))

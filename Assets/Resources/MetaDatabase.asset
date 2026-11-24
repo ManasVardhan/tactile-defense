@@ -19,6 +19,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 300b0d5a168e44e82b9f6552affd1476, type: 2}
   - {fileID: 11400000, guid: 068e215c14a4e4fefb063923c0f4d4a5, type: 2}
   roster: {fileID: 11400000, guid: b52d658890bde459da528f08337c0d0d, type: 2}
+  units: {fileID: 11400000, guid: f2c0880df46bc463681e6a4c22c13265, type: 2}
   defenses: {fileID: 11400000, guid: 71935f9e3402748f1a93b114b138f52a, type: 2}
   game: {fileID: 11400000, guid: 347244d8377e84fbe9d6993c33b24cdb, type: 2}
   squadConfig: {fileID: 11400000, guid: 5d3a04598ecfd4cdb97b9d3c6c691f51, type: 2}
@@ -28,5 +29,8 @@ MonoBehaviour:
   defenseBattle: {fileID: 11400000, guid: 8d3a7efaa57554e5e94786a488d81957, type: 2}
   homeMap: {fileID: 11400000, guid: 9cb5bff4a18914ee4a8d0e334a0f833c, type: 2}
   maps:
-  - {fileID: 11400000, guid: 34eab83668f3647808993a774755e220, type: 2}
-  - {fileID: 11400000, guid: c4130c810929f4bd3bb3df7af67234cf, type: 2}
+  - {fileID: 11400000, guid: 9cccc579bfaf645159023709bf431908, type: 2}
+  - {fileID: 11400000, guid: 818aa7dc211834e3881c7f5b36476b40, type: 2}
+  - {fileID: 11400000, guid: 3682ee2aa08594232b088895019e1ccd, type: 2}
+  - {fileID: 11400000, guid: 165888088c5e14372a9d288d019a421d, type: 2}
+  - {fileID: 11400000, guid: e725a5598225748ba822796eb4bdfc6b, type: 2}

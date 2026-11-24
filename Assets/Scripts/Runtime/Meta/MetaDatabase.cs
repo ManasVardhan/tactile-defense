@@ -12,7 +12,8 @@ namespace TactileWars.Meta
         public ProgressionConfig progression;
         public ResearchTree research;
         public MercenaryDef[] mercenaries = new MercenaryDef[0];
-        public BaseRoster roster;
+        [Tooltip("The ladder: Level N is the N-th base.")] public BaseRoster roster;
+        [Tooltip("The player's unit types (names, glyphs, accents, descriptions) for the menu screens.")] public Army.UnitRoster units;
         public DefenseCatalog defenses;
         public GameConfig game;
         [Tooltip("Base squad stats that research adds to.")] public Squad.SquadConfig squadConfig;
@@ -22,7 +23,7 @@ namespace TactileWars.Meta
         public BaseEditorConfig baseEditor;
         public DefenseBattleConfig defenseBattle;
         [Tooltip("The player's own base map.")] public MapLayoutData homeMap;
-        [Tooltip("AI base map variants (the handcrafted lane is the null map).")] public MapLayoutData[] maps = new MapLayoutData[0];
+        [Tooltip("The ladder levels' maps, Level 1 first.")] public MapLayoutData[] maps = new MapLayoutData[0];
 
         public const string ResourcePath = "MetaDatabase";
         static MetaDatabase cached;

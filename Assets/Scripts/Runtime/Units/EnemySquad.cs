@@ -8,8 +8,10 @@ using UnityEngine;
 
 namespace TactileWars.Units
 {
-    /// <summary>Enemy cluster in a loose ring around a bubbled flag bearer. Idles, then engages and either
-    /// holds or loosely advances. Killing the bearer leaves a bubble: tapping it wipes the squad (verified mechanic).</summary>
+    /// <summary>Enemy cluster in a loose ring around a bubbled flag bearer (or a plain group without one). Idles, then
+    /// engages and either holds or loosely advances. Killing the bearer leaves a bubble: tapping it wipes the squad
+    /// (verified mechanic). A passive squad (tutorial levels) only wakes when a player soldier comes within its
+    /// weapon range plus 2 of one of its members.</summary>
     public class EnemySquad : MonoBehaviour
     {
         public EnemySquadConfig config;
@@ -19,6 +21,12 @@ namespace TactileWars.Units
         [Tooltip("Counterattack wave: marches on 'assaultPoint' with no leash and engages anything on the way.")] public bool assault;
         public Vector3 assaultPoint;
         public float assaultSpeed = 2.2f;
+        // The wave follows a nav route (around walls, water and rock spines) rather than a straight line.
+        System.Collections.Generic.List<Vector3> assaultRoute;
+        int assaultStep;
+        [Tooltip("Without a flag bearer the squad is a plain group: no bubble to pop.")] public bool withFlagBearer = true;
+        [Tooltip("Passive until approached: wakes only when a player soldier is within the weapon range plus this of a member.")] public bool passive;
+        public const float PassiveWakeMargin = 2f;
 
         readonly List<Soldier> members = new List<Soldier>(16);
         Vector3[] offsets;
@@ -72,6 +80,7 @@ namespace TactileWars.Units
                 members.Add(s);
             }
             if (positions.Length < n + 1) positions = new Vector3[n + 1];
+            if (!withFlagBearer) return;
 
             // Flag bearer at the centre, inside a bubble.
             var bearerPrefab = prefabs.flagBearer != null ? prefabs.flagBearer : prefabs.soldier;
@@ -105,6 +114,42 @@ namespace TactileWars.Units
             BattleEvents.RaiseSquadWiped(this);
         }
 
+        float WeaponRange => config != null && config.soldier != null && config.soldier.weapon != null ? config.soldier.weapon.range : 6f;
+
+        /// <summary>The player target within weapon range plus the margin of any living member, or null.</summary>
+        Health PassiveWake()
+        {
+            float r = WeaponRange + PassiveWakeMargin;
+            for (int i = 0; i < members.Count; i++)
+            {
+                var s = members[i];
+                if (s == null || !s.IsAlive) continue;
+                var h = UnitRegistry.FindNearest(Team.Player, s.transform.position, r);
+                if (h != null) return h;
+            }
+            if (bearer != null && bearer.IsAlive) return UnitRegistry.FindNearest(Team.Player, bearer.transform.position, r);
+            return null;
+        }
+
+        /// <summary>The next point of the wave's route to assaultPoint (the point itself when no route is known).</summary>
+        Vector3 NextAssaultWaypoint()
+        {
+            if (assaultRoute == null)
+            {
+                assaultRoute = new System.Collections.Generic.List<Vector3>();
+                var army = Army.PlayerArmy.Instance;
+                if (army == null || army.Nav == null || !army.Nav.FindPath(center, assaultPoint, assaultRoute)) assaultRoute.Clear();
+                assaultStep = 0;
+            }
+            while (assaultStep < assaultRoute.Count)
+            {
+                Vector3 d = assaultRoute[assaultStep] - center; d.y = 0f;
+                if (d.magnitude > 1.2f) return assaultRoute[assaultStep];
+                assaultStep++;
+            }
+            return assaultPoint;
+        }
+
         void Update()
         {
             float dt = Time.deltaTime;
@@ -116,7 +161,7 @@ namespace TactileWars.Units
             if (scanTimer <= 0f && config != null)
             {
                 scanTimer = 0.25f;
-                var near = UnitRegistry.FindNearest(Team.Player, center, engaged ? config.aggroRange * 1.6f : config.aggroRange);
+                var near = passive && !engaged ? PassiveWake() : UnitRegistry.FindNearest(Team.Player, center, engaged ? config.aggroRange * 1.6f : config.aggroRange);
                 if (near != null) { engaged = true; threat = near.transform.position; }
                 else if (engaged && UnitRegistry.FindNearest(Team.Player, center, config.aggroRange * 2f) == null) engaged = false;
             }
@@ -127,7 +172,7 @@ namespace TactileWars.Units
                 float range = config.soldier != null && config.soldier.weapon != null ? config.soldier.weapon.range : 6f;
                 var near = UnitRegistry.FindNearest(Team.Player, center, range * 0.8f);
                 engaged = true;
-                Vector3 goal = near != null ? center : assaultPoint;
+                Vector3 goal = near != null ? center : NextAssaultWaypoint();
                 Vector3 to = goal - center; to.y = 0f;
                 if (to.magnitude > 0.5f) center += to.normalized * Mathf.Min(to.magnitude, assaultSpeed * dt);
             }

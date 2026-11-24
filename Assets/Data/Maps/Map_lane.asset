@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a1f9e4f34a824b79ac181bdf46ac635, type: 3}
+  m_Name: Map_lane
+  m_EditorClassIdentifier: TactileWars.Runtime::TactileWars.Battle.MapLayoutData
+  id: lane
+  displayName: Classic Lane
+  biome: {fileID: 11400000, guid: 4ab984aac860e4cdbaa4e896c8a21354, type: 2}
+  playerSpawn: {x: 0, y: 0, z: 8}
+  capturePoints:
+  - {x: 0, y: 0, z: 43}
+  - {x: 0, y: 0, z: 94}
+  hq: {x: 0, y: 0, z: 105.5}
+  mapMin: {x: -18, y: 1}
+  mapMax: {x: 18, y: 108}
+  focusMin: {x: -1.5, y: 9}
+  focusMax: {x: 1.5, y: 99}
+  groundMask: {fileID: 0}
+  mapRect: {x: -40, y: -25, z: 80, w: 160}
+  path:
+  - {x: 0, y: -6}
+  - {x: 0, y: 4}
+  - {x: -2.5, y: 14}
+  - {x: 1.5, y: 25}
+  - {x: 0, y: 36}
+  - {x: 0, y: 43}
+  - {x: -1, y: 50}
+  - {x: -4, y: 58}
+  - {x: 2, y: 66}
+  - {x: 4.5, y: 74}
+  - {x: 1, y: 84}
+  - {x: 0, y: 94}
+  - {x: 0, y: 112}
+  props: []
+  spawnHatches:
+  - {x: -12, y: 0, z: 44}
+  - {x: 12.5, y: 0, z: 81}
+  - {x: -10, y: 0, z: 92}
+  squadSockets:
+  - {x: -8.5, y: 0, z: 21.5}
+  - {x: 8.5, y: 0, z: 28}
+  - {x: -6.5, y: 0, z: 47.5}
+  - {x: 5.5, y: 0, z: 57}
+  - {x: -5.5, y: 0, z: 69}
+  - {x: -6.5, y: 0, z: 88.5}
+  - {x: 6.5, y: 0, z: 99}
+  - {x: 0, y: 0, z: 36}
+  - {x: -1, y: 0, z: 52}
+  - {x: 0, y: 0, z: 73}
+  - {x: 1.5, y: 0, z: 87}
+  mineSockets:
+  - {x: -3.5, y: 0, z: 17}
+  - {x: 3.5, y: 0, z: 15.5}
+  - {x: 0.5, y: 0, z: 21}
+  - {x: -4.5, y: 0, z: 30}
+  - {x: 5, y: 0, z: 34}
+  - {x: 1.5, y: 0, z: 62}
+  - {x: -1.5, y: 0, z: 64.5}
+  - {x: 4.5, y: 0, z: 63.5}
+  - {x: 7, y: 0, z: 79}
+  - {x: -7, y: 0, z: 79.5}
+  - {x: -2, y: 0, z: 26}
+  - {x: 1.5, y: 0, z: 48}
+  - {x: -2.5, y: 0, z: 56}
+  - {x: 2, y: 0, z: 70}
+  - {x: -1.5, y: 0, z: 81}
+  - {x: 2.5, y: 0, z: 90}
+  defenseSockets:
+  - {x: 8.5, y: 0, z: 46.5}
+  - {x: -9.5, y: 0, z: 98.5}
+  - {x: -11, y: 0, z: 59}
+  - {x: 11, y: 0, z: 67}
+  - {x: 0, y: 0, z: 83.5}
+  - {x: -12, y: 0, z: 52}
+  - {x: 10.5, y: 0, z: 90}
+  attackerZoneMaxZ: 18
+  placeable: {x: -15.5, y: 18, z: 15.5, w: 102}
+  padClearance: 3.6

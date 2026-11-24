@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace TactileWars.Meta
 {
-    /// <summary>Turns the profile (research levels, hired mercenary, chosen team) and an opponent into the
+    /// <summary>Turns the profile (squad, research levels, hired mercenary, chosen team) and an opponent into the
     /// BattleLoadout that BattleSetup applies when the battle scene starts.</summary>
     public static class LoadoutBuilder
     {
@@ -20,6 +20,7 @@ namespace TactileWars.Meta
             int baseRe = db != null && db.battleConfig != null ? db.battleConfig.reinforcementCount : DefaultReinforcement;
 
             lo.playerTeam = p.team;
+            lo.squad = Progression.Fielded(Progression.RepairStored(p.squad, Progression.LevelsCleared(p, db)));
             lo.squadSize = baseSquad + Mathf.RoundToInt(V(ResearchEffect.SquadSize));
             lo.soldierHealthMult = 1f + V(ResearchEffect.SoldierHealth);
             lo.fireRateMult = 1f + V(ResearchEffect.FireRate);
@@ -37,6 +38,7 @@ namespace TactileWars.Meta
                     {
                         id = m.id, displayName = m.displayName, healthMult = m.healthMult, damageMult = m.damageMult,
                         fireRateMult = m.fireRateMult, scale = m.scale, reinforcementChargeBonus = m.reinforcementChargeBonus,
+                        accent = m.accent, description = m.description,
                     };
             }
 
@@ -51,6 +53,8 @@ namespace TactileWars.Meta
                 lo.rewardMult = b.rewardMultiplier;
                 lo.difficulty = b.difficulty;
                 lo.map = b.map;
+                lo.passiveEnemies = b.passiveEnemies;
+                lo.counterattack = b.counterattack;
             }
             if (lo.enemyTeam == lo.playerTeam) lo.enemyTeam = AlternateEnemy(lo.playerTeam);
             return lo;

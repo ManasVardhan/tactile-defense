@@ -269,20 +269,12 @@ def log():
     return [join(parts, "Log", smooth_angle=40)]
 
 
-def hex_tile():
-    R = 1.5 / math.cos(math.radians(30))  # 3.0 across flats
-    t = 0.06
-    o = cyl(R, t, "Stone", (0, 0, 0), seg=6, bevel=0.025, bseg=2, angle=30)
-    o.rotation_euler.z = math.radians(30)  # flats facing +-Y
-    return [join([o], "HexTile")]
-
-
 BUILDERS = {
     "Tree_A": tree_a, "Tree_B": tree_b, "Tree_C": tree_c,
     "Bush_A": bush_a, "Bush_B": bush_b,
     "Rock_A": rock_a, "Rock_B": rock_b, "Rock_C": rock_c,
     "GrassTuft": grass_tuft, "Flower_A": flower_a, "Flower_B": flower_b,
-    "Fence": fence, "Crate": crate, "Barrel": barrel, "Log": log, "HexTile": hex_tile,
+    "Fence": fence, "Crate": crate, "Barrel": barrel, "Log": log,
 }
 
 if __name__ == "__main__":
